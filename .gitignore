@@ -1,0 +1,70 @@
+# IDE
+.vscode/
+.idea/
+*.iws
+*.iml
+*.ipr
+**/nbproject/private/
+**/nbproject/Private/
+
+# Build
+target/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!mvnw
+!mvnw.cmd
+.gradle/
+**/gradle-app.setting
+
+# Logs
+logs/
+*.log
+**/logs/
+
+# Runtime data (arquivos locais de configuração)
+**/src/main/resources/application-local.properties
+**/src/main/resources/application-dev.properties
+
+# Mantenha os arquivos de configuração base
+!**/src/main/resources/application.properties
+!**/src/main/resources/application.yml
+
+# Arquivos temporários
+*.tmp
+*.temp
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos do usuário
+*.swp
+*.swo
+
+# Coverage reports
+**/jacoco.exec
+**/jacoco-aggregate/
+**/site/
+.coverage/
+
+# Package Files (exceto os necessários)
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+# Arquivos do Banco H2 (se usado)
+*.db
+*.trace
+
+# Docker (mantenha os arquivos de configuração)
+!Dockerfile
+!docker-compose.yml
+!docker-compose.prod.yml
