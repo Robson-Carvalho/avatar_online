@@ -11,26 +11,35 @@ import java.util.UUID;
 @Entity (name  = "card")
 @Table (name = "card")
 public class Card {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
-    private String userId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(updatable = false, nullable = false)
+    private UUID id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false) // cria a FK
+    private User user;
+
     private String name;
+    @Enumerated(EnumType.STRING)
     private ElementCard element;
+
+    @Enumerated(EnumType.STRING)
     private PhaseCard phase;
     private int attack;
     private int life;
     private int defense;
+
+    @Enumerated(EnumType.STRING)
     private RarityCard rarity;
     private String description;
 
     public Card() {
-        this.id = UUID.randomUUID().toString();
     }
 
-    public Card(String userId, String name, ElementCard element, PhaseCard phase, int attack, int life, int defense, RarityCard rarity, String description) {
-        this.id = UUID.randomUUID().toString();
-        this.userId = userId;
+    public Card(User user, String name, ElementCard element, PhaseCard phase, int attack, int life, int defense, RarityCard rarity, String description) {
+        this.user = user;
         this.name = name;
         this.element = element;
         this.phase = phase;
@@ -41,20 +50,20 @@ public class Card {
         this.description = description;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public String getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public String setUserId(String userId) {
-        return this.userId = userId;
+    public User setUser(User user) {
+        return this.user = user;
     }
 
     public String getName() {
@@ -121,19 +130,4 @@ public class Card {
         this.description = description;
     }
 
-
-    public Map<String, Object> toJson() {
-        return Map.of(
-                "id", this.id,
-                "name", this.name,
-                "userId", this.userId,
-                "element", this.element,
-                "phase", this.phase,
-                "attack", this.attack,
-                "life", this.life,
-                "defense", this.defense,
-                "rarity", this.rarity,
-                "description", this.description
-        );
-    }
 }
