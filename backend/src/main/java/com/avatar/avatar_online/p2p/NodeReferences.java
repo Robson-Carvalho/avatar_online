@@ -8,7 +8,8 @@ import java.util.List;
 public class NodeReferences {
     private final List<Node> nodes = List.of(
             new Node("server01", "http://localhost:8081"),
-            new Node("server02", "http://localhost:8082")
+            new Node("server02", "http://localhost:8082"),
+            new Node("server03", "http://localhost:8083")
     );
 
     public List<Node> getNodes() {
