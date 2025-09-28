@@ -17,6 +17,7 @@ public class PeerService {
     public void addPeer(String ip) {
         if (!ip.equals(Host.getLocalIPv4()) && peers.add(ip)) {
             System.out.println("✅ Peer adicionado: " + ip);
+            notifyNewPeer(ip);
         }
     }
 
