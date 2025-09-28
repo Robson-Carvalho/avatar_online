@@ -1,9 +1,12 @@
 package com.avatar.avatar_online.p2p;
 
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
+@Component
 public class NodeReferences {
-    private List<Node> nodes = List.of(
+    private final List<Node> nodes = List.of(
             new Node("server01", "http://localhost:8081"),
             new Node("server02", "http://localhost:8082")
     );
