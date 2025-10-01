@@ -1,12 +1,11 @@
 package com.avatar.avatar_online.controller;
 
-import com.avatar.avatar_online.util.ApiResponse;
+
+import com.avatar.avatar_online.network.Host;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.avatar.avatar_online.util.ResponseBuilder;
 
 import java.util.Map;
 
@@ -15,14 +14,16 @@ import java.util.Map;
 public class WelcomeController {
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Map<String, Object>>> welcome() {
+    public ResponseEntity<Map<String, Object>> welcome() {
+        String ipv4 = Host.getLocalIPv4();
+
         Map<String, Object> welcomeData = Map.of(
                 "application", "Avatar Online P2P Server",
                 "description", "Servidor descentralizado para jogo multiplayer",
-                "version", "1.0.0",
-                "status", "online"
+                "ipv4", ipv4,
+                "hostname", Host.getHostname()
         );
 
-        return ResponseBuilder.ok("Bem-vindo ao Avatar Online P2P", welcomeData);
+        return ResponseEntity.ok(welcomeData);
     }
 }

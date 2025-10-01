@@ -1,0 +1,91 @@
+version: '3.9'
+
+services:
+  avatar-postgres1:
+    image: postgres:17
+    container_name: avatar-postgres1
+    environment:
+      POSTGRES_DB: avatar_db1
+      POSTGRES_USER: avatar_user1
+      POSTGRES_PASSWORD: senha123
+    volumes:
+      - postgres_data1:/var/lib/postgresql/data
+    networks:
+      - avatar_net
+
+  avatar-postgres2:
+    image: postgres:17
+    container_name: avatar-postgres2
+    environment:
+      POSTGRES_DB: avatar_db2
+      POSTGRES_USER: avatar_user2
+      POSTGRES_PASSWORD: senha123
+    volumes:
+      - postgres_data2:/var/lib/postgresql/data
+    networks:
+      - avatar_net
+
+  avatar-postgres3:
+    image: postgres:17
+    container_name: avatar-postgres3
+    environment:
+      POSTGRES_DB: avatar_db3
+      POSTGRES_USER: avatar_user3
+      POSTGRES_PASSWORD: senha123
+    volumes:
+      - postgres_data3:/var/lib/postgresql/data
+    networks:
+      - avatar_net
+
+  app1:
+    build: .
+    container_name: app1
+    depends_on:
+      - avatar-postgres1
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://avatar-postgres1:5432/avatar_db1
+      SPRING_DATASOURCE_USERNAME: avatar_user1
+      SPRING_DATASOURCE_PASSWORD: senha123
+      NODE_BASE_URL: http://app1:8081
+    networks:
+      - avatar_net
+    ports:
+      - "8081:8080"
+
+  app2:
+    build: .
+    container_name: app2
+    depends_on:
+      - avatar-postgres2
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://avatar-postgres2:5432/avatar_db2
+      SPRING_DATASOURCE_USERNAME: avatar_user2
+      SPRING_DATASOURCE_PASSWORD: senha123
+      NODE_BASE_URL: http://app2:8082
+    networks:
+      - avatar_net
+    ports:
+      - "8082:8080"
+
+  app3:
+    build: .
+    container_name: app3
+    depends_on:
+      - avatar-postgres3
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://avatar-postgres3:5432/avatar_db3
+      SPRING_DATASOURCE_USERNAME: avatar_user3
+      SPRING_DATASOURCE_PASSWORD: senha123
+      NODE_BASE_URL: http://app3:8083
+    networks:
+      - avatar_net
+    ports:
+      - "8083:8080"
+
+networks:
+  avatar_net:
+
+volumes:
+  postgres_data1:
+  postgres_data2:
+  postgres_data3:
