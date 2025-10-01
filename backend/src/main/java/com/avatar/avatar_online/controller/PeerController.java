@@ -21,7 +21,7 @@ public class PeerController {
     public ResponseEntity<String> registerPeer(@RequestBody Map<String, String> body) {
         String ip = body.get("ip");
         peerService.addPeer(ip);
-        return ResponseEntity.ok("Peer registrado: " + ip);
+        return ResponseEntity.ok("O host "+ip+" informou existência! Peer registrado 📥");
     }
 
     @GetMapping

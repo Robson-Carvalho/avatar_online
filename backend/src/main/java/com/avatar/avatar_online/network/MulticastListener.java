@@ -5,25 +5,30 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.MulticastSocket;
 
 @Component
-public class BroadcastListener {
+public class MulticastListener {
     private final PeerService peerService;
 
-    public BroadcastListener(PeerService peerService) {
+    private static final String MULTICAST_ADDRESS = "230.0.0.1"; // grupo multicast
+    private static final int PORT = 4444;
+
+    public MulticastListener(PeerService peerService) {
         this.peerService = peerService;
     }
 
     @PostConstruct
     public void startListener() {
-        new Thread(this::listenForBroadcasts).start();
-
+        new Thread(this::listenForMulticast).start();
     }
 
-    private void listenForBroadcasts() {
-        try (DatagramSocket socket = new DatagramSocket(4444, InetAddress.getByName("0.0.0.0"))) {
+    private void listenForMulticast() {
+        try (MulticastSocket socket = new MulticastSocket(PORT)) {
+            InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
+            socket.joinGroup(group);
+
             byte[] buf = new byte[256];
 
             while (true) {
@@ -31,15 +36,15 @@ public class BroadcastListener {
                 socket.receive(packet);
 
                 String receivedIp = new String(packet.getData(), 0, packet.getLength()).trim();
-                String myIp = Host.getLocalIPv4();
+                String myIp = InetAddress.getLocalHost().getHostAddress();
 
-                if (!Host.getAllLocalIPv4s().contains(myIp)) {
-                    System.out.println("📥 Recebi broadcast de: "+ receivedIp);
+                if (!receivedIp.equals(myIp)) {
+                    System.out.println("📥 Recebi multicast de: " + receivedIp);
                     peerService.addPeer(receivedIp);
                 }
             }
         } catch (Exception e) {
-            System.out.println("Erro ao escutar broadcasts: " + e);
+            System.out.println("❌ Erro ao escutar multicast: " + e);
         }
     }
 }

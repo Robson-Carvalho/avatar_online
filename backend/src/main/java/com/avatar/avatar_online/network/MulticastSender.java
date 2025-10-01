@@ -9,27 +9,28 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 @Component
-public class BroadcastSender implements ApplicationRunner {
-
+public class MulticastSender implements ApplicationRunner {
+    private static final String MULTICAST_ADDRESS = "230.0.0.1"; // grupo multicast
     private static final int PORT = 4444;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         try (DatagramSocket socket = new DatagramSocket()) {
-            socket.setBroadcast(true);
-
-            String message = InetAddress.getLocalHost().getHostAddress();
-            byte[] buffer = message.getBytes();
+            String ip = InetAddress.getLocalHost().getHostAddress();
+            byte[] buffer = ip.getBytes();
 
             DatagramPacket packet = new DatagramPacket(
                     buffer,
                     buffer.length,
-                    InetAddress.getByName("255.255.255.255"),
+                    InetAddress.getByName(MULTICAST_ADDRESS),
                     PORT
             );
 
             socket.send(packet);
-            System.out.println("📡 Broadcast enviado: " + message);
+
+            System.out.println("📡 Multicast enviado por: " + ip);
+        } catch (Exception e) {
+            System.out.println("❌ Erro ao enviar multicast: " + e);
         }
     }
 }
