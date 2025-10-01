@@ -30,7 +30,7 @@ public class PeerService {
             String url = "http://" + ip + ":8080/peers";
             Map<String, String> body = Map.of("ip", Host.getLocalIPv4());
             restTemplate.postForEntity(url, body, String.class);
-            System.out.println("📤 Avisei " + ip + " que eu existo.");
+            System.out.println("📤 Avisei ao host " + ip + " que eu existo.");
         } catch (Exception e) {
             System.err.println("❌ Falha ao avisar " + ip);
         }
