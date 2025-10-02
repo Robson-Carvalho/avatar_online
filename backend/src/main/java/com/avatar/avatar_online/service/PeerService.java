@@ -1,6 +1,9 @@
 package com.avatar.avatar_online.service;
 
 import com.avatar.avatar_online.network.Host;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,8 +31,16 @@ public class PeerService {
     public void notifyNewPeer(String ip) {
         try {
             String url = "http://" + ip + ":8080/peers";
+
             Map<String, String> body = Map.of("ip", Host.getLocalIPv4());
-            restTemplate.postForEntity(url, body, String.class);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
+
+            restTemplate.postForEntity(url, request, String.class);
+
             System.out.println("📤 Avisei ao host " + ip + " que eu existo.");
         } catch (Exception e) {
             System.err.println("❌ Falha ao avisar " + ip);
