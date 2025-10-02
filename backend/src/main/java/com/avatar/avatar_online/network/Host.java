@@ -17,7 +17,7 @@ public class Host {
             while (interfaces.hasMoreElements()) {
                 NetworkInterface iface = interfaces.nextElement();
 
-                if (iface.isLoopback() || !iface.isUp() || iface.getName().contains("docker")) {
+                if (iface.isLoopback() || !iface.isUp()) {
                     continue;
                 }
 
