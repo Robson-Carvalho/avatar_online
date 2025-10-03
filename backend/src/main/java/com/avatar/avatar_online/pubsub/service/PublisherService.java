@@ -10,8 +10,8 @@ public class PublisherService {
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
-    public void publish(String topic, String message) {
-        kafkaTemplate.send(topic, message);
+    public void publish(String topic, String message, String key) {
+        kafkaTemplate.send(topic, key, message);
     }
 
 }
