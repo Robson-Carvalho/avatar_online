@@ -4,7 +4,6 @@ import com.avatar.avatar_online.pubsub.ClientMessageDTO;
 import com.avatar.avatar_online.pubsub.ServerEventDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.catalina.Server;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -24,7 +23,7 @@ public class GatewayService {
     public void handleClientCommand(String clientID, ClientMessageDTO RawMessage){
         try {
             String jsonMessage = objectMapper.writeValueAsString(RawMessage);
-            publisherService.publish("client-commands", jsonMessage, clientID);
+            publisherService.publish("client-to-server", jsonMessage, clientID);
         } catch (JsonProcessingException e) {
             System.out.println("erro ao processar mensagem do cliente: " + e.getMessage());
         }

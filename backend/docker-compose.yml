@@ -28,5 +28,16 @@ services:
     ports:
       - "5432:5432"
 
+  frontend:
+    image: node:18-alpine
+    container_name: avatar-frontend
+    working_dir: /app
+    volumes:
+      - /home/less/Documentos/Guilherme/avatar_online/frontend:/app
+    command: sh -c "npx http-server -p 3000"
+    network_mode: host
+    ports:
+      - "3000:3000"
+
 volumes:
   postgres_data:

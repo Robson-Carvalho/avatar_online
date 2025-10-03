@@ -17,11 +17,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         // Cliente -> Controller
         config.setApplicationDestinationPrefixes("/app");
+
+        config.setUserDestinationPrefix("/user");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/gateway-connect").setAllowedOrigins("*");
+        registry.addEndpoint("/gateway-connect").setAllowedOrigins("*").withSockJS();
+        System.out.println("Endpoint registered: " + registry);
     }
 
 }
