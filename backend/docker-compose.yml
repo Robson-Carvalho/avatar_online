@@ -1,19 +1,36 @@
 version: '3.9'
 
 services:
-  app1:
-    build: .
-    container_name: app1
-    depends_on:
-      - db
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: zookeeper
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/avatar_db
-      SPRING_DATASOURCE_USERNAME: avatar_user
-      SPRING_DATASOURCE_PASSWORD: senha123
-      SPRING_FLYWAY_DEFAULT_SCHEMA: avatar_schema
-    network_mode: host
+      # CRUCIAL para o Kafka: O Zookeeper precisa do nome do broker
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    # A porta 2181 é opcional para expor ao host, mas útil para debug
     ports:
-      - "8080:8080"
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    # Depende do Zookeeper
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      # Conexão interna do Kafka com o Zookeeper (usa o nome do serviço)
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Configura os listeners interno (Docker) e externo (Host)
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092
+      # CRUCIAL: Endereço para outros contêineres (app1) e para o host se conectarem
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+    # Porta 29092 é a porta que usamos para acessar o Kafka do seu host, se necessário
+    ports:
+      - "29092:29092"
 
   db:
     image: postgres:17
@@ -24,18 +41,34 @@ services:
       POSTGRES_PASSWORD: senha123
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    network_mode: host
     ports:
       - "5432:5432"
+
+  app1:
+    build: .
+    container_name: app1
+    # Agora depende tanto do DB quanto do Kafka
+    depends_on:
+      - db
+      - kafka
+    environment:
+      # Ajuste 1: Endereço do PostgreSQL (usa o nome de serviço 'db')
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/avatar_db
+      # Ajuste 2: Endereço do Kafka (usa o nome de serviço 'kafka')
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATASOURCE_USERNAME: avatar_user
+      SPRING_DATASOURCE_PASSWORD: senha123
+      SPRING_FLYWAY_DEFAULT_SCHEMA: avatar_schema
+    ports:
+      - "8080:8080"
 
   frontend:
     image: node:18-alpine
     container_name: avatar-frontend
     working_dir: /app
     volumes:
-      - /home/less/Documentos/Guilherme/avatar_online/frontend:/app
+      - /home/gui/Documentos/avatar_online/frontend:/app
     command: sh -c "npx http-server -p 3000"
-    network_mode: host
     ports:
       - "3000:3000"
 

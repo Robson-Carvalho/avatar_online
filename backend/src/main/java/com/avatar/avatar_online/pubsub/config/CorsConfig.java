@@ -13,7 +13,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Permite CORS em todas as rotas
-                        .allowedOrigins("*") // Permite só seu frontend
+                        .allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*") // Permite só seu frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowCredentials(true);
             }
