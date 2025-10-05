@@ -19,8 +19,18 @@ public class PubSubController {
     public void receiveCommand(@Payload ClientMessageDTO rawMessage, Principal principal) {
 
         System.out.println("Received message: " + rawMessage);
-        String clientId = principal.getName();
 
+        String clientId;
+
+        if (principal != null) {
+            clientId = principal.getName();
+        } else {
+            System.out.println("WARN: Comando recebido sem usuário autenticado. Usando ID de convidado.");
+            clientId = "GUEST_" + Thread.currentThread().threadId();
+        }
+
+
+        System.out.println("Enviando pro gateway hein");
         gatewayService.handleClientCommand(clientId, rawMessage);
     }
 }

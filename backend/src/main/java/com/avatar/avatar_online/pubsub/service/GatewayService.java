@@ -23,6 +23,7 @@ public class GatewayService {
     public void handleClientCommand(String clientID, ClientMessageDTO RawMessage){
         try {
             String jsonMessage = objectMapper.writeValueAsString(RawMessage);
+            System.out.println("Mensagem passou pelo gateway hein!");
             publisherService.publish("client-to-server", jsonMessage, clientID);
         } catch (JsonProcessingException e) {
             System.out.println("erro ao processar mensagem do cliente: " + e.getMessage());
