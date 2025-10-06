@@ -20,7 +20,7 @@ public class Deck {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference// cria a FK
-    private User user;
+    private UserEntity user;
 
     @ManyToMany
     @JoinTable(
@@ -46,11 +46,11 @@ public class Deck {
         this.id = id;
     }
 
-    public User getUser() {
+    public UserEntity getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(UserEntity user) {
         this.user = user;
     }
 

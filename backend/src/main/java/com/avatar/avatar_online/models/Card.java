@@ -5,7 +5,6 @@ import com.avatar.avatar_online.enums.PhaseCard;
 import com.avatar.avatar_online.enums.RarityCard;
 import jakarta.persistence.*;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Entity (name  = "card")
@@ -19,7 +18,7 @@ public class Card {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) // cria a FK
-    private User user;
+    private UserEntity user;
 
     private String name;
     @Enumerated(EnumType.STRING)
@@ -38,7 +37,7 @@ public class Card {
     public Card() {
     }
 
-    public Card(User user, String name, ElementCard element, PhaseCard phase, int attack, int life, int defense, RarityCard rarity, String description) {
+    public Card(UserEntity user, String name, ElementCard element, PhaseCard phase, int attack, int life, int defense, RarityCard rarity, String description) {
         this.user = user;
         this.name = name;
         this.element = element;
@@ -58,11 +57,11 @@ public class Card {
         return id;
     }
 
-    public User getUser() {
+    public UserEntity getUser() {
         return user;
     }
 
-    public User setUser(User user) {
+    public UserEntity setUser(UserEntity user) {
         return this.user = user;
     }
 
