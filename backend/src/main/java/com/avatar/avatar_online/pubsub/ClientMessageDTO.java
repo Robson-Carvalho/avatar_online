@@ -1,6 +1,7 @@
 package com.avatar.avatar_online.pubsub;
 
 public class ClientMessageDTO {
+    private String clientID;
     private String commandType;
     private String payload;
 
@@ -18,5 +19,12 @@ public class ClientMessageDTO {
 
     public void setPayload(String payload) {
         this.payload = payload;
+    }
+
+    public String getClientID() {
+        return clientID;
+    }
+    public void setClientID(String clientID) {
+        this.clientID = clientID;
     }
 }

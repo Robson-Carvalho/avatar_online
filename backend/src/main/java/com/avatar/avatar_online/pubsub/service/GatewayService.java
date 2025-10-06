@@ -18,7 +18,9 @@ public class GatewayService {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public void handleClientCommand(String clientID, ClientMessageDTO RawMessage){
         try {
@@ -35,9 +37,10 @@ public class GatewayService {
         try {
             ServerEventDTO event = objectMapper.readValue(message, ServerEventDTO.class);
 
-            String id = event.getRecipientId();
+            String id = event.getRecipientId().trim();
             String destiny = "/topic/update";
 
+            System.out.println("Enviando mensagem para: " + id.trim());
             simpMessagingTemplate.convertAndSendToUser(id, destiny, message);
 
         } catch (JsonProcessingException e) {

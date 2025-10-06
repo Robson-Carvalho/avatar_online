@@ -18,12 +18,11 @@ public class PubSubController {
     @MessageMapping("/command")
     public void receiveCommand(@Payload ClientMessageDTO rawMessage, Principal principal) {
 
-        System.out.println("Received message: " + rawMessage);
-
         String clientId;
 
         if (principal != null) {
-            clientId = principal.getName();
+            clientId = principal.getName().trim();
+            System.out.println("Received message from: " + clientId + " | payload: " + rawMessage.getPayload());
         } else {
             System.out.println("WARN: Comando recebido sem usuário autenticado. Usando ID de convidado.");
             clientId = "GUEST_" + Thread.currentThread().threadId();
