@@ -1,13 +1,12 @@
 package com.avatar.avatar_online.config;
 
+import com.avatar.avatar_online.network.Host;
 import com.hazelcast.config.*;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Arrays;
 
 @Configuration
 public class HazelcastConfig {
@@ -24,26 +23,23 @@ public class HazelcastConfig {
 
         Config config = new Config();
 
-        // Configurações básicas
         config.setClusterName("avatar-cluster");
         config.setInstanceName("avatar-node-" + nodeId);
+        config.setProperty("hazelcast.tcp.join.timeout.seconds", "1");
 
-        // 🔥 DESABILITA SHUTDOWN HOOK AUTOMÁTICO
         config.setProperty("hazelcast.shutdownhook.enabled", "false");
         config.setProperty("hazelcast.phone.home.enabled", "false");
 
-        // Configuração de rede SIMPLIFICADA
         NetworkConfig networkConfig = config.getNetworkConfig();
         networkConfig.setPort(clusterPort)
-                .setPortAutoIncrement(false); // Porta fixa
+                .setPortAutoIncrement(false);
 
-        // Apenas localhost para desenvolvimento
+
         networkConfig.getJoin().getMulticastConfig().setEnabled(false);
         networkConfig.getJoin().getTcpIpConfig()
                 .setEnabled(true)
-                .setMembers(Arrays.asList("127.0.0.1"));
+                .setMembers(Host.getLocalNetworkHosts());
 
-        // Configuração de Maps
         MapConfig leaderMapConfig = new MapConfig();
         leaderMapConfig.setName("leader-registry")
                 .setTimeToLiveSeconds(30);
