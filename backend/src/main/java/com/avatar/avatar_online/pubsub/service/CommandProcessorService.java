@@ -14,9 +14,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -75,32 +73,9 @@ public class CommandProcessorService {
         }
 
         if(operation == ResponsePubSub.SIGNUP_RESPONSE) {
-            Map<String, Object> payload = Map.of(
-                    "Status", "OK",
-                    "clientId", user_UUID
-            );
-
-            try {
-                String payloadJson = objectMapper.writeValueAsString(payload);
-                ServerEventDTO eventMessage = buildResponse(clientId, operation, payloadJson);
-                String response = objectMapper.writeValueAsString(eventMessage);
-                publisherService.publish(Kafka_channel, response, clientId);
-            } catch (JsonProcessingException e) {
-                System.out.println("Error ao processar ServerEventDTO como string: " + e.getMessage());
-            }
+            createPublish(clientId);
         } else if (operation == ResponsePubSub.LOGIN_RESPONSE) {
-            Map<String, Object> payload = Map.of(
-                    "Status", "OK",
-                    "clientId", user_UUID
-            );
-            try {
-                String payloadJson = objectMapper.writeValueAsString(payload);
-                ServerEventDTO eventMessage = buildResponse(clientId, operation, payloadJson);
-                String response = objectMapper.writeValueAsString(eventMessage);
-                publisherService.publish(Kafka_channel, response, clientId);
-            } catch (JsonProcessingException e) {
-                System.out.println("Error ao processar ServerEventDTO como string: " + e.getMessage());
-            }
+            createPublish(clientId);
         }
     }
 
@@ -111,5 +86,20 @@ public class CommandProcessorService {
         serverEventDTO.setEventType(responsePubSub.toString());
         serverEventDTO.setData(payload);
         return serverEventDTO;
+    }
+
+    public void createPublish(String clientId){
+        Map<String, Object> payload = Map.of(
+                "Status", "OK",
+                "clientId", user_UUID
+        );
+        try {
+            String payloadJson = objectMapper.writeValueAsString(payload);
+            ServerEventDTO eventMessage = buildResponse(clientId, operation, payloadJson);
+            String response = objectMapper.writeValueAsString(eventMessage);
+            publisherService.publish(Kafka_channel, response, clientId);
+        } catch (JsonProcessingException e) {
+            System.out.println("Error ao processar ServerEventDTO como string: " + e.getMessage());
+        }
     }
 }
