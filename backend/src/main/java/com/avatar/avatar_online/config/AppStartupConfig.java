@@ -14,21 +14,6 @@ public class AppStartupConfig {
             System.out.println("📡 Hazelcast Cluster ativo");
             System.out.println("🌐 Servidor web rodando na porta 8080");
             System.out.println("💾 Banco de dados conectado");
-
-            // Mantém a aplicação rodando
-            Thread keepAliveThread = new Thread(() -> {
-                try {
-                    // Thread de keep-alive infinita
-                    while (true) {
-                        Thread.sleep(60000); // 1 minuto
-                        System.out.println("❤️  Aplicação ativa...");
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            });
-            keepAliveThread.setDaemon(true);
-            keepAliveThread.start();
         };
     }
 }
