@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/peers")
+@RequestMapping("/api/peers")
 public class PeerController {
 
     private final PeerService peerService;
