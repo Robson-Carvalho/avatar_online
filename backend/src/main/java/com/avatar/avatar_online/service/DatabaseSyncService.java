@@ -23,9 +23,6 @@ public class DatabaseSyncService {
     private final JdbcTemplate jdbcTemplate;
     private final HazelcastInstance hazelcast;
 
-    // 🔥 REMOVIDA A DEPENDÊNCIA CIRCULAR
-    // private final ClusterLeadershipService leadershipService;
-
     private ScheduledExecutorService syncScheduler;
     private boolean syncActive = false;
 
@@ -51,7 +48,7 @@ public class DatabaseSyncService {
 
         // Sincroniza a cada 60 segundos
         syncScheduler.scheduleAtFixedRate(() -> {
-            if (isCurrentNodeLeader()) { // 🔥 MÉTODO ALTERNATIVO
+            if (isCurrentNodeLeader()) {
                 performLeaderSync();
             }
         }, 0, 60, TimeUnit.SECONDS);
@@ -164,9 +161,8 @@ public class DatabaseSyncService {
      * Sincroniza um novo nó que entrou no cluster
      */
     public void syncNewNode() {
-        if (isCurrentNodeLeader()) { // 🔥 MÉTODO ALTERNATIVO
+        if (isCurrentNodeLeader()) {
             System.out.println("🔄 Líder sincronizando novo nó...");
-            // Força exportação imediata dos dados para o novo nó pegar
             performLeaderSync();
         } else {
             System.out.println("🔄 Novo nó solicitando sincronização...");
@@ -179,7 +175,7 @@ public class DatabaseSyncService {
      * Seguidores verificam se precisam sincronizar
      */
     public void checkSyncNeeded() {
-        if (isCurrentNodeLeader()) return; // 🔥 MÉTODO ALTERNATIVO
+        if (isCurrentNodeLeader()) return;
 
         IMap<String, Object> syncMap = hazelcast.getMap(SYNC_MAP);
         Long lastSync = (Long) syncMap.get(SYNC_MARKER);
@@ -191,7 +187,6 @@ public class DatabaseSyncService {
     }
 
     /**
-     * 🔥 MÉTODO ALTERNATIVO PARA EVITAR DEPENDÊNCIA CIRCULAR
      * Verifica se este nó é o líder consultando diretamente o Hazelcast
      */
     private boolean isCurrentNodeLeader() {

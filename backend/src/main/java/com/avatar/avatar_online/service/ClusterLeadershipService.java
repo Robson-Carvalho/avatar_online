@@ -20,7 +20,7 @@ public class ClusterLeadershipService {
 
     private final HazelcastInstance hazelcast;
     private final LeaderRegistryService leaderRegistryService;
-    private final ApplicationContext applicationContext; // 🔥 PARA ACESSO INDIRETO
+    private final ApplicationContext applicationContext;
 
     private ScheduledExecutorService electionScheduler;
     private ScheduledExecutorService cleanupScheduler;
@@ -33,7 +33,7 @@ public class ClusterLeadershipService {
 
     public ClusterLeadershipService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast,
                                     LeaderRegistryService leaderRegistryService,
-                                    ApplicationContext applicationContext) { // 🔥 APPLICATION CONTEXT
+                                    ApplicationContext applicationContext) {
         this.hazelcast = hazelcast;
         this.leaderRegistryService = leaderRegistryService;
         this.applicationContext = applicationContext;
@@ -112,7 +112,6 @@ public class ClusterLeadershipService {
         // Registra como líder no cluster
         leaderRegistryService.registerAsLeader();
 
-        // 🔥 ACESSO INDIRETO PARA EVITAR DEPENDÊNCIA CIRCULAR
         startLeaderSync();
 
         // Força sincronização inicial
@@ -127,7 +126,7 @@ public class ClusterLeadershipService {
     }
 
     /**
-     * 🔥 ACESSO INDIRETO AO DatabaseSyncService
+     *  ACESSO INDIRETO AO DatabaseSyncService
      */
     private void startLeaderSync() {
         try {
@@ -139,7 +138,7 @@ public class ClusterLeadershipService {
     }
 
     /**
-     * 🔥 ACESSO INDIRETO AO DatabaseSyncService
+     *  ACESSO INDIRETO AO DatabaseSyncService
      */
     private void performInitialLeaderSync() {
         try {
@@ -166,12 +165,12 @@ public class ClusterLeadershipService {
         // Remove registro de líder
         leaderRegistryService.unregisterAsLeader();
 
-        // 🔥 ACESSO INDIRETO PARA PARAR SINCRONIZAÇÃO
+        //  ACESSO INDIRETO PARA PARAR SINCRONIZAÇÃO
         stopLeaderSync();
     }
 
     /**
-     * 🔥 ACESSO INDIRETO AO DatabaseSyncService
+     *  ACESSO INDIRETO AO DatabaseSyncService
      */
     private void stopLeaderSync() {
         try {
@@ -267,7 +266,7 @@ public class ClusterLeadershipService {
     }
 
     /**
-     * 🔥 ACESSO INDIRETO PARA SINCRONIZAÇÃO
+     *  ACESSO INDIRETO PARA SINCRONIZAÇÃO
      */
     private void syncNewNode() {
         try {
@@ -279,7 +278,7 @@ public class ClusterLeadershipService {
     }
 
     /**
-     * 🔥 ACESSO INDIRETO PARA VERIFICAÇÃO DE SINCRONIZAÇÃO
+     *  ACESSO INDIRETO PARA VERIFICAÇÃO DE SINCRONIZAÇÃO
      */
     private void checkSyncNeeded() {
         try {
