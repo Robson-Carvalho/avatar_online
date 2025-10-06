@@ -1,32 +1,34 @@
 version: '3.9'
 
 services:
-  app1:
+  app:
     build: .
-    container_name: app1
-    depends_on:
-      - db
+    container_name: avatar-node
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/avatar_db
-      SPRING_DATASOURCE_USERNAME: avatar_user
-      SPRING_DATASOURCE_PASSWORD: senha123
-      SPRING_FLYWAY_DEFAULT_SCHEMA: avatar_schema
+      - APP_NODE_ID=node-1x
+      - APP_CLUSTER_PORT=5701
+      - APP_SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql:db:5432/avatar_node
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - HAZELCAST_NETWORK_PUBLIC_ADDRESS=172.16.201.x:5701
     network_mode: host
     ports:
       - "8080:8080"
+      - "5701:5701"
 
   db:
     image: postgres:17
-    container_name: avatar-postgres
+    container_name: postgres-node
     environment:
-      POSTGRES_DB: avatar_db
-      POSTGRES_USER: avatar_user
-      POSTGRES_PASSWORD: senha123
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      POSTGRES_DB: avatar_node
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
     network_mode: host
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data_node1:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  postgres_data_node1:

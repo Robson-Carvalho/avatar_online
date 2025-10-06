@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  app:
+    build: ..
+    container_name: avatar-node-${NODE_ID}
+    environment:
+      - APP_NODE_ID=${NODE_ID}
+      - APP_CLUSTER_PORT=5701
+      - APP_SERVER_PORT=${SERVER_PORT}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:5432/avatar_${NODE_ID}
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - HAZELCAST_NETWORK_PUBLIC_ADDRESS=${NODE_IP}:5701
+    network_mode: host
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+      - "5701:5701"
+    restart: unless-stopped
+
+  db:
+    image: postgres:17
+    container_name: postgres-${NODE_ID}
+    environment:
+      POSTGRES_DB: avatar_${NODE_ID}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    network_mode: host
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_${NODE_ID}:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data_${NODE_ID}:
