@@ -41,6 +41,15 @@ public class GatewayService {
         }
     }
 
+    public void handleSignIn(ClientMessageDTO rawMessage, String principalId){
+        try{
+            String jsonMessage = objectMapper.writeValueAsString(rawMessage);
+            publisherService.publish("client-to-server", jsonMessage, principalId);
+        }catch (JsonProcessingException e){
+            throw new RuntimeException(e); //Deixando assim por enquanto
+        }
+    }
+
     @KafkaListener(topics = "server-to-client", groupId = "gateway-group")
     public void routeServerToCliente(String message) {
         try {

@@ -3,6 +3,7 @@ package com.avatar.avatar_online.pubsub.service;
 import com.avatar.avatar_online.enums.ResponsePubSub;
 import com.avatar.avatar_online.pubsub.ClientMessageDTO;
 import com.avatar.avatar_online.pubsub.ServerEventDTO;
+import com.avatar.avatar_online.pubsub.SignInDTO;
 import com.avatar.avatar_online.pubsub.SignUpDTO;
 import com.avatar.avatar_online.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -34,6 +35,8 @@ public class CommandProcessorService {
 
     UUID user_UUID;
 
+    ResponsePubSub operation;
+
     String Kafka_channel = "server-to-client";
 
     @KafkaListener(topics = "client-to-server", groupId = "logic-group")
@@ -44,11 +47,17 @@ public class CommandProcessorService {
             String commandType = messageDTO.getCommandType();
             if(commandType.equals("signUp")){
                 SignUpDTO signUpDTO = objectMapper.readValue(messageDTO.getPayload(), SignUpDTO.class);
+                operation = ResponsePubSub.SIGNUP_RESPONSE;
                 user_UUID = userService.signUpProcessment(signUpDTO);
+            } else if(commandType.equals("signIn")){
+                SignInDTO signInDTO = objectMapper.readValue(messageDTO.getPayload(), SignInDTO.class);
+                operation = ResponsePubSub.LOGIN_RESPONSE;
+                user_UUID = userService.signInProcessment(signInDTO);
             }
         } catch(Exception e){
             System.out.println(e.getMessage());
             user_UUID = null;
+            operation = null;
         }
 
         if (user_UUID == null) {
@@ -65,18 +74,33 @@ public class CommandProcessorService {
             return;
         }
 
-        Map<String, Object> payload = Map.of(
-                "Status", "OK",
-                "clientId", user_UUID
-        );
+        if(operation == ResponsePubSub.SIGNUP_RESPONSE) {
+            Map<String, Object> payload = Map.of(
+                    "Status", "OK",
+                    "clientId", user_UUID
+            );
 
-        try {
-        String payloadJson = objectMapper.writeValueAsString(payload);
-        ServerEventDTO eventMessage = buildResponse(clientId, ResponsePubSub.SIGNUP_RESPONSE, payloadJson);
-            String response = objectMapper.writeValueAsString(eventMessage);
-            publisherService.publish(Kafka_channel, response, clientId);
-        } catch (JsonProcessingException e) {
-            System.out.println("Error ao processar ServerEventDTO como string: " + e.getMessage());
+            try {
+                String payloadJson = objectMapper.writeValueAsString(payload);
+                ServerEventDTO eventMessage = buildResponse(clientId, operation, payloadJson);
+                String response = objectMapper.writeValueAsString(eventMessage);
+                publisherService.publish(Kafka_channel, response, clientId);
+            } catch (JsonProcessingException e) {
+                System.out.println("Error ao processar ServerEventDTO como string: " + e.getMessage());
+            }
+        } else if (operation == ResponsePubSub.LOGIN_RESPONSE) {
+            Map<String, Object> payload = Map.of(
+                    "Status", "OK",
+                    "clientId", user_UUID
+            );
+            try {
+                String payloadJson = objectMapper.writeValueAsString(payload);
+                ServerEventDTO eventMessage = buildResponse(clientId, operation, payloadJson);
+                String response = objectMapper.writeValueAsString(eventMessage);
+                publisherService.publish(Kafka_channel, response, clientId);
+            } catch (JsonProcessingException e) {
+                System.out.println("Error ao processar ServerEventDTO como string: " + e.getMessage());
+            }
         }
     }
 

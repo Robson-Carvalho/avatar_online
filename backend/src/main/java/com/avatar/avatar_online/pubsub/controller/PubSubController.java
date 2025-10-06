@@ -40,4 +40,12 @@ public class PubSubController {
         }
         gatewayService.handleSignUp(rawMessage, principal.getName());
     }
+
+    @MessageMapping("/signin")
+    public void signin(@Payload ClientMessageDTO rawMessage, Principal principal) {
+        if (principal == null) {
+            return;
+        }
+        gatewayService.handleSignIn(rawMessage, principal.getName());
+    }
 }

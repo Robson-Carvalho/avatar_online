@@ -2,6 +2,7 @@ package com.avatar.avatar_online.service;
 
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.pubsub.ClientMessageDTO;
+import com.avatar.avatar_online.pubsub.SignInDTO;
 import com.avatar.avatar_online.pubsub.SignUpDTO;
 import com.avatar.avatar_online.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -19,11 +21,6 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private ResourceUrlProvider resourceUrlProvider;
 
     @Transactional
     public UUID signUpProcessment(SignUpDTO signUpDTO){
@@ -38,6 +35,23 @@ public class UserService {
 
             userRepository.save(user);
             return user.getId();
+        } catch (DataIntegrityViolationException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    @Transactional
+    public UUID signInProcessment(SignInDTO signInDTO){
+        try {
+            User user = userRepository.findByNickname(signInDTO.getNickname());
+
+            if(user == null || !user.getPassword().equals(signInDTO.getPassword())){
+                return null;
+            }
+
+            return user.getId();
+
         } catch (DataIntegrityViolationException e) {
             System.out.println(e.getMessage());
             return null;
