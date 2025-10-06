@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teste WebSocket STOMP (Cliente)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-xl">
+    <h2 class="text-3xl font-bold mb-4 text-indigo-700">Gateway Teste: Cliente STOMP</h2>
+    
+    <div class="mb-4 space-y-2">
+        <label for="clientIdInput" class="block text-sm font-medium text-gray-700">Seu Client ID (Simulado como Principal):</label>
+        <input type="text" id="clientIdInput" value="user123" 
+               class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+        <label for="serverAddressInput" class="block text-sm font-medium text-gray-700">Endereço do Servidor Spring:</label>
+        <input type="text" id="serverAddressInput" value="http://localhost:8080" 
+               class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+    </div>
+
+    <div class="flex space-x-4 mb-6">
+      <button onclick="connect()" 
+              class="flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-150">
+        1. Conectar & Inscrever
+      </button>
+      <button onclick="sendCommand()" 
+              class="flex-1 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 disabled:opacity-50"
+              id="sendCommandBtn" disabled>
+        2. Enviar Comando (app/command)
+      </button>
+    </div>
+
+    <h3 class="text-xl font-semibold mb-2 text-gray-800">Log de Mensagens:</h3>
+    <pre id="log" class="bg-gray-800 text-green-300 p-4 rounded-md overflow-x-auto text-sm h-64 border border-gray-700"></pre>
+  </div>
+
+  <script>
+    let stompClient = null;
+    let clientId = "";
+    const SEND_COMMAND_BTN = document.getElementById("sendCommandBtn");
+
+    function log(msg) {
+      const logElement = document.getElementById("log");
+      const timestamp = new Date().toLocaleTimeString();
+      logElement.textContent = `[${timestamp}] ${msg}\n` + logElement.textContent;
+    }
+    
+    // --- Funções de Conexão e Roteamento ---
+
+    function connect() {
+      if (stompClient && stompClient.connected) {
+        log("Já está conectado.");
+        return;
+      }
+
+      clientId = document.getElementById("clientIdInput").value;
+      const serverAddress = document.getElementById("serverAddressInput").value;
+      
+      const socket = new SockJS(serverAddress + "/gateway-connect"); 
+      stompClient = Stomp.over(socket);
+
+      stompClient.debug = null; 
+
+      stompClient.connect({
+        login: clientId,
+        passcode: 'ignore' 
+      }, 
+      function (frame) {
+        log("Conexão bem-sucedida! Frame: " + frame);
+
+        const subscriptionTopic = `/user/${clientId}/topic/updates`;
+
+        stompClient.subscribe(subscriptionTopic, function (message) {
+          log("<<< EVENTO RECEBIDO (Unicast) >>> \n" + message.body);
+        });
+        
+        log(`INSCRITO no tópico privado: ${subscriptionTopic}`);
+        SEND_COMMAND_BTN.disabled = false;
+      },
+      function (error) {
+        log("ERRO de Conexão: " + error);
+        SEND_COMMAND_BTN.disabled = true;
+      });
+    }
+
+    function sendCommand() {
+      if (!stompClient || !stompClient.connected) {
+        log("ERRO: Não conectado. Clique em 'Conectar' primeiro.");
+        return;
+      }
+      
+      const messageDto = {
+        commandType: "MOVE",
+        payload: "W_KEY_PRESSED"
+      };
+
+      const destination = "/app/command";
+
+      stompClient.send(destination, {}, JSON.stringify(messageDto));
+      log(`>>> COMANDO ENVIADO para ${destination}: \n${JSON.stringify(messageDto)}`);
+    }
+  </script>
+</body>
+</html>
