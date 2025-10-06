@@ -34,7 +34,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setHandshakeHandler(new DefaultHandshakeHandler(){
                     @Override
                     protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes){
-                        String clientID = request.getURI().getQuery().trim();
+                        String clientID = request.getURI().getQuery();
                         if (clientID == null){
                             clientID = "anon-" + UUID.randomUUID();
                         }

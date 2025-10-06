@@ -1,6 +1,10 @@
 package com.avatar.avatar_online.pubsub.service;
 
+import com.avatar.avatar_online.enums.ResponsePubSub;
+import com.avatar.avatar_online.pubsub.ClientMessageDTO;
 import com.avatar.avatar_online.pubsub.ServerEventDTO;
+import com.avatar.avatar_online.pubsub.SignUpDTO;
+import com.avatar.avatar_online.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +14,9 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 // PubSub Subscriber
 @Service
@@ -21,22 +28,60 @@ public class CommandProcessorService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserService userService;
+
+    boolean verify_operation;
+
+    String Kafka_channel = "server-to-client";
+
     @KafkaListener(topics = "client-to-server", groupId = "logic-group")
-    public void processClientCommand(String message, @Header(KafkaHeaders.RECEIVED_KEY) String clientId) throws JsonProcessingException {
+    public void processClientCommand(String message, @Header(KafkaHeaders.RECEIVED_KEY) String clientId){
 
-        System.out.println("Processing command for Client: " + clientId + " | Message: " + message);
+        try{
+            ClientMessageDTO messageDTO = objectMapper.readValue(message, ClientMessageDTO.class);
+            String commandType = messageDTO.getCommandType();
+            if(commandType.equals("signUp")){
+                SignUpDTO signUpDTO = objectMapper.readValue(messageDTO.getPayload(), SignUpDTO.class);
+                verify_operation = userService.signUpProcessment(signUpDTO);
+            }
+        } catch(Exception e){
+            System.out.println(e.getMessage());
+            verify_operation = false;
+        }
 
-        ServerEventDTO serverEventDTO = new ServerEventDTO();
-        serverEventDTO.setRecipientId(clientId);
-        serverEventDTO.setData("content type");
-        serverEventDTO.setEventType("Coisas malucas");
+        if (!verify_operation){
+            Map<String, Object> errorPayload = Collections.singletonMap("error", "Invalid command");
+            try{
+            String payloadJson = objectMapper.writeValueAsString(errorPayload);
+            ServerEventDTO eventMessage = buildResponse(clientId, ResponsePubSub.ERROR_RESPONSE, payloadJson);
+
+                String response = objectMapper.writeValueAsString(eventMessage);
+                publisherService.publish(Kafka_channel, response, clientId);
+            } catch (JsonProcessingException e){
+                System.out.println("Error ao processar ServerEventDTO como string: " + e.getMessage());
+            }
+            return;
+        }
+
+        Map<String, Object> payload = Collections.singletonMap("Status", "OK");
 
         try {
-            String response = objectMapper.writeValueAsString(serverEventDTO);
-            System.out.println("oi mundiça");
-            publisherService.publish("server-to-client", response, clientId);
+        String payloadJson = objectMapper.writeValueAsString(payload);
+        ServerEventDTO eventMessage = buildResponse(clientId, ResponsePubSub.SIGNUP_RESPONSE, payloadJson);
+            String response = objectMapper.writeValueAsString(eventMessage);
+            publisherService.publish(Kafka_channel, response, clientId);
         } catch (JsonProcessingException e) {
-            System.out.println("error: " + e.getMessage());
+            System.out.println("Error ao processar ServerEventDTO como string: " + e.getMessage());
         }
+    }
+
+    // Classe para padronizar a construção de Response
+    public ServerEventDTO buildResponse(String clientId, ResponsePubSub responsePubSub, String payload) {
+        ServerEventDTO serverEventDTO = new ServerEventDTO();
+        serverEventDTO.setRecipientId(clientId);
+        serverEventDTO.setEventType(responsePubSub.toString());
+        serverEventDTO.setData(payload);
+        return serverEventDTO;
     }
 }

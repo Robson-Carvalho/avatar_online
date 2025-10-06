@@ -32,4 +32,12 @@ public class PubSubController {
         System.out.println("Enviando pro gateway hein");
         gatewayService.handleClientCommand(clientId, rawMessage);
     }
+
+    @MessageMapping("/signup")
+    public void signup(@Payload ClientMessageDTO rawMessage, Principal principal) {
+        if (principal == null) {
+            return;
+        }
+        gatewayService.handleSignUp(rawMessage, principal.getName());
+    }
 }
