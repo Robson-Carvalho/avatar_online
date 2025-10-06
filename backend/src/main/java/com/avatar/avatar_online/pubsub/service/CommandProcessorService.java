@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 // PubSub Subscriber
 @Service
@@ -31,7 +32,7 @@ public class CommandProcessorService {
     @Autowired
     private UserService userService;
 
-    boolean verify_operation;
+    UUID user_UUID;
 
     String Kafka_channel = "server-to-client";
 
@@ -43,14 +44,14 @@ public class CommandProcessorService {
             String commandType = messageDTO.getCommandType();
             if(commandType.equals("signUp")){
                 SignUpDTO signUpDTO = objectMapper.readValue(messageDTO.getPayload(), SignUpDTO.class);
-                verify_operation = userService.signUpProcessment(signUpDTO);
+                user_UUID = userService.signUpProcessment(signUpDTO);
             }
         } catch(Exception e){
             System.out.println(e.getMessage());
-            verify_operation = false;
+            user_UUID = null;
         }
 
-        if (!verify_operation){
+        if (user_UUID == null) {
             Map<String, Object> errorPayload = Collections.singletonMap("error", "Invalid command");
             try{
             String payloadJson = objectMapper.writeValueAsString(errorPayload);
@@ -64,7 +65,10 @@ public class CommandProcessorService {
             return;
         }
 
-        Map<String, Object> payload = Collections.singletonMap("Status", "OK");
+        Map<String, Object> payload = Map.of(
+                "Status", "OK",
+                "clientId", user_UUID
+        );
 
         try {
         String payloadJson = objectMapper.writeValueAsString(payload);

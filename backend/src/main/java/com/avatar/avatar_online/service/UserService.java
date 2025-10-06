@@ -26,7 +26,7 @@ public class UserService {
     private ResourceUrlProvider resourceUrlProvider;
 
     @Transactional
-    public boolean signUpProcessment(SignUpDTO signUpDTO){
+    public UUID signUpProcessment(SignUpDTO signUpDTO){
         try {
             User user = new User();
 
@@ -37,10 +37,10 @@ public class UserService {
             user.setId(UUID.randomUUID());
 
             userRepository.save(user);
-            return true;
+            return user.getId();
         } catch (DataIntegrityViolationException e) {
             System.out.println(e.getMessage());
-            return false;
+            return null;
         }
     }
 }
