@@ -60,10 +60,10 @@
       clientId = document.getElementById("clientIdInput").value;
       const serverAddress = document.getElementById("serverAddressInput").value;
       
-      const socket = new SockJS(serverAddress + "/gateway-connect"); 
+      const socket = new SockJS(serverAddress + "/gateway-connect?"+clientId); 
       stompClient = Stomp.over(socket);
 
-      stompClient.debug = null; 
+      stompClient.debug = console.log; 
 
       stompClient.connect({
         login: clientId,
@@ -72,13 +72,15 @@
       function (frame) {
         log("Conexão bem-sucedida! Frame: " + frame);
 
-        const subscriptionTopic = `/user/${clientId}/topic/updates`;
+        const subscriptionTopic = `/user/topic/update`;
 
         stompClient.subscribe(subscriptionTopic, function (message) {
           log("<<< EVENTO RECEBIDO (Unicast) >>> \n" + message.body);
         });
         
         log(`INSCRITO no tópico privado: ${subscriptionTopic}`);
+        console.log("STOMP conectado?", stompClient.connected);
+        
         SEND_COMMAND_BTN.disabled = false;
       },
       function (error) {
@@ -94,10 +96,13 @@
       }
       
       const messageDto = {
+        clientID: clientId,
         commandType: "MOVE",
         payload: "W_KEY_PRESSED"
       };
 
+      console.log(JSON.stringify(messageDto));
+      
       const destination = "/app/command";
 
       stompClient.send(destination, {}, JSON.stringify(messageDto));
