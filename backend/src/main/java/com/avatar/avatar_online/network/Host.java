@@ -10,6 +10,25 @@ public class Host {
         throw new UnsupportedOperationException("Classe utilitária");
     }
 
+    public static List<String> getLocalNetworkHosts() {
+        List<String> hosts = new ArrayList<>();
+        String localIP = getLocalIPv4();
+
+        if (localIP == null || !localIP.contains(".")) {
+            System.err.println("IP local inválido.");
+            return hosts;
+        }
+
+        String networkPrefix = localIP.substring(0, localIP.lastIndexOf("."));
+
+        for (int i = 1; i <= 20; i++) {
+            String host = networkPrefix + "." + i;
+            hosts.add(host);
+        }
+
+        return hosts;
+    }
+
     public static String getLocalIPv4() {
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
