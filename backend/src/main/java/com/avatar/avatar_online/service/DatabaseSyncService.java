@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -84,9 +85,7 @@ public class DatabaseSyncService {
             List<UserEntity> allUsers = userRepository.findAll();
 
             // 2. Converte para formato simples para transferência
-            List<UserExport> userExports = allUsers.stream()
-                    .map(UserExport::fromEntity)
-                    .toList();
+            List<UserExport> userExports = new ArrayList<>( allUsers.stream().map(UserExport::fromEntity).toList());
 
             // 3. Armazena no mapa distribuído para seguidores pegarem
             IMap<String, Object> syncMap = hazelcast.getMap(SYNC_MAP);
