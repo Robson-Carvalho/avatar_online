@@ -1,8 +1,10 @@
 package com.avatar.avatar_online.service;
 
+import com.avatar.avatar_online.config.NodeIDConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,11 +18,17 @@ public class LeaderRegistryService {
 
     private final HazelcastInstance hazelcast;
 
-    @Value("${app.node.id:node-1}")
-    private String nodeId;
+    private final String nodeId;
 
     @Value("${app.server.port:8080}")
     private int serverPort;
+
+
+    @Autowired
+    public LeaderRegistryService(HazelcastInstance hazelcast, NodeIDConfig nodeIDConfig) {
+        this.hazelcast = hazelcast;
+        this.nodeId = nodeIDConfig.getNodeId(); // ← Agora funciona!
+    }
 
     private ScheduledExecutorService heartbeatScheduler;
     private static final String LEADER_REGISTRY_MAP = "leader-registry";
@@ -75,8 +83,9 @@ public class LeaderRegistryService {
         }
     }
 
-    public LeaderRegistryService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast) {
+    public LeaderRegistryService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast, String nodeId) {
         this.hazelcast = hazelcast;
+        this.nodeId = nodeId;
     }
 
     @PostConstruct

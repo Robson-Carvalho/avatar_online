@@ -4,6 +4,7 @@ import com.avatar.avatar_online.network.Host;
 import com.hazelcast.config.*;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,11 +12,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class HazelcastConfig {
 
-    @Value("${app.node.id:node-1}")
-    private String nodeId;
+    private final String nodeId;
 
     @Value("${app.cluster.port:5701}")
     private int clusterPort;
+
+    @Autowired
+    public HazelcastConfig(NodeIDConfig nodeIDConfig) {
+        this.nodeId = nodeIDConfig.getNodeId(); // ← Agora funciona!
+    }
 
     @Bean
     public HazelcastInstance hazelcastInstance() {
