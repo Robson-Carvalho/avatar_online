@@ -85,7 +85,11 @@ public class DatabaseSyncService {
             List<UserEntity> allUsers = userRepository.findAll();
 
             // 2. Converte para formato simples para transferência
-            List<UserExport> userExports = new ArrayList<>( allUsers.stream().map(UserExport::fromEntity).toList());
+            List<UserExport> userExports = new ArrayList<>(
+                    allUsers.stream()
+                            .map(UserExport::fromEntity)
+                            .toList()
+            );
 
             // 3. Armazena no mapa distribuído para seguidores pegarem
             IMap<String, Object> syncMap = hazelcast.getMap(SYNC_MAP);
@@ -246,7 +250,7 @@ public class DatabaseSyncService {
      * Classe simples para transferência de dados
      */
     public record UserExport(
-            UUID id,
+            String id,
             String name,
             String nickname,
             String email,
@@ -254,7 +258,7 @@ public class DatabaseSyncService {
     ) {
         public static UserExport fromEntity(UserEntity entity) {
             return new UserExport(
-                    entity.getId(),
+                    entity.getId().toString(),
                     entity.getName(),
                     entity.getNickname(),
                     entity.getEmail(),

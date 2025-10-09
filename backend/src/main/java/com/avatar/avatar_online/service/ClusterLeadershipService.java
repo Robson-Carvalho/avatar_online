@@ -39,7 +39,6 @@ public class ClusterLeadershipService {
         this.applicationContext = applicationContext;
     }
 
-    @PostConstruct
     public void init() {
         this.currentNodeId = hazelcast.getCluster().getLocalMember().getUuid().toString();
         this.electionScheduler = Executors.newSingleThreadScheduledExecutor();
