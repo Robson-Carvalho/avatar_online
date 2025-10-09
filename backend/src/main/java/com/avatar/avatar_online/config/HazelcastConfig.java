@@ -19,7 +19,7 @@ public class HazelcastConfig {
 
     @Autowired
     public HazelcastConfig(NodeIDConfig nodeIDConfig) {
-        this.nodeId = nodeIDConfig.getNodeId(); // ← Agora funciona!
+        this.nodeId = nodeIDConfig.getNodeId();
     }
 
     @Bean
@@ -40,25 +40,17 @@ public class HazelcastConfig {
                 .setPortAutoIncrement(false);
 
 
-        networkConfig.getJoin().getMulticastConfig().setEnabled(false);
-        networkConfig.getJoin().getTcpIpConfig()
-                .setEnabled(true)
-                .setMembers(Host.getLocalNetworkHosts());
+        networkConfig.getJoin().getMulticastConfig().setEnabled(true);
 
         MapConfig leaderMapConfig = new MapConfig();
         leaderMapConfig.setName("leader-registry")
                 .setTimeToLiveSeconds(30);
-
-        MapConfig syncMapConfig = new MapConfig();
-        syncMapConfig.setName("sync-markers")
-                .setTimeToLiveSeconds(3600);
 
         MapConfig electionMapConfig = new MapConfig();
         electionMapConfig.setName("leader-election")
                 .setTimeToLiveSeconds(30);
 
         config.addMapConfig(leaderMapConfig);
-        config.addMapConfig(syncMapConfig);
         config.addMapConfig(electionMapConfig);
 
         try {

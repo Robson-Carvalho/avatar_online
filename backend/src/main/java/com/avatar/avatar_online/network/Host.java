@@ -19,6 +19,8 @@ public class Host {
             return hosts;
         }
 
+        // Verificar necessidade de fazer multicast
+
         String networkPrefix = localIP.substring(0, localIP.lastIndexOf("."));
 
         for (int i = 1; i <= 20; i++) {
