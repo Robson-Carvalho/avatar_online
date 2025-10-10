@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.File;
+
 @Configuration
 public class HazelcastConfig {
 
@@ -49,8 +51,12 @@ public class HazelcastConfig {
         electionMapConfig.setName("leader-election")
                 .setTimeToLiveSeconds(30);
 
+            File PCdir = new File("pc-data");
+
         config.getCPSubsystemConfig()
-                .setCPMemberCount(3);
+                .setCPMemberCount(3)
+                .setPersistenceEnabled(true)
+                .setBaseDir(PCdir);
 
         config.addMapConfig(leaderMapConfig);
         config.addMapConfig(electionMapConfig);
