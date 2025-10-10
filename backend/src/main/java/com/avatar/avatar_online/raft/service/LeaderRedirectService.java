@@ -47,4 +47,18 @@ public class LeaderRedirectService {
                     .body("{\"error\": \"Falha ao redirecionar para o líder: " + e.getMessage() + "\"}");
         }
     }
+
+    public void sendCommandToNode(String targetURL, Object command, HttpMethod method) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Object> requestEntity = new HttpEntity<>(command, headers);
+
+            restTemplate.exchange(targetURL, method, requestEntity, String.class);
+            System.out.println("✅ Comando enviado para: " + targetURL);
+        } catch (Exception e) {
+            System.err.println("❌ Falha ao enviar comando para " + targetURL + ": " + e.getMessage());
+        }
+    }
+
 }
