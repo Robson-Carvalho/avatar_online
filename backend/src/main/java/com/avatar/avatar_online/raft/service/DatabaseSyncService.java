@@ -1,8 +1,10 @@
 package com.avatar.avatar_online.raft.service;
 
+import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.Logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.Logs.UserSignUpCommand;
+import com.avatar.avatar_online.repository.DeckRepository;
 import com.avatar.avatar_online.repository.UserRepository;
 import com.hazelcast.cluster.Member;
 import com.hazelcast.core.HazelcastInstance;
@@ -22,6 +24,7 @@ import java.util.UUID;
 public class DatabaseSyncService {
 
     private final UserRepository userRepository;
+    private final DeckRepository deckRepository;
     private final HazelcastInstance hazelcast;
 
     private static final String SYNC_MAP = "sync-markers";
@@ -30,11 +33,12 @@ public class DatabaseSyncService {
     private final RestTemplate restTemplate;
 
 
-    public DatabaseSyncService(UserRepository userRepository,
+    public DatabaseSyncService(UserRepository userRepository, DeckRepository deckRepository,
                                @Qualifier("hazelcastInstance") HazelcastInstance hazelcast,
                                LeaderRedirectService leaderRedirectService,
                                RestTemplate restTemplate) {
         this.userRepository = userRepository;
+        this.deckRepository = deckRepository;
         this.hazelcast = hazelcast;
         this.leaderRedirectService = leaderRedirectService;
         this.restTemplate = restTemplate;
@@ -57,11 +61,16 @@ public class DatabaseSyncService {
                 command.getPassword()
         );
 
+        Deck newDeck = new Deck();
+
+        newDeck.setId(UUID.randomUUID());
         newUser.setId(command.getPlayerId());
+        newDeck.setUser(newUser);
 
         System.out.println("APLICA NO BANCO");
 
         userRepository.save(newUser);
+        deckRepository.save(newDeck);
     }
 
     @Transactional
