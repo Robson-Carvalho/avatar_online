@@ -77,18 +77,7 @@ public class DatabaseSyncService {
                     String targetURL = String.format("http://%s:%d/api/sync/apply-commit/users",
                             member.getAddress().getHost(),
                             8080);
-
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.APPLICATION_JSON);
-                    HttpEntity<Object> requestEntity = new HttpEntity<>(command, headers);
-
-                    try {
-                        // 🔑 Chamada bloqueante
-                        restTemplate.exchange(targetURL, HttpMethod.POST, requestEntity, String.class);
-                        System.out.println("✅ Propagado via RestTemplate para: " + targetURL);
-                    } catch (Exception e) {
-                        System.err.println("❌ Falha na propagação para " + targetURL + ": " + e.getMessage());
-                    }
+                    leaderRedirectService.sendCommandToNode(targetURL, command, HttpMethod.POST);
                 });
     }
 
