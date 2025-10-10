@@ -5,6 +5,8 @@ import com.avatar.avatar_online.raft.service.DatabaseSyncService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/sync")
 public class SyncController {
@@ -22,5 +24,11 @@ public class SyncController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("{\"error\": \"Erro ao Commitar usuários: " + e.getMessage() + "\"}");
         }
+    }
+
+    @GetMapping("/export/users")
+    public List<DatabaseSyncService.UserExport> exportUsers() {
+        System.out.println("🌍 Requisição de exportação de usuários recebida. Exportando dados...");
+        return databaseSyncService.performLeaderSync();
     }
 }
