@@ -71,8 +71,7 @@ public class CPCommitService {
             // Aplica mudança no próprio DB
             syncService.applyUserSignUpCommand(newCommand);
 
-            // 2. PROPAGAÇÃO HTTP PARA OS SEGUIDORES
-            // A chamada para o DatabaseSyncService (POST /apply-commit) vai aqui...
+            syncService.propagateUserSignUpCommand(newCommand);
 
             return true;
         } catch (Exception e) {

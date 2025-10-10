@@ -1,6 +1,8 @@
 package com.avatar.avatar_online.service;
 
 import com.avatar.avatar_online.models.User;
+import com.avatar.avatar_online.raft.Logs.UserSignUpCommand;
+import com.avatar.avatar_online.raft.service.CPCommitService;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
 import com.avatar.avatar_online.raft.service.LeaderRedirectService;
 import com.avatar.avatar_online.repository.UserRepository;
@@ -18,14 +20,16 @@ public class UserService {
     private final UserRepository userRepository;
     private final ClusterLeadershipService leadershipService;
     private final LeaderRedirectService leaderRedirectService;
+    private final CPCommitService cPCommitService;
 
 
     public UserService(UserRepository userRepository,
                        ClusterLeadershipService leadershipService,
-                       LeaderRedirectService leaderRedirectService) {
+                       LeaderRedirectService leaderRedirectService, CPCommitService cPCommitService) {
         this.userRepository = userRepository;
         this.leadershipService = leadershipService;
         this.leaderRedirectService = leaderRedirectService;
+        this.cPCommitService = cPCommitService;
     }
 
     @Transactional
@@ -44,11 +48,17 @@ public class UserService {
                 return ResponseEntity.badRequest().body("{\"error\": \"Nickname já cadastrado\"}");
             }
 
-            User savedUser = userRepository.save(user);
-            System.out.println("✅ Usuário criado pelo líder: " + savedUser.getEmail());
+            UserSignUpCommand command = new UserSignUpCommand(UUID.randomUUID(), "SIGN_USER", user.getId().toString(), user.getName(),
+                    user.getEmail(), user.getNickname(), user.getPassword());
 
-            //databaseSyncService.performLeaderSync();
-            return ResponseEntity.ok(savedUser);
+            boolean response = cPCommitService.tryCommitUserSignUp(command);
+
+            if(!response){
+                return ResponseEntity.badRequest().body("");
+            }
+
+            System.out.println("✅ Usuário criado pelo líder: ");
+            return ResponseEntity.ok().body("");
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");
