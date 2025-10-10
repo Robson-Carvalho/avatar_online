@@ -166,6 +166,7 @@ public class DatabaseSyncService {
     @Transactional
     public void applyUserSignUpCommand(UserSignUpCommand command){
         User newUser = new User(
+                command.getPlayerId(),
                 command.getName(),
                 command.getNickname(),
                 command.getEmail(),

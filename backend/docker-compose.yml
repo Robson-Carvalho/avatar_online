@@ -11,7 +11,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=avatar_user
       - SPRING_DATASOURCE_PASSWORD=senha123
 #      Alterar para o IP da máquina que irá executar o docker-compose
-      - HAZELCAST_NETWORK_PUBLIC_ADDRESS=10.0.0.151:5701
+#      - HAZELCAST_NETWORK_PUBLIC_ADDRESS=10.0.0.151:5701
     network_mode: host
     ports:
       - "8080:8080"
