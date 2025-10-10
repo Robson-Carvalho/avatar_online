@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.controller;
 
+import com.avatar.avatar_online.DTOs.UserDTO;
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.service.UserService;
 import org.springframework.http.*;
@@ -20,7 +21,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody User user) {
+    public ResponseEntity<?> createUser(@RequestBody UserDTO user) {
         try {
             return userService.createUser(user);
         } catch (Exception e) {

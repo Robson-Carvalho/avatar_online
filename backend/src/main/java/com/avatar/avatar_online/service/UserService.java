@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.service;
 
+import com.avatar.avatar_online.DTOs.UserDTO;
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.Logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.service.CPCommitService;
@@ -33,7 +34,7 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<?> createUser(User user) {
+    public ResponseEntity<?> createUser(UserDTO user) {
         try {
             if (!leadershipService.isLeader()) {
                 System.out.println("🚫 Este nó não é o líder. Redirecionando para o líder...");
@@ -42,7 +43,7 @@ public class UserService {
 
             System.out.println("Chegou aqui essa desgraça");
 
-            UserSignUpCommand command = new UserSignUpCommand(UUID.randomUUID(), "SIGN_USER", user.getId(), user.getName(),
+            UserSignUpCommand command = new UserSignUpCommand(UUID.randomUUID(), "SIGN_USER", UUID.randomUUID(), user.getName(),
                     user.getEmail(), user.getNickname(), user.getPassword());
 
             boolean response = cPCommitService.tryCommitUserSignUp(command);
