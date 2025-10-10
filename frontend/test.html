@@ -162,9 +162,21 @@
                     connect(newUserId);
                 }, 500);
                 
-            } else if (status === "ERROR_RESPONSE" && payload && payload.message) {
+            } else if (status === "ERROR_RESPONSE") {
                 log(`❌ ERRO de Cadastro: ${payload.message}`);
-            } else {
+            } else if(status === "LOGIN_RESPONSE"){
+               const newUserId = payload.clientId;
+
+               log(`✅ LOGIN BEM-SUCEDIDO. Novo ID Autenticado: ${newUserId}`);
+                
+                disconnect(); 
+                
+                setTimeout(() => {
+                    log(`Iniciando reconexão automática com ID permanente: ${newUserId}`);
+                    connect(newUserId);
+                }, 500);
+            
+              }else {
                 log(`AVISO: Resposta desconhecida do servidor. Comando: ${status}`);
             }
         } catch (e) {
@@ -179,19 +191,17 @@
       }
       
       const signUpPayload = {
-        name: document.getElementById("nameInput").value,
         nickname: document.getElementById("nicknameInput").value,
-        email: document.getElementById("emailInput").value,
         password: document.getElementById("passwordInput").value
       };
 
       const clientMessageDTO = {
         clientID: currentPrincipalId, 
-        commandType: "signUp",
+        commandType: "signIn",
         payload: JSON.stringify(signUpPayload)
       };
       
-      const destination = "/app/signup";
+      const destination = "/app/signin";
 
       stompClient.send(destination, {}, JSON.stringify(clientMessageDTO));
       log(`>>> COMANDO ENVIADO para ${destination} (Key: ${currentPrincipalId})`);
