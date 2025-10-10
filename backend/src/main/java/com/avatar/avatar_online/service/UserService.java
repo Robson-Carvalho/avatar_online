@@ -48,7 +48,7 @@ public class UserService {
                 return ResponseEntity.badRequest().body("{\"error\": \"Nickname já cadastrado\"}");
             }
 
-            UserSignUpCommand command = new UserSignUpCommand(UUID.randomUUID(), "SIGN_USER", user.getId().toString(), user.getName(),
+            UserSignUpCommand command = new UserSignUpCommand(UUID.randomUUID(), "SIGN_USER", user.getId(), user.getName(),
                     user.getEmail(), user.getNickname(), user.getPassword());
 
             boolean response = cPCommitService.tryCommitUserSignUp(command);

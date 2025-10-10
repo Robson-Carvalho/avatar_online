@@ -57,7 +57,7 @@ public class DatabaseSyncService {
                 command.getPassword()
         );
 
-        newUser.setId(UUID.fromString(command.getPlayerId()));
+        newUser.setId(command.getPlayerId());
 
         userRepository.save(newUser);
     }

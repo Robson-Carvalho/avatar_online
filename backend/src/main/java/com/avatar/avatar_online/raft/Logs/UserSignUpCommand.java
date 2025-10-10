@@ -8,7 +8,7 @@ public class UserSignUpCommand implements Serializable {
 
     private final String operationType;
 
-    private final String playerId;
+    private final UUID playerId;
 
     private final String name;
 
@@ -18,7 +18,7 @@ public class UserSignUpCommand implements Serializable {
 
     private final String password;
 
-    public  UserSignUpCommand(UUID commandId, String operationType, String playerId, String name,
+    public  UserSignUpCommand(UUID commandId, String operationType, UUID playerId, String name,
                               String email, String nickname, String password) {
         this.commandId = commandId;
         this.operationType = operationType;
@@ -36,7 +36,7 @@ public class UserSignUpCommand implements Serializable {
         return operationType;
     }
 
-    public String getPlayerId() {
+    public UUID getPlayerId() {
         return playerId;
     }
 
