@@ -26,18 +26,15 @@ public class ClusterController {
     private final ClusterLeadershipService leadershipService;
     private final LeaderDiscoveryService leaderDiscoveryService;
     private final LeaderRegistryService leaderRegistryService;
-    private final DatabaseSyncService databaseSyncService;
 
     public ClusterController(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast,
                              ClusterLeadershipService leadershipService,
                              LeaderDiscoveryService leaderDiscoveryService,
-                             LeaderRegistryService leaderRegistryService,
-                             DatabaseSyncService databaseSyncService) {
+                             LeaderRegistryService leaderRegistryService) {
         this.hazelcast = hazelcast;
         this.leadershipService = leadershipService;
         this.leaderDiscoveryService = leaderDiscoveryService;
         this.leaderRegistryService = leaderRegistryService;
-        this.databaseSyncService = databaseSyncService;
     }
 
     @GetMapping("/status")
