@@ -1,4 +1,4 @@
-package com.avatar.avatar_online.raft.Logs;
+package com.avatar.avatar_online.raft.logs;
 
 import java.util.List;
 import java.util.UUID;

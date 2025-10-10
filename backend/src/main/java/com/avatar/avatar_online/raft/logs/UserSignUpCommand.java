@@ -1,4 +1,4 @@
-package com.avatar.avatar_online.raft.Logs;
+package com.avatar.avatar_online.raft.logs;
 
 import java.io.Serializable;
 import java.util.UUID;

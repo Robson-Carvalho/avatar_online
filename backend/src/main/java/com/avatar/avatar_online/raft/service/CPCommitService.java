@@ -1,11 +1,10 @@
 package com.avatar.avatar_online.raft.service;
 
-import com.avatar.avatar_online.raft.Logs.OpenPackCommand;
-import com.avatar.avatar_online.raft.Logs.UserSignUpCommand;
+import com.avatar.avatar_online.raft.logs.OpenPackCommand;
+import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.repository.UserRepository;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.cp.IAtomicReference;
-import com.hazelcast.cp.internal.datastructures.lock.Lock;
 import com.hazelcast.cp.lock.FencedLock;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

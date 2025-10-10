@@ -2,11 +2,10 @@ package com.avatar.avatar_online.raft.service;
 
 import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.models.User;
-import com.avatar.avatar_online.raft.Logs.OpenPackCommand;
-import com.avatar.avatar_online.raft.Logs.UserSignUpCommand;
+import com.avatar.avatar_online.raft.logs.OpenPackCommand;
+import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.repository.DeckRepository;
 import com.avatar.avatar_online.repository.UserRepository;
-import com.hazelcast.cluster.Member;
 import com.hazelcast.core.HazelcastInstance;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,7 +19,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service

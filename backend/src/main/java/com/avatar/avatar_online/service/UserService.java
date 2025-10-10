@@ -2,7 +2,7 @@ package com.avatar.avatar_online.service;
 
 import com.avatar.avatar_online.DTOs.UserDTO;
 import com.avatar.avatar_online.models.User;
-import com.avatar.avatar_online.raft.Logs.UserSignUpCommand;
+import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.service.CPCommitService;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
 import com.avatar.avatar_online.raft.service.LeaderRedirectService;
