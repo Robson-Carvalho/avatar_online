@@ -165,16 +165,4 @@ public class ClusterController {
                     .body("{\"error\": \"Erro ao obter status: " + e.getMessage() + "\"}");
         }
     }
-
-    @GetMapping("/health")
-    public Map<String, Object> health() {
-        Map<String, Object> health = new HashMap<>();
-        health.put("status", "UP");
-        health.put("service", "Avatar Cluster");
-        health.put("timestamp", System.currentTimeMillis());
-        health.put("hazelcast", hazelcast.getLifecycleService().isRunning());
-        health.put("clusterSize", leadershipService.getClusterSize());
-        health.put("isLeader", leadershipService.isLeader());
-        return health;
-    }
 }
