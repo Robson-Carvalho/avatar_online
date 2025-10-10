@@ -107,7 +107,6 @@ services:
     volumes:
       - postgres_data_node3:/var/lib/postgresql/data
 
-# Define volumes nomeados para garantir a persistência dos dados de cada banco
 volumes:
   postgres_data_node1:
   postgres_data_node2:
