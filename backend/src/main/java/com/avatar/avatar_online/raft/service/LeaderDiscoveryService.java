@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.raft.service;
 
+import com.avatar.avatar_online.raft.model.LeaderInfo;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,14 +23,14 @@ public class LeaderDiscoveryService {
     public Optional<String> getLeaderHttpAddress() {
         // Se este nó é o líder, retorna seu próprio endereço
         if (leadershipService.isLeader()) {
-            LeaderRegistryService.LeaderInfo currentLeader = leaderRegistryService.getCurrentLeader();
+            LeaderInfo currentLeader = leaderRegistryService.getCurrentLeader();
             if (currentLeader != null) {
                 return Optional.of(currentLeader.getHttpAddress());
             }
         }
 
         // Busca o líder registrado
-        LeaderRegistryService.LeaderInfo leader = leaderRegistryService.getCurrentLeader();
+        LeaderInfo leader = leaderRegistryService.getCurrentLeader();
         if (leader != null && !leader.isExpired(45000)) {
             return Optional.of(leader.getHttpAddress());
         }
@@ -48,12 +49,12 @@ public class LeaderDiscoveryService {
     /**
      * Obtém informações completas do líder
      */
-    public LeaderRegistryService.LeaderInfo getLeaderInfo() {
+    public LeaderInfo getLeaderInfo() {
         return leaderRegistryService.getCurrentLeader();
     }
 
     public String getCurrentNodeInfo() {
-        LeaderRegistryService.LeaderInfo leader = leaderRegistryService.getCurrentLeader();
+        LeaderInfo leader = leaderRegistryService.getCurrentLeader();
         String leaderStatus = leadershipService.isLeader() ? "LÍDER" : "SEGUIDOR";
         String leaderAddress = leader != null ? leader.getHttpAddress() : "Não definido";
 

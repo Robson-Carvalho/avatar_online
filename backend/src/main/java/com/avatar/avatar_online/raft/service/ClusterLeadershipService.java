@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.raft.service;
 
+import com.avatar.avatar_online.raft.model.LeaderInfo;
 import com.hazelcast.cluster.MembershipEvent;
 import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.core.HazelcastInstance;
@@ -292,7 +293,7 @@ public class ClusterLeadershipService {
     }
 
     public String getLeaderInfo() {
-        LeaderRegistryService.LeaderInfo leader = leaderRegistryService.getCurrentLeader();
+        LeaderInfo leader = leaderRegistryService.getCurrentLeader();
         if (leader != null) {
             return isLeader.get() ?
                     "Este nó é o LÍDER (" + leader.getHttpAddress() + ")" :

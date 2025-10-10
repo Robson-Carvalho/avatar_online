@@ -1,6 +1,7 @@
 package com.avatar.avatar_online.raft.service;
 
 import com.avatar.avatar_online.raft.config.NodeIDConfig;
+import com.avatar.avatar_online.raft.model.LeaderInfo;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import jakarta.annotation.PostConstruct;
@@ -15,72 +16,19 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class LeaderRegistryService {
-
     private final HazelcastInstance hazelcast;
-
     private final String nodeId;
+    private ScheduledExecutorService heartbeatScheduler;
+    private static final String LEADER_REGISTRY_MAP = "leader-registry";
+    private static final String LEADER_KEY = "current-leader";
 
     @Value("${app.server.port:8080}")
     private int serverPort;
-
 
     @Autowired
     public LeaderRegistryService(HazelcastInstance hazelcast, NodeIDConfig nodeIDConfig) {
         this.hazelcast = hazelcast;
         this.nodeId = nodeIDConfig.getNodeId(); // ← Agora funciona!
-    }
-
-    private ScheduledExecutorService heartbeatScheduler;
-    private static final String LEADER_REGISTRY_MAP = "leader-registry";
-    private static final String LEADER_KEY = "current-leader";
-
-    // Estrutura para armazenar informações do líder
-    public static class LeaderInfo {
-        private String nodeId;
-        private String host;
-        private int port;
-        private long lastHeartbeat;
-        private String httpAddress;
-
-        public LeaderInfo() {}
-
-        public LeaderInfo(String nodeId, String host, int port) {
-            this.nodeId = nodeId;
-            this.host = host;
-            this.port = port;
-            this.lastHeartbeat = System.currentTimeMillis();
-            this.httpAddress = "http://" + host + ":" + port;
-        }
-
-        // Getters e Setters
-        public String getNodeId() { return nodeId; }
-        public void setNodeId(String nodeId) { this.nodeId = nodeId; }
-
-        public String getHost() { return host; }
-        public void setHost(String host) { this.host = host; }
-
-        public int getPort() { return port; }
-        public void setPort(int port) { this.port = port; }
-
-        public long getLastHeartbeat() { return lastHeartbeat; }
-        public void setLastHeartbeat(long lastHeartbeat) { this.lastHeartbeat = lastHeartbeat; }
-
-        public String getHttpAddress() { return httpAddress; }
-        public void setHttpAddress(String httpAddress) { this.httpAddress = httpAddress; }
-
-        public void updateHeartbeat() {
-            this.lastHeartbeat = System.currentTimeMillis();
-        }
-
-        public boolean isExpired(long timeoutMs) {
-            return (System.currentTimeMillis() - lastHeartbeat) > timeoutMs;
-        }
-
-        @Override
-        public String toString() {
-            return "LeaderInfo{nodeId='" + nodeId + "', host='" + host + "', port=" + port +
-                    ", httpAddress='" + httpAddress + "', lastHeartbeat=" + lastHeartbeat + "}";
-        }
     }
 
     public LeaderRegistryService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast, String nodeId) {
@@ -116,7 +64,7 @@ public class LeaderRegistryService {
         IMap<String, LeaderInfo> leaderMap = hazelcast.getMap(LEADER_REGISTRY_MAP);
         LeaderInfo currentLeader = leaderMap.get(LEADER_KEY);
 
-        if (currentLeader != null && currentLeader.nodeId.equals(nodeId)) {
+        if (currentLeader != null && currentLeader.getNodeId().equals(nodeId)) {
             leaderMap.remove(LEADER_KEY);
             System.out.println("🗑️  Registro de líder removido");
         }
@@ -146,7 +94,7 @@ public class LeaderRegistryService {
      */
     public boolean isRegisteredLeader() {
         LeaderInfo leader = getCurrentLeader();
-        return leader != null && leader.nodeId.equals(nodeId);
+        return leader != null && leader.getNodeId().equals(nodeId);
     }
 
     /**
@@ -156,7 +104,7 @@ public class LeaderRegistryService {
         heartbeatScheduler.scheduleAtFixedRate(() -> {
             try {
                 LeaderInfo currentLeader = getCurrentLeader();
-                if (currentLeader != null && currentLeader.nodeId.equals(nodeId)) {
+                if (currentLeader != null && currentLeader.getNodeId().equals(nodeId)) {
                     // Atualiza heartbeat
                     currentLeader.updateHeartbeat();
                     IMap<String, LeaderInfo> leaderMap = hazelcast.getMap(LEADER_REGISTRY_MAP);

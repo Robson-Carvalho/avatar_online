@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.controller;
 
+import com.avatar.avatar_online.raft.model.LeaderInfo;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
 import com.avatar.avatar_online.raft.service.LeaderDiscoveryService;
 import com.avatar.avatar_online.raft.service.LeaderRegistryService;
@@ -49,7 +50,7 @@ public class ClusterController {
         status.put("nodeInfo", leaderDiscoveryService.getCurrentNodeInfo());
         status.put("timestamp", System.currentTimeMillis());
 
-        LeaderRegistryService.LeaderInfo leader = leaderRegistryService.getCurrentLeader();
+        LeaderInfo leader = leaderRegistryService.getCurrentLeader();
         if (leader != null) {
             status.put("registeredLeader", leader.toString());
         } else {
@@ -63,7 +64,7 @@ public class ClusterController {
     public Map<String, Object> getLeaderInfo() {
         Map<String, Object> leaderInfo = new HashMap<>();
 
-        LeaderRegistryService.LeaderInfo leader = leaderRegistryService.getCurrentLeader();
+        LeaderInfo leader = leaderRegistryService.getCurrentLeader();
         if (leader != null) {
             leaderInfo.put("nodeId", leader.getNodeId());
             leaderInfo.put("host", leader.getHost());
