@@ -3,9 +3,12 @@ package com.avatar.avatar_online.service;
 import com.avatar.avatar_online.models.UserEntity;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
 import com.avatar.avatar_online.raft.service.DatabaseSyncService;
+import com.avatar.avatar_online.raft.service.LeaderDiscoveryService;
 import com.avatar.avatar_online.repository.UserRepository;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,92 +20,102 @@ public class UserService {
     private final UserRepository userRepository;
     private final ClusterLeadershipService leadershipService;
     private final DatabaseSyncService databaseSyncService;
+    private final LeaderDiscoveryService leaderDiscoveryService;
+    private final RestTemplate restTemplate;
 
     public UserService(UserRepository userRepository,
                        ClusterLeadershipService leadershipService,
-                       DatabaseSyncService databaseSyncService) {
+                       DatabaseSyncService databaseSyncService,
+                       LeaderDiscoveryService leaderDiscoveryService,
+                       RestTemplate restTemplate) {
         this.userRepository = userRepository;
         this.leadershipService = leadershipService;
         this.databaseSyncService = databaseSyncService;
+        this.leaderDiscoveryService = leaderDiscoveryService;
+        this.restTemplate = restTemplate;
     }
 
-    /**
-     * Cria usuário apenas se este nó for o líder
-     */
     @Transactional
-    public UserEntity createUser(UserEntity user) {
-        if (!leadershipService.isLeader()) {
-            throw new IllegalStateException(
-                    "Apenas o nó líder pode criar usuários. " +
-                            "Este nó não é o líder."
-            );
+    public ResponseEntity<?> createUser(UserEntity user) {
+        try {
+            if (!leadershipService.isLeader()) {
+                System.out.println("🚫 Este nó não é o líder. Redirecionando para o líder...");
+                return redirectToLeader("/api/users", user, HttpMethod.POST);
+            }
+
+            if (userRepository.existsByEmail(user.getEmail())) {
+                return ResponseEntity.badRequest().body("{\"error\": \"Email já cadastrado\"}");
+            }
+
+            if (user.getNickname() != null && userRepository.existsByNickname(user.getNickname())) {
+                return ResponseEntity.badRequest().body("{\"error\": \"Nickname já cadastrado\"}");
+            }
+
+            UserEntity savedUser = userRepository.save(user);
+            System.out.println("✅ Usuário criado pelo líder: " + savedUser.getEmail());
+
+            databaseSyncService.performLeaderSync();
+            return ResponseEntity.ok(savedUser);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");
         }
-
-        // Verifica se email ou nickname já existem
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado");
-        }
-
-        if (user.getNickname() != null && userRepository.existsByNickname(user.getNickname())) {
-            throw new IllegalArgumentException("Nickname já cadastrado");
-        }
-
-        // Salva no banco do líder
-        UserEntity savedUser = userRepository.save(user);
-
-        System.out.println("✅ Usuário criado pelo líder: " + savedUser.getEmail());
-
-        // 🔥 FORÇA SINCRONIZAÇÃO IMEDIATA
-        databaseSyncService.performLeaderSync();
-
-        return savedUser;
     }
 
-    /**
-     * Busca por ID - consulta LOCAL no banco deste nó
-     */
+    private ResponseEntity<?> redirectToLeader(String path, Object body, HttpMethod method) {
+        try {
+            Optional<String> leaderAddress = leaderDiscoveryService.getLeaderHttpAddress();
+
+            if (leaderAddress.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                        .body("{\"error\": \"Líder não encontrado no cluster. Tente novamente.\"}");
+            }
+
+            String leaderUrl = leaderAddress.get() + path;
+            System.out.println("🔄 Redirecionando requisição para o líder: " + leaderUrl);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    leaderUrl, method, requestEntity, String.class
+            );
+
+            return ResponseEntity.status(response.getStatusCode())
+                    .headers(response.getHeaders())
+                    .body(response.getBody());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body("{\"error\": \"Falha ao redirecionar para o líder: " + e.getMessage() + "\"}");
+        }
+    }
+
     public Optional<UserEntity> findById(UUID id) {
         return userRepository.findById(id);
     }
 
-    /**
-     * Busca por email - consulta LOCAL
-     */
     public Optional<UserEntity> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    /**
-     * Busca por nickname - consulta LOCAL
-     */
     public Optional<UserEntity> findByNickname(String nickname) {
         return userRepository.findByNickname(nickname);
     }
 
-    /**
-     * Verifica se email existe - consulta LOCAL
-     */
     public boolean emailExists(String email) {
         return userRepository.existsByEmail(email);
     }
 
-    /**
-     * Verifica se nickname existe - consulta LOCAL
-     */
     public boolean nicknameExists(String nickname) {
         return userRepository.existsByNickname(nickname);
     }
 
-    /**
-     * Lista todos os usuários - consulta LOCAL
-     */
     public List<UserEntity> findAll() {
         return userRepository.findAll();
     }
 
-    /**
-     * Conta usuários - consulta LOCAL
-     */
     public long count() {
         return userRepository.count();
     }
