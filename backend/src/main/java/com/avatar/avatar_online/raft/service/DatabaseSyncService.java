@@ -9,8 +9,6 @@ import com.hazelcast.core.HazelcastInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
-
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,13 +20,24 @@ public class DatabaseSyncService {
 
     private static final String SYNC_MAP = "sync-markers";
     private static final String SYNC_MARKER = "last-sync-timestamp";
+    private final LeaderRedirectService leaderRedirectService;
+
 
     public DatabaseSyncService(UserRepository userRepository,
                                @Qualifier("hazelcastInstance") HazelcastInstance hazelcast,
-                               WebClient.Builder webClientBuilder) {
+                               LeaderRedirectService leaderRedirectService) {
         this.userRepository = userRepository;
         this.hazelcast = hazelcast;
+        this.leaderRedirectService = leaderRedirectService;
     }
+
+    // Tem que ter um post construct para sincronização inicial
+
+    // tem que ter uma função para performar as persistencia de usuário cadastrados
+
+    // Tem que ter uma função para performar as persistencia de Cartas abertas
+
+    // Tem que ter uma função para performar
 
     @Transactional
     public void applyUserSignUpCommand(UserSignUpCommand command){
