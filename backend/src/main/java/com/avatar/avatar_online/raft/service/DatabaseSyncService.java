@@ -84,15 +84,7 @@ public class DatabaseSyncService {
         // Aguarda cluster estabilizar
         new Thread(() -> {
             try {
-                Thread.sleep(15000); // 15 segundos
-                System.out.println("🔍 Verificando necessidade de sincronização inicial...");
-
-                if (isCurrentNodeLeader()) {
-                    System.out.println("👑 Este nó é líder - exportando dados iniciais");
-                } else {
-                    System.out.println("👥 Este nó é seguidor - sincronizando com líder");
-                }
-
+                Thread.sleep(5000); // 5 segundos
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
