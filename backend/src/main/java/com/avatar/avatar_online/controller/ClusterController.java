@@ -131,17 +131,6 @@ public class ClusterController {
         }
     }
 
-    @PostMapping("/sync/force")
-    public ResponseEntity<?> forceSync() {
-        try {
-            databaseSyncService.forceSync();
-            return ResponseEntity.ok("{\"message\": \"Sincronização forçada executada\"}");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\": \"Erro na sincronização: " + e.getMessage() + "\"}");
-        }
-    }
-
     @GetMapping("/sync/status")
     public ResponseEntity<?> getSyncStatus() {
         try {

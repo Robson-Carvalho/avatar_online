@@ -1,6 +1,6 @@
 package com.avatar.avatar_online.service;
 
-import com.avatar.avatar_online.models.UserEntity;
+import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
 import com.avatar.avatar_online.raft.service.DatabaseSyncService;
 import com.avatar.avatar_online.raft.service.LeaderDiscoveryService;
@@ -36,7 +36,7 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<?> createUser(UserEntity user) {
+    public ResponseEntity<?> createUser(User user) {
         try {
             if (!leadershipService.isLeader()) {
                 System.out.println("🚫 Este nó não é o líder. Redirecionando para o líder...");
@@ -51,10 +51,10 @@ public class UserService {
                 return ResponseEntity.badRequest().body("{\"error\": \"Nickname já cadastrado\"}");
             }
 
-            UserEntity savedUser = userRepository.save(user);
+            User savedUser = userRepository.save(user);
             System.out.println("✅ Usuário criado pelo líder: " + savedUser.getEmail());
 
-            databaseSyncService.performLeaderSync();
+            //databaseSyncService.performLeaderSync();
             return ResponseEntity.ok(savedUser);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
@@ -92,15 +92,15 @@ public class UserService {
         }
     }
 
-    public Optional<UserEntity> findById(UUID id) {
+    public Optional<User> findById(UUID id) {
         return userRepository.findById(id);
     }
 
-    public Optional<UserEntity> findByEmail(String email) {
+    public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    public Optional<UserEntity> findByNickname(String nickname) {
+    public Optional<User> findByNickname(String nickname) {
         return userRepository.findByNickname(nickname);
     }
 
@@ -112,7 +112,7 @@ public class UserService {
         return userRepository.existsByNickname(nickname);
     }
 
-    public List<UserEntity> findAll() {
+    public List<User> findAll() {
         return userRepository.findAll();
     }
 

@@ -15,15 +15,15 @@ public class Match {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "player_one_id", nullable = false)
-    private UserEntity playerOne;
+    private User playerOne;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "player_two_id", nullable = false)
-    private UserEntity playerTwo;
+    private User playerTwo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "player_win_id")
-    private UserEntity playerWin; // Pode ser null se ainda não houver vencedor
+    private User playerWin; // Pode ser null se ainda não houver vencedor
 
     public Match() {}
 
@@ -31,12 +31,12 @@ public class Match {
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
-    public UserEntity getPlayerOne() { return playerOne; }
-    public void setPlayerOne(UserEntity playerOne) { this.playerOne = playerOne; }
+    public User getPlayerOne() { return playerOne; }
+    public void setPlayerOne(User playerOne) { this.playerOne = playerOne; }
 
-    public UserEntity getPlayerTwo() { return playerTwo; }
-    public void setPlayerTwo(UserEntity playerTwo) { this.playerTwo = playerTwo; }
+    public User getPlayerTwo() { return playerTwo; }
+    public void setPlayerTwo(User playerTwo) { this.playerTwo = playerTwo; }
 
-    public UserEntity getPlayerWin() { return playerWin; }
-    public void setPlayerWin(UserEntity playerWin) { this.playerWin = playerWin; }
+    public User getPlayerWin() { return playerWin; }
+    public void setPlayerWin(User playerWin) { this.playerWin = playerWin; }
 }

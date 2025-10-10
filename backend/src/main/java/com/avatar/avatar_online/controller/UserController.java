@@ -1,6 +1,6 @@
 package com.avatar.avatar_online.controller;
 
-import com.avatar.avatar_online.models.UserEntity;
+import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.service.UserService;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody UserEntity user) {
+    public ResponseEntity<?> createUser(@RequestBody User user) {
         try {
             return userService.createUser(user);
         } catch (Exception e) {
@@ -32,7 +32,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<?> getAllUsers() {
         try {
-            List<UserEntity> users = userService.findAll();
+            List<User> users = userService.findAll();
             return ResponseEntity.ok(users);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
@@ -43,7 +43,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable UUID id) {
         try {
-            Optional<UserEntity> user = userService.findById(id);
+            Optional<User> user = userService.findById(id);
             return user.map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {

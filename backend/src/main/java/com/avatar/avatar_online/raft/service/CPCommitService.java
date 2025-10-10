@@ -19,10 +19,11 @@ public class CPCommitService {
 
     private static final String LAST_COMMAND_REF =  "last-db-command";
 
-    // injetar DatabaseSyncService para sincronização
+    private final DatabaseSyncService syncService;
 
-    public CPCommitService(HazelcastInstance hazelcast) {
+    public CPCommitService(HazelcastInstance hazelcast, DatabaseSyncService syncService) {
         this.hazelcast = hazelcast;
+        this.syncService = syncService;
     }
 
     public boolean tryCommitPackOpening(OpenPackCommand newCommand){
@@ -67,8 +68,8 @@ public class CPCommitService {
 
             commandRef.set(newCommand);
 
-            // 1. APLICAÇÃO NO BD LOCAL (DO LÍDER DA TRANSAÇÃO)
-            // SE o set() foi bem-sucedido, aplique a instrução SQL no BD deste nó.
+            // Aplica mudança no próprio DB
+            syncService.applyUserSignUpCommand(newCommand);
 
             // 2. PROPAGAÇÃO HTTP PARA OS SEGUIDORES
             // A chamada para o DatabaseSyncService (POST /apply-commit) vai aqui...

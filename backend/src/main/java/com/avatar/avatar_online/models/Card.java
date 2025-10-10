@@ -18,7 +18,7 @@ public class Card {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) // cria a FK
-    private UserEntity user;
+    private User user;
 
     private String name;
     @Enumerated(EnumType.STRING)
@@ -37,7 +37,7 @@ public class Card {
     public Card() {
     }
 
-    public Card(UserEntity user, String name, ElementCard element, PhaseCard phase, int attack, int life, int defense, RarityCard rarity, String description) {
+    public Card(User user, String name, ElementCard element, PhaseCard phase, int attack, int life, int defense, RarityCard rarity, String description) {
         this.user = user;
         this.name = name;
         this.element = element;
@@ -57,11 +57,11 @@ public class Card {
         return id;
     }
 
-    public UserEntity getUser() {
+    public User getUser() {
         return user;
     }
 
-    public UserEntity setUser(UserEntity user) {
+    public User setUser(User user) {
         return this.user = user;
     }
 

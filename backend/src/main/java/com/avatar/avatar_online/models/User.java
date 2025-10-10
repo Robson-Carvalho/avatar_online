@@ -5,7 +5,7 @@ import java.util.UUID;
 
 @Entity(name = "app_user")
 @Table(name = "app_user")
-public class UserEntity {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -23,11 +23,11 @@ public class UserEntity {
     @Column(nullable = false)
     private String password;
 
-    public UserEntity() {
+    public User() {
 
     }
 
-    public UserEntity(String name, String nickname, String email, String password) {
+    public User(String name, String nickname, String email, String password) {
         this.name = name;
         this.nickname = nickname;
         this.email = email;
