@@ -214,7 +214,6 @@ public class ClusterLeadershipService {
 
                 if (isLeader.get()) {
                     // Como líder, sincroniza o novo nó
-                    System.out.println("👑 Líder detectou novo nó - sincronizando...");
                     syncNewNode();
                 } else {
                     // Se este nó é o novo nó que entrou, sincroniza com líder
@@ -268,6 +267,7 @@ public class ClusterLeadershipService {
      */
     private void syncNewNode() {
         try {
+            System.out.println("📡 Sincronizando dados com nós (seguidores)");
             DatabaseSyncService databaseSyncService = applicationContext.getBean(DatabaseSyncService.class);
             databaseSyncService.syncNewNode();
         } catch (Exception e) {
