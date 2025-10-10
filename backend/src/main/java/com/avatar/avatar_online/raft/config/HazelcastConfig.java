@@ -51,12 +51,9 @@ public class HazelcastConfig {
         electionMapConfig.setName("leader-election")
                 .setTimeToLiveSeconds(30);
 
-            File PCdir = new File("pc-data");
 
         config.getCPSubsystemConfig()
-                .setCPMemberCount(3)
-                .setPersistenceEnabled(true)
-                .setBaseDir(PCdir);
+                .setCPMemberCount(3);
 
         config.addMapConfig(leaderMapConfig);
         config.addMapConfig(electionMapConfig);
