@@ -1,6 +1,6 @@
-package com.avatar.avatar_online.service;
+package com.avatar.avatar_online.raft.service;
 
-import com.avatar.avatar_online.config.NodeIDConfig;
+import com.avatar.avatar_online.raft.config.NodeIDConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import jakarta.annotation.PostConstruct;

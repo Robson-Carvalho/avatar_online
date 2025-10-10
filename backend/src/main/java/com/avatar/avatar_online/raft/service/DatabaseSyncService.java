@@ -1,21 +1,15 @@
-package com.avatar.avatar_online.service;
+package com.avatar.avatar_online.raft.service;
 
 import com.avatar.avatar_online.models.UserEntity;
 import com.avatar.avatar_online.repository.UserRepository;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.map.IMap;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class DatabaseSyncService {

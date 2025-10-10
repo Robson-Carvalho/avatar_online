@@ -1,4 +1,4 @@
-package com.avatar.avatar_online.service;
+package com.avatar.avatar_online.raft.service;
 
 import org.springframework.stereotype.Service;
 

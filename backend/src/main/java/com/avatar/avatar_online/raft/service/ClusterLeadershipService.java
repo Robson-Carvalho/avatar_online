@@ -1,11 +1,10 @@
-package com.avatar.avatar_online.service;
+package com.avatar.avatar_online.raft.service;
 
 import com.hazelcast.cluster.MembershipEvent;
 import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.core.HazelcastInstance;
 
 import com.hazelcast.map.IMap;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;

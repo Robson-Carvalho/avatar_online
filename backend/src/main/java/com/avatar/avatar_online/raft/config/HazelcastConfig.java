@@ -1,6 +1,5 @@
-package com.avatar.avatar_online.config;
+package com.avatar.avatar_online.raft.config;
 
-import com.avatar.avatar_online.network.Host;
 import com.hazelcast.config.*;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;

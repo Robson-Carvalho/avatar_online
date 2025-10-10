@@ -1,7 +1,7 @@
 package com.avatar.avatar_online.controller;
 
 import com.avatar.avatar_online.models.UserEntity;
-import com.avatar.avatar_online.service.LeaderDiscoveryService;
+import com.avatar.avatar_online.raft.service.LeaderDiscoveryService;
 import com.avatar.avatar_online.service.UserService;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;

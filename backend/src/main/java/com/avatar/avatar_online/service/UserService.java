@@ -1,6 +1,8 @@
 package com.avatar.avatar_online.service;
 
 import com.avatar.avatar_online.models.UserEntity;
+import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
+import com.avatar.avatar_online.raft.service.DatabaseSyncService;
 import com.avatar.avatar_online.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

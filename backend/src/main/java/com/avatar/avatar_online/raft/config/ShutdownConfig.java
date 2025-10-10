@@ -1,4 +1,4 @@
-package com.avatar.avatar_online.config;
+package com.avatar.avatar_online.raft.config;
 
 import com.hazelcast.core.HazelcastInstance;
 import jakarta.annotation.PreDestroy;
