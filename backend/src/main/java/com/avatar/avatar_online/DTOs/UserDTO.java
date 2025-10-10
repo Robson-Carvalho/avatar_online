@@ -8,10 +8,11 @@ public class UserDTO {
 
     public UserDTO() {}
 
-    public UserDTO(String name, String nickname, String email) {
+    public UserDTO(String name, String nickname, String email, String password) {
         this.name = name;
         this.nickname = nickname;
         this.email = email;
+        this.password = password;
     }
 
     public String getName() {
