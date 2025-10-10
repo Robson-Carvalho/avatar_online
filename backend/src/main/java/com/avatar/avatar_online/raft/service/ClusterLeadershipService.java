@@ -130,7 +130,7 @@ public class ClusterLeadershipService {
     private void startLeaderSync() {
         try {
             DatabaseSyncService databaseSyncService = applicationContext.getBean(DatabaseSyncService.class);
-            databaseSyncService.startLeaderSync();
+            //databaseSyncService.startLeaderSync();
         } catch (Exception e) {
             System.err.println("❌ Erro ao iniciar sincronização do líder: " + e.getMessage());
         }
@@ -147,7 +147,7 @@ public class ClusterLeadershipService {
                 try {
                     Thread.sleep(2000);
                     // Usa reflexão ou método público para sincronização
-                    databaseSyncService.forceSync();
+                    //databaseSyncService.forceSync();
                 } catch (Exception e) {
                     System.err.println("❌ Erro na sincronização inicial: " + e.getMessage());
                 }
@@ -174,7 +174,7 @@ public class ClusterLeadershipService {
     private void stopLeaderSync() {
         try {
             DatabaseSyncService databaseSyncService = applicationContext.getBean(DatabaseSyncService.class);
-            databaseSyncService.stopLeaderSync();
+            //databaseSyncService.stopLeaderSync();
         } catch (Exception e) {
             System.err.println("❌ Erro ao parar sincronização: " + e.getMessage());
         }
@@ -270,7 +270,7 @@ public class ClusterLeadershipService {
         try {
             System.out.println("📡 Sincronizando dados com nós (seguidores)");
             DatabaseSyncService databaseSyncService = applicationContext.getBean(DatabaseSyncService.class);
-            databaseSyncService.syncNewNode();
+            //databaseSyncService.syncNewNode();
         } catch (Exception e) {
             System.err.println("❌ Erro ao sincronizar novo nó: " + e.getMessage());
         }
@@ -282,7 +282,7 @@ public class ClusterLeadershipService {
     private void checkSyncNeeded() {
         try {
             DatabaseSyncService databaseSyncService = applicationContext.getBean(DatabaseSyncService.class);
-            databaseSyncService.checkSyncNeeded();
+            //databaseSyncService.checkSyncNeeded();
         } catch (Exception e) {
             System.err.println("❌ Erro ao verificar sincronização: " + e.getMessage());
         }

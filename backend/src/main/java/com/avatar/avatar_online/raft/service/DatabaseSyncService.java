@@ -4,12 +4,14 @@ import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.Logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.Logs.UserSignUpCommand;
 import com.avatar.avatar_online.repository.UserRepository;
+import com.hazelcast.cluster.Member;
 import com.hazelcast.core.HazelcastInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -48,6 +50,8 @@ public class DatabaseSyncService {
     }
 
     public void propagateUserSignUpCommand(UserSignUpCommand command){
+        Set<Member> set = hazelcast.getCluster().getMembers(); // for each para iterar por cima do set
+
 
     }
 
