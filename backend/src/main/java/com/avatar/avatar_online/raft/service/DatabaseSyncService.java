@@ -59,6 +59,8 @@ public class DatabaseSyncService {
 
         newUser.setId(command.getPlayerId());
 
+        System.out.println("APLICA NO BANCO");
+
         userRepository.save(newUser);
     }
 
@@ -68,6 +70,7 @@ public class DatabaseSyncService {
     }
 
     public void propagateUserSignUpCommand(UserSignUpCommand command){
+        System.out.println("CHEGOU NA PROPAGAÇÃO");
         hazelcast.getCluster().getMembers().stream()
                 .filter(member -> !member.localMember())
                 .forEach(member -> {

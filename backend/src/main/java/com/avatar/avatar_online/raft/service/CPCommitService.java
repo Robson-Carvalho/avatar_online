@@ -2,10 +2,12 @@ package com.avatar.avatar_online.raft.service;
 
 import com.avatar.avatar_online.raft.Logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.Logs.UserSignUpCommand;
+import com.avatar.avatar_online.repository.UserRepository;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.cp.IAtomicReference;
 import com.hazelcast.cp.internal.datastructures.lock.Lock;
 import com.hazelcast.cp.lock.FencedLock;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,9 +23,12 @@ public class CPCommitService {
 
     private final DatabaseSyncService syncService;
 
-    public CPCommitService(HazelcastInstance hazelcast, DatabaseSyncService syncService) {
+    private final UserRepository userRepository;
+
+    public CPCommitService(HazelcastInstance hazelcast, DatabaseSyncService syncService, UserRepository userRepository) {
         this.hazelcast = hazelcast;
         this.syncService = syncService;
+        this.userRepository = userRepository;
     }
 
     public boolean tryCommitPackOpening(OpenPackCommand newCommand){
@@ -56,7 +61,19 @@ public class CPCommitService {
     }
 
     public boolean tryCommitUserSignUp(UserSignUpCommand newCommand){
+        System.out.println("chegou antes do lock");
+
         FencedLock packLock = hazelcast.getCPSubsystem().getLock(USER_LOCK);
+
+        System.out.println("ESSA PORRA CHEGOU NO TRYCOMMIT");
+
+        if (userRepository.existsByEmail(newCommand.getEmail())) {
+            return ResponseEntity.badRequest().body("{\"error\": \"Email já cadastrado\"}").hasBody();
+        }
+
+        if (newCommand.getNickname() != null && userRepository.existsByNickname(newCommand.getNickname())) {
+            return ResponseEntity.badRequest().body("{\"error\": \"Nickname já cadastrado\"}").hasBody();
+        }
 
         if(!packLock.tryLock()){
             System.out.println("⚠️ Não conseguiu o Lock. Outro nó está processando.");

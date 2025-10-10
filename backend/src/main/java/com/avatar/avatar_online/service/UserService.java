@@ -40,13 +40,7 @@ public class UserService {
                 return leaderRedirectService.redirectToLeader("/api/users", user, HttpMethod.POST);
             }
 
-            if (userRepository.existsByEmail(user.getEmail())) {
-                return ResponseEntity.badRequest().body("{\"error\": \"Email já cadastrado\"}");
-            }
-
-            if (user.getNickname() != null && userRepository.existsByNickname(user.getNickname())) {
-                return ResponseEntity.badRequest().body("{\"error\": \"Nickname já cadastrado\"}");
-            }
+            System.out.println("Chegou aqui essa desgraça");
 
             UserSignUpCommand command = new UserSignUpCommand(UUID.randomUUID(), "SIGN_USER", user.getId(), user.getName(),
                     user.getEmail(), user.getNickname(), user.getPassword());
