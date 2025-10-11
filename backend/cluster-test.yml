@@ -40,6 +40,7 @@ services:
       - "5433:5432" # Expõe a porta 5432 do contêiner na porta 5433 da sua máquina
     volumes:
       - postgres_data_node1:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # --- NÓ 2 ---
   app2:
@@ -73,6 +74,7 @@ services:
       - "5434:5432" # Porta 5434 da sua máquina
     volumes:
       - postgres_data_node2:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # --- NÓ 3 ---
   app3:
@@ -106,6 +108,7 @@ services:
       - "5435:5432" # Porta 5435 da sua máquina
     volumes:
       - postgres_data_node3:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
   postgres_data_node1:

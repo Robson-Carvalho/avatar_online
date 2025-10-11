@@ -1,0 +1,1 @@
+CREATE SCHEMA IF NOT EXISTS avatar_schema AUTHORIZATION avatar_user;
