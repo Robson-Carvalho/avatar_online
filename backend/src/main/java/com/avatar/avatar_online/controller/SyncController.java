@@ -1,6 +1,7 @@
 package com.avatar.avatar_online.controller;
 
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
+import com.avatar.avatar_online.raft.model.UserExport;
 import com.avatar.avatar_online.raft.service.DatabaseSyncService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class SyncController {
     }
 
     @GetMapping("/export/users")
-    public List<DatabaseSyncService.UserExport> exportUsers() {
+    public List<UserExport> exportUsers() {
         System.out.println("🌍 Requisição de exportação de usuários recebida. Exportando dados...");
         return databaseSyncService.performLeaderSync();
     }

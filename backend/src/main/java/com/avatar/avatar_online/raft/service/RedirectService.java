@@ -7,13 +7,13 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Optional;
 
 @Service
-public class LeaderRedirectService {
+public class RedirectService {
 
     private final LeaderDiscoveryService leaderDiscoveryService;
     private final RestTemplate restTemplate;
 
-    public LeaderRedirectService(LeaderDiscoveryService leaderDiscoveryService,
-                                 RestTemplate restTemplate) {
+    public RedirectService(LeaderDiscoveryService leaderDiscoveryService,
+                           RestTemplate restTemplate) {
         this.leaderDiscoveryService = leaderDiscoveryService;
         this.restTemplate = restTemplate;
     }

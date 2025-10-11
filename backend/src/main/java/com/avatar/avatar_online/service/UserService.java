@@ -5,7 +5,7 @@ import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.service.CPCommitService;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
-import com.avatar.avatar_online.raft.service.LeaderRedirectService;
+import com.avatar.avatar_online.raft.service.RedirectService;
 import com.avatar.avatar_online.repository.UserRepository;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -20,16 +20,16 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ClusterLeadershipService leadershipService;
-    private final LeaderRedirectService leaderRedirectService;
+    private final RedirectService redirectService;
     private final CPCommitService cPCommitService;
 
 
     public UserService(UserRepository userRepository,
                        ClusterLeadershipService leadershipService,
-                       LeaderRedirectService leaderRedirectService, CPCommitService cPCommitService) {
+                       RedirectService leaderRedirectService, CPCommitService cPCommitService) {
         this.userRepository = userRepository;
         this.leadershipService = leadershipService;
-        this.leaderRedirectService = leaderRedirectService;
+        this.redirectService = leaderRedirectService;
         this.cPCommitService = cPCommitService;
     }
 
@@ -38,7 +38,7 @@ public class UserService {
         try {
             if (!leadershipService.isLeader()) {
                 System.out.println("🚫 Este nó não é o líder. Redirecionando para o líder...");
-                return leaderRedirectService.redirectToLeader("/api/users", user, HttpMethod.POST);
+                return redirectService.redirectToLeader("/api/users", user, HttpMethod.POST);
             }
 
             System.out.println("Chegou aqui essa desgraça");
