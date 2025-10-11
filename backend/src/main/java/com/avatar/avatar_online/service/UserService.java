@@ -43,7 +43,7 @@ public class UserService {
 
             System.out.println("Chegou aqui essa desgraça");
 
-            UserSignUpCommand command = new UserSignUpCommand(UUID.randomUUID(), "SIGN_USER", UUID.randomUUID(), user.getName(),
+            UserSignUpCommand command = new UserSignUpCommand(UUID.randomUUID(), "SIGN_USER",UUID.randomUUID(), UUID.randomUUID(), user.getName(),
                     user.getEmail(), user.getNickname(), user.getPassword());
 
             boolean response = cPCommitService.tryCommitUserSignUp(command);

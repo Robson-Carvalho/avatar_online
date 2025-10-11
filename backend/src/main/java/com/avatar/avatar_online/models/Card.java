@@ -7,16 +7,14 @@ import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "card")
+@Table(name = "cards")
 public class Card {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(updatable = false, nullable = false)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false) // FK para o dono da carta
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     @Column(nullable = false)

@@ -26,27 +26,18 @@ public class DatabaseSyncService {
     private final UserRepository userRepository;
     private final DeckRepository deckRepository;
     private final ClusterLeadershipService leadershipService;
-    private final LeaderDiscoveryService discoveryService;
     private final HazelcastInstance hazelcast;
     private final RedirectService redirectService;
 
-    private static final String SYNC_MAP = "sync-markers";
-    private static final String SYNC_MARKER = "last-sync-timestamp";
-    private final RedirectService leaderRedirectService;
-    private final RestTemplate restTemplate;
-
-
-    public DatabaseSyncService(UserRepository userRepository, DeckRepository deckRepository, ClusterLeadershipService leadershipService, LeaderDiscoveryService discoveryService,
+    public DatabaseSyncService(UserRepository userRepository, DeckRepository deckRepository,
+                               ClusterLeadershipService leadershipService,
+                               LeaderDiscoveryService discoveryService,
                                @Qualifier("hazelcastInstance") HazelcastInstance hazelcast,
-                               RedirectService leaderRedirectService,
-                               RestTemplate restTemplate, RedirectService redirectService) {
+                               RedirectService redirectService) {
         this.userRepository = userRepository;
         this.deckRepository = deckRepository;
         this.leadershipService = leadershipService;
-        this.discoveryService = discoveryService;
         this.hazelcast = hazelcast;
-        this.leaderRedirectService = leaderRedirectService;
-        this.restTemplate = restTemplate;
         this.redirectService = redirectService;
     }
 
@@ -113,13 +104,17 @@ public class DatabaseSyncService {
         }
     }
 
-    // Tem que ter um post construct para sincronização inicial
 
-    // tem que ter uma função para performar as persistencia de usuário cadastrados
+//    Métodos para sincronizar informações
 
-    // Tem que ter uma função para performar as persistencia de Cartas abertas
+    @Transactional
+    public void applyOpenPackCommand(OpenPackCommand command){
 
-    // Tem que ter uma função para performar
+    }
+
+    public void propagateOpenPackCommand(OpenPackCommand command){
+
+    }
 
     @Transactional
     public void applyUserSignUpCommand(UserSignUpCommand command){
@@ -133,9 +128,9 @@ public class DatabaseSyncService {
 
         Deck newDeck = new Deck();
 
-        newDeck.setId(UUID.randomUUID());
+        newDeck.setId(command.getDeckId());
         newUser.setId(command.getPlayerId());
-        newDeck.setUser(newUser);
+        newDeck.setUser(newUser.getId());
 
         System.out.println("APLICA NO BANCO");
 
@@ -143,24 +138,15 @@ public class DatabaseSyncService {
         deckRepository.save(newDeck);
     }
 
-    @Transactional
-    public void applyOpenPackCommand(OpenPackCommand command){
-
-    }
 
     public void propagateUserSignUpCommand(UserSignUpCommand command){
-        System.out.println("CHEGOU NA PROPAGAÇÃO");
         hazelcast.getCluster().getMembers().stream()
                 .filter(member -> !member.localMember())
                 .forEach(member -> {
                     String targetURL = String.format("http://%s:%d/api/sync/apply-commit/users",
                             member.getAddress().getHost(),
                             8080);
-                    leaderRedirectService.sendCommandToNode(targetURL, command, HttpMethod.POST);
+                    redirectService.sendCommandToNode(targetURL, command, HttpMethod.POST);
                 });
-    }
-
-    public void progageteOpenPackCommand(OpenPackCommand command){
-
     }
 }

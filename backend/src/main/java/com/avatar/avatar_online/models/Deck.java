@@ -1,21 +1,17 @@
 package com.avatar.avatar_online.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity()
 @Table(name = "deck")
 public class Deck {
-
     @Id
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    @JsonBackReference
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private UUID user;
 
     @Column(name = "card_id1")
     private String card1;
@@ -32,9 +28,7 @@ public class Deck {
     @Column(name = "card_id5")
     private String card5;
 
-    public Deck() {
-        this.id = UUID.randomUUID(); // gera ID automático
-    }
+    public Deck() {}
 
     // ===== Getters e Setters =====
 
@@ -46,11 +40,11 @@ public class Deck {
         this.id = id;
     }
 
-    public User getUser() {
+    public UUID getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(UUID user) {
         this.user = user;
     }
 
