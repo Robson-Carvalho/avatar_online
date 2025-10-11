@@ -3,8 +3,8 @@ package com.avatar.avatar_online.models;
 import jakarta.persistence.*;
 import java.util.UUID;
 
-@Entity(name = "app_user")
-@Table(name = "app_user")
+@Entity()
+@Table(name = "users")
 public class User {
     @Id
     @Column(nullable = false)

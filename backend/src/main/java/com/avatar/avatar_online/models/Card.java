@@ -4,11 +4,10 @@ import com.avatar.avatar_online.enums.ElementCard;
 import com.avatar.avatar_online.enums.PhaseCard;
 import com.avatar.avatar_online.enums.RarityCard;
 import jakarta.persistence.*;
-
 import java.util.UUID;
 
-@Entity (name  = "card")
-@Table (name = "card")
+@Entity
+@Table(name = "card")
 public class Card {
 
     @Id
@@ -17,27 +16,43 @@ public class Card {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false) // cria a FK
+    @JoinColumn(name = "user_id", nullable = false) // FK para o dono da carta
     private User user;
 
+    @Column(nullable = false)
     private String name;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ElementCard element;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PhaseCard phase;
+
+    @Column(nullable = false)
     private int attack;
+
+    @Column(nullable = false)
     private int life;
+
+    @Column(nullable = false)
     private int defense;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private RarityCard rarity;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
 
+    // ===== Construtores =====
     public Card() {
+        // O ID será gerado automaticamente
     }
 
-    public Card(User user, String name, ElementCard element, PhaseCard phase, int attack, int life, int defense, RarityCard rarity, String description) {
+    public Card(User user, String name, ElementCard element, PhaseCard phase,
+                int attack, int life, int defense, RarityCard rarity, String description) {
         this.user = user;
         this.name = name;
         this.element = element;
@@ -49,20 +64,21 @@ public class Card {
         this.description = description;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
+    // ===== Getters e Setters =====
     public UUID getId() {
         return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public User getUser() {
         return user;
     }
 
-    public User setUser(User user) {
-        return this.user = user;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getName() {
@@ -128,5 +144,4 @@ public class Card {
     public void setDescription(String description) {
         this.description = description;
     }
-
 }

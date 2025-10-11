@@ -1,15 +1,11 @@
 package com.avatar.avatar_online.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-@Entity (name = "deck")
-@Table (name = "deck")
+@Entity()
+@Table(name = "deck")
 public class Deck {
 
     @Id
@@ -18,36 +14,29 @@ public class Deck {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonBackReference// cria a FK
+    @JsonBackReference
     private User user;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "card_id1")
-    @JsonBackReference
-    private Card card1;
+    @Column(name = "card_id1")
+    private String card1;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "card_id2")
-    @JsonBackReference
-    private Card card2;
+    @Column(name = "card_id2")
+    private String card2;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "card_id3")
-    @JsonBackReference
-    private Card card3;
+    @Column(name = "card_id3")
+    private String card3;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "card_id4")
-    @JsonBackReference
-    private Card card4;
+    @Column(name = "card_id4")
+    private String card4;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "card_id5")
-    @JsonBackReference
-    private Card card5;
+    @Column(name = "card_id5")
+    private String card5;
 
     public Deck() {
+        this.id = UUID.randomUUID(); // gera ID automático
     }
+
+    // ===== Getters e Setters =====
 
     public UUID getId() {
         return id;
@@ -65,43 +54,43 @@ public class Deck {
         this.user = user;
     }
 
-    public Card getCard5() {
-        return card5;
-    }
-
-    public void setCard5(Card card5) {
-        this.card5 = card5;
-    }
-
-    public Card getCard4() {
-        return card4;
-    }
-
-    public void setCard4(Card card4) {
-        this.card4 = card4;
-    }
-
-    public Card getCard3() {
-        return card3;
-    }
-
-    public void setCard3(Card card3) {
-        this.card3 = card3;
-    }
-
-    public Card getCard2() {
-        return card2;
-    }
-
-    public void setCard2(Card card2) {
-        this.card2 = card2;
-    }
-
-    public Card getCard1() {
+    public String getCard1() {
         return card1;
     }
 
-    public void setCard1(Card card1) {
+    public void setCard1(String card1) {
         this.card1 = card1;
+    }
+
+    public String getCard2() {
+        return card2;
+    }
+
+    public void setCard2(String card2) {
+        this.card2 = card2;
+    }
+
+    public String getCard3() {
+        return card3;
+    }
+
+    public void setCard3(String card3) {
+        this.card3 = card3;
+    }
+
+    public String getCard4() {
+        return card4;
+    }
+
+    public void setCard4(String card4) {
+        this.card4 = card4;
+    }
+
+    public String getCard5() {
+        return card5;
+    }
+
+    public void setCard5(String card5) {
+        this.card5 = card5;
     }
 }

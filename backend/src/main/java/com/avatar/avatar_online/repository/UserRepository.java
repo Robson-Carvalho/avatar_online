@@ -16,7 +16,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByNickname(String nickname);
 
-    @Query("SELECT u FROM app_user u WHERE u.email = :email OR u.nickname = :nickname")
+    @Query("SELECT u FROM User u WHERE u.email = :email OR u.nickname = :nickname")
     Optional<User> findByEmailOrNickname(@Param("email") String email,
                                          @Param("nickname") String nickname);
 
