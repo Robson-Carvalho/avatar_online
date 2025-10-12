@@ -5,6 +5,7 @@ import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
+import com.avatar.avatar_online.raft.model.CardExport;
 import com.avatar.avatar_online.raft.model.UserExport;
 import com.avatar.avatar_online.repository.CardRepository;
 import com.avatar.avatar_online.repository.DeckRepository;
@@ -78,18 +79,28 @@ public class DatabaseSyncService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<CardExport> performLeaderCardSync() {
+        System.out.println("💾 Líder - exportando dados de cartas.");
+
+        // Retorna todas as cartas, mapeadas para CardExport
+        return cardRepository.findAll().stream()
+                .map(CardExport::fromEntity) // Assumindo CardExport tem o método fromEntity
+                .toList();
+    }
+
     @Transactional
     public void performFollowerSync() {
         System.out.println("👥 Este nó é seguidor - iniciando sincronização com líder");
 
         try {
-            System.out.println("💾 Solicitando estado ao Líder");
+            // --- SINCRONIZAÇÃO DE USUÁRIOS ---
+            System.out.println("💾 Solicitando estado de usuários ao Líder");
+            ResponseEntity<?> userResponse = redirectService.redirectToLeader("/api/sync/export/users", null, HttpMethod.GET);
 
-            ResponseEntity<?> response = redirectService.redirectToLeader("/api/sync/export/users", null, HttpMethod.GET);
-
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                String jsonBody = (String) response.getBody();
-                UserExport[] usersToSyncArray = new ObjectMapper().readValue(jsonBody, UserExport[].class);
+            if (userResponse.getStatusCode().is2xxSuccessful() && userResponse.getBody() != null) {
+                String userJsonBody = (String) userResponse.getBody();
+                UserExport[] usersToSyncArray = new ObjectMapper().readValue(userJsonBody, UserExport[].class);
 
                 if (usersToSyncArray.length > 0) {
                     List<User> entities = Arrays.stream(usersToSyncArray)
@@ -99,9 +110,44 @@ public class DatabaseSyncService {
                     userRepository.saveAll(entities);
                     System.out.println("✅ Sincronização de " + entities.size() + " usuários concluída com sucesso!");
                 } else {
-                    System.out.println("✅ Sincronização concluída. Nenhum dado novo para importar.");
+                    System.out.println("✅ Sincronização de usuários concluída. Nenhum dado novo para importar.");
                 }
             }
+
+            // --- SINCRONIZAÇÃO DE CARTAS (NOVO) ---
+            System.out.println("💾 Solicitando estado de cartas ao Líder");
+            ResponseEntity<?> cardResponse = redirectService.redirectToLeader("/api/sync/export/cards", null, HttpMethod.GET);
+
+            if (cardResponse.getStatusCode().is2xxSuccessful() && cardResponse.getBody() != null) {
+                String cardJsonBody = (String) cardResponse.getBody();
+                CardExport[] cardsToSyncArray = new ObjectMapper().readValue(cardJsonBody, CardExport[].class);
+
+                if (cardsToSyncArray.length > 0) {
+
+                    Set<UUID> userIds = Arrays.stream(cardsToSyncArray)
+                            .map(CardExport::userId)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toSet());
+
+                    List<User> referencedUsers = userRepository.findAllById(userIds);
+
+                    Map<UUID, User> userMap = referencedUsers.stream()
+                            .collect(Collectors.toMap(User::getId, user -> user));
+
+                    List<Card> entities = Arrays.stream(cardsToSyncArray)
+                            .map(export -> {
+                                return export.toEntity(userMap);
+                            })
+                            .toList();
+
+                    cardRepository.saveAll(entities);
+                    System.out.println("✅ Sincronização de " + entities.size() + " cartas concluída com sucesso!");
+
+                } else {
+                    System.out.println("✅ Sincronização de cartas concluída. Nenhuma carta nova para importar.");
+                }
+            }
+
         } catch (Exception e) {
             System.err.println("❌ Erro fatal ao sincronizar com o líder: " + e.getMessage());
         }

@@ -2,6 +2,7 @@ package com.avatar.avatar_online.controller;
 
 import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
+import com.avatar.avatar_online.raft.model.CardExport;
 import com.avatar.avatar_online.raft.model.UserExport;
 import com.avatar.avatar_online.raft.service.DatabaseSyncService;
 import org.springframework.http.ResponseEntity;
@@ -42,5 +43,11 @@ public class SyncController {
     public List<UserExport> exportUsers() {
         System.out.println("🌍 Requisição de exportação de usuários recebida. Exportando dados...");
         return databaseSyncService.performLeaderSync();
+    }
+
+    @GetMapping("/export/cards")
+    public List<CardExport> exportCards() {
+        System.out.println("🌍 Requisição de exportação de cartas recebida. Exportando dados...");
+        return databaseSyncService.performLeaderCardSync();
     }
 }
