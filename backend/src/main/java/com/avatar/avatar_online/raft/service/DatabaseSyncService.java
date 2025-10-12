@@ -4,6 +4,7 @@ import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
+import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.model.CardExport;
 import com.avatar.avatar_online.raft.model.UserExport;
@@ -155,6 +156,41 @@ public class DatabaseSyncService {
 
 
 //    Métodos para sincronizar informações
+
+    @Transactional
+    public void applyDeckUpdateCommand(SetDeckCommmand command) {
+        Optional<Deck> deckOptional = deckRepository.findByUser(command.getUserId());
+
+        if (deckOptional.isEmpty()) {
+            throw new RuntimeException("Deck de usuário com ID: " + command.getUserId() + " não encontrado!");
+        }
+
+        Deck deck = deckOptional.get();
+
+        // é bom fazer uma verificação aqui dps para ver se todas as cartas são diferentes (Verificar o UUID)
+        System.out.println(command.getCard1Id());
+        deck.setCard1(command.getCard1Id());
+        deck.setCard2(command.getCard2Id());
+        deck.setCard3(command.getCard3Id());
+        deck.setCard4(command.getCard4Id());
+        deck.setCard5(command.getCard5Id());
+
+        System.out.println("APLICA NO BANCO");
+
+        deckRepository.save(deck);
+    }
+
+    public void propagateDeckUpdateCommand(SetDeckCommmand command) {
+        System.out.println("PROPAGA");
+        hazelcast.getCluster().getMembers().stream()
+                .filter(member -> !member.localMember())
+                .forEach(member -> {
+                    String targetURL = String.format("http://%s:%d/api/sync/apply-commit/deck",
+                            member.getAddress().getHost(),
+                            8080);
+                    redirectService.sendCommandToNode(targetURL, command, HttpMethod.POST);
+                });
+    }
 
     @Transactional
     public List<Card> applyOpenPackCommand(OpenPackCommand command) {
