@@ -7,7 +7,7 @@ public class SetDeckCommmand implements Serializable {
 
     private final UUID commandId;
 
-    private final UUID deckId;
+    private final UUID userId;
 
     private final String operationType;
 
@@ -17,10 +17,10 @@ public class SetDeckCommmand implements Serializable {
     private final UUID card4Id;
     private final UUID card5Id;
 
-    public SetDeckCommmand(UUID commandId, UUID deckId, String operationType, UUID card1Id,
+    public SetDeckCommmand(UUID commandId, UUID userId, String operationType, UUID card1Id,
                            UUID card2Id, UUID card3Id, UUID card4Id, UUID card5Id) {
         this.commandId = commandId;
-        this.deckId = deckId;
+        this.userId = userId;
         this.operationType = operationType;
         this.card1Id = card1Id;
         this.card2Id = card2Id;
@@ -33,8 +33,8 @@ public class SetDeckCommmand implements Serializable {
         return commandId;
     }
 
-    public UUID getDeckId() {
-        return deckId;
+    public UUID getUserId() {
+        return userId;
     }
 
     public String getOperationType() {
