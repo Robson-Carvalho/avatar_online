@@ -2,6 +2,7 @@ package com.avatar.avatar_online.raft.service;
 
 import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
+import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.repository.UserRepository;
 import com.hazelcast.core.HazelcastInstance;
@@ -21,6 +22,8 @@ public class CPCommitService {
 
     private static final String USER_LOCK = "user-lock";
 
+    private static final String DECK_LOCK = "deck-lock";
+
     private static final String LAST_COMMAND_REF =  "last-db-command";
 
     private final DatabaseSyncService syncService;
@@ -31,6 +34,35 @@ public class CPCommitService {
         this.hazelcast = hazelcast;
         this.syncService = syncService;
         this.userRepository = userRepository;
+    }
+
+    public boolean tryCommitUpdateDeck(SetDeckCommmand newCommand) {
+        System.out.println("chegou antes do lock");
+        FencedLock decklock = hazelcast.getCPSubsystem().getLock(DECK_LOCK);
+
+        System.out.println("ESSA PORRA CHEGOU NO TRYCOMMIT");
+
+        if (!decklock.tryLock()) {
+            System.out.println("⚠️ Não conseguiu o Lock. Outro nó está processando.");
+            return false;
+        }
+
+        try{
+           IAtomicReference<SetDeckCommmand> commandRef = hazelcast.getCPSubsystem().getAtomicReference(LAST_COMMAND_REF);
+
+           commandRef.set(newCommand);
+
+           syncService.applyDeckUpdateCommand(newCommand);
+
+           syncService.propagateDeckUpdateCommand(newCommand);
+
+           return true;
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao comitar comando CP: " + e.getMessage());
+            return false;
+        } finally {
+            decklock.unlock();
+        }
     }
 
     public boolean tryCommitPackOpening(OpenPackCommand newCommand){
