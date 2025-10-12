@@ -7,6 +7,7 @@ import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.model.CardExport;
+import com.avatar.avatar_online.raft.model.DeckExport;
 import com.avatar.avatar_online.raft.model.UserExport;
 import com.avatar.avatar_online.repository.CardRepository;
 import com.avatar.avatar_online.repository.DeckRepository;
@@ -57,7 +58,6 @@ public class DatabaseSyncService {
                 System.out.println("🔍 Verificando necessidade de sincronização inicial...");
 
                 if (!isCurrentNodeLeader()) {
-                    // O Seguidor busca o estado mais recente do Líder
                     performFollowerSync();
                 }
 
@@ -86,7 +86,16 @@ public class DatabaseSyncService {
 
         // Retorna todas as cartas, mapeadas para CardExport
         return cardRepository.findAll().stream()
-                .map(CardExport::fromEntity) // Assumindo CardExport tem o método fromEntity
+                .map(CardExport::fromEntity)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<DeckExport> performLeaderDeckSync() {
+        System.out.println("💾 Líder - exportando dados de decks.");
+
+        return deckRepository.findAll().stream()
+                .map(DeckExport::fromEntity)
                 .toList();
     }
 
@@ -115,7 +124,7 @@ public class DatabaseSyncService {
                 }
             }
 
-            // --- SINCRONIZAÇÃO DE CARTAS (NOVO) ---
+            // --- SINCRONIZAÇÃO DE CARTAS ---
             System.out.println("💾 Solicitando estado de cartas ao Líder");
             ResponseEntity<?> cardResponse = redirectService.redirectToLeader("/api/sync/export/cards", null, HttpMethod.GET);
 
@@ -151,6 +160,40 @@ public class DatabaseSyncService {
 
         } catch (Exception e) {
             System.err.println("❌ Erro fatal ao sincronizar com o líder: " + e.getMessage());
+        }
+
+        // --- SINCRONIZAÇÃO DE DECKS ---
+        System.out.println("💾 Solicitando estado de decks ao Líder");
+        try {
+            ResponseEntity<?> deckResponse = redirectService.redirectToLeader("/api/sync/export/decks", null, HttpMethod.GET);
+
+            if (deckResponse.getStatusCode().is2xxSuccessful() && deckResponse.getBody() != null) {
+                String deckJsonBody = (String) deckResponse.getBody();
+                DeckExport[] decksToSyncArray = new ObjectMapper().readValue(deckJsonBody, DeckExport[].class);
+
+                if (decksToSyncArray.length > 0) {
+
+                    Set<UUID> userIds = Arrays.stream(decksToSyncArray)
+                            .map(DeckExport::userId)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toSet());
+
+                    List<User> referencedUsers = userRepository.findAllById(userIds);
+                    Map<UUID, User> userMap = referencedUsers.stream()
+                            .collect(Collectors.toMap(User::getId, user -> user));
+
+                    List<Deck> entities = Arrays.stream(decksToSyncArray)
+                            .map(export -> export.toEntity(userMap))
+                            .toList();
+
+                    deckRepository.saveAll(entities);
+                    System.out.println("✅ Sincronização de " + entities.size() + " decks concluída com sucesso!");
+                } else {
+                    System.out.println("✅ Sincronização de decks concluída. Nenhum deck novo para importar.");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Erro fatal ao sincronizar decks: " + e.getMessage());
         }
     }
 
