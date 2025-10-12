@@ -3,6 +3,7 @@ package com.avatar.avatar_online.models;
 import com.avatar.avatar_online.enums.ElementCard;
 import com.avatar.avatar_online.enums.PhaseCard;
 import com.avatar.avatar_online.enums.RarityCard;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ public class Card {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User user;
 
     @Column(nullable = false)

@@ -1,23 +1,21 @@
 package com.avatar.avatar_online.raft.logs;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
-public class OpenPackCommand {
+public class OpenPackCommand implements Serializable {
 
     private final UUID commandId;
 
     private final String operationType;
 
-    private final String playerId;
+    private final UUID playerId;
 
-    private final List<UUID> cardsIds;
-
-    public OpenPackCommand(UUID commandId, String operationType, String playerId, List<UUID> cardsIds) {
+    public OpenPackCommand(UUID commandId, String operationType, UUID playerId) {
         this.commandId = commandId;
         this.operationType = operationType;
         this.playerId = playerId;
-        this.cardsIds = cardsIds;
     }
 
     public UUID getCommandId() {
@@ -28,11 +26,7 @@ public class OpenPackCommand {
         return operationType;
     }
 
-    public String getPlayerId() {
+    public UUID getPlayerId() {
         return playerId;
-    }
-
-    public List<UUID> getCardsIds() {
-        return cardsIds;
     }
 }

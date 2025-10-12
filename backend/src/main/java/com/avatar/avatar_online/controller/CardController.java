@@ -1,11 +1,10 @@
 package com.avatar.avatar_online.controller;
 
+import com.avatar.avatar_online.DTOs.PackDTO;
 import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.service.CardService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,6 +16,17 @@ public class CardController {
 
     public CardController(CardService cardService) {
         this.cardService = cardService;
+    }
+
+    @PostMapping("/pack")
+    public ResponseEntity<?> getPack(@RequestBody PackDTO packDTO) {
+        try {
+            ResponseEntity <?> pack = cardService.generatePack(packDTO);
+            return ResponseEntity.ok().body(pack.getBody());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("{\"error\": \"Erro ao processar requisição: " + e.getMessage() + "\"}");
+        }
     }
 
     @GetMapping

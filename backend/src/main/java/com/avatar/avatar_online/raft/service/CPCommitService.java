@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.raft.service;
 
+import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.repository.UserRepository;
@@ -8,6 +9,8 @@ import com.hazelcast.cp.IAtomicReference;
 import com.hazelcast.cp.lock.FencedLock;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class CPCommitService {
@@ -31,7 +34,10 @@ public class CPCommitService {
     }
 
     public boolean tryCommitPackOpening(OpenPackCommand newCommand){
+        System.out.println("chegou antes do lock");
         FencedLock packLock = hazelcast.getCPSubsystem().getLock(PACK_LOCK);
+
+        System.out.println("ESSA PORRA CHEGOU NO TRYCOMMIT");
 
         if(!packLock.tryLock()){
             System.out.println("⚠️ Não conseguiu o Lock. Outro nó está processando.");
@@ -44,10 +50,10 @@ public class CPCommitService {
             commandRef.set(newCommand);
 
             // 1. APLICAÇÃO NO BD LOCAL (DO LÍDER DA TRANSAÇÃO)
-            // SE o set() foi bem-sucedido, aplique a instrução SQL no BD deste nó. syncService.applyCommandLocally(newCommand);
+            List<Card> cards = syncService.applyOpenPackCommand(newCommand);
 
             // 2. PROPAGAÇÃO HTTP PARA OS SEGUIDORES
-            // A chamada para o DatabaseSyncService (POST /apply-commit) vai aqui... syncService.propagateCommand(newCommand);
+            syncService.propagateOpenPackCommand(cards);
 
             return true;
         } catch (Exception e) {

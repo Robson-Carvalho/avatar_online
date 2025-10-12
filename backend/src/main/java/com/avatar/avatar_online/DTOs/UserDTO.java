@@ -1,4 +1,4 @@
-package com.avatar.avatar_online.DTOs; // É uma boa prática criar um pacote para os DTOs
+package com.avatar.avatar_online.DTOs;
 
 public class UserDTO {
     private String name;

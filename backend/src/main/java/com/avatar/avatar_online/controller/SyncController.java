@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.controller;
 
+import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.model.UserExport;
 import com.avatar.avatar_online.raft.service.DatabaseSyncService;
@@ -24,6 +25,16 @@ public class SyncController {
             return ResponseEntity.ok().body("");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("{\"error\": \"Erro ao Commitar usuários: " + e.getMessage() + "\"}");
+        }
+    }
+
+    @PostMapping("/apply-commit/pack")
+    public ResponseEntity<?> applyPackCommit (@RequestBody List<Card> cards){
+        try {
+            databaseSyncService.applyPackCommit(cards);
+            return ResponseEntity.ok().body("");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("{\"error\": \"Erro ao Commitar pack: " + e.getMessage() + "\"}");
         }
     }
 

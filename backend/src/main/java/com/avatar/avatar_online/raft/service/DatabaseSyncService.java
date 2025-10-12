@@ -1,10 +1,12 @@
 package com.avatar.avatar_online.raft.service;
 
+import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.model.UserExport;
+import com.avatar.avatar_online.repository.CardRepository;
 import com.avatar.avatar_online.repository.DeckRepository;
 import com.avatar.avatar_online.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,27 +18,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DatabaseSyncService {
 
     private final UserRepository userRepository;
     private final DeckRepository deckRepository;
+    private final CardRepository cardRepository;
     private final ClusterLeadershipService leadershipService;
     private final HazelcastInstance hazelcast;
     private final RedirectService redirectService;
 
     public DatabaseSyncService(UserRepository userRepository, DeckRepository deckRepository,
                                ClusterLeadershipService leadershipService,
-                               LeaderDiscoveryService discoveryService,
+                               LeaderDiscoveryService discoveryService, CardRepository cardRepository,
                                @Qualifier("hazelcastInstance") HazelcastInstance hazelcast,
                                RedirectService redirectService) {
         this.userRepository = userRepository;
         this.deckRepository = deckRepository;
         this.leadershipService = leadershipService;
+        this.cardRepository = cardRepository;
         this.hazelcast = hazelcast;
         this.redirectService = redirectService;
     }
@@ -108,12 +111,58 @@ public class DatabaseSyncService {
 //    Métodos para sincronizar informações
 
     @Transactional
-    public void applyOpenPackCommand(OpenPackCommand command){
+    public List<Card> applyOpenPackCommand(OpenPackCommand command) {
+        int packSize = 5;
+        UUID userId = command.getPlayerId();
 
+        List<Card> availableCards = cardRepository.findAll()
+                .stream()
+                .filter(card -> card.getUser() == null)
+                .collect(Collectors.toList());
+
+        if (availableCards.size() < packSize) {
+            throw new RuntimeException("Não há cartas suficientes disponíveis!");
+        }
+
+        Collections.shuffle(availableCards);
+        List<Card> selectedCards = availableCards.subList(0, packSize);
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("Usuário não encontrado com ID: " + userId);
+        }
+
+        System.out.println("APLICA NO BANCO");
+
+        User user = userOptional.get();
+        selectedCards.forEach(card -> card.setUser(user));
+        cardRepository.saveAll(selectedCards);
+
+        return selectedCards;
     }
 
-    public void propagateOpenPackCommand(OpenPackCommand command){
+    public void propagateOpenPackCommand(List<Card> cards){
+        System.out.println("PROPAGA");
+        hazelcast.getCluster().getMembers().stream()
+                .filter(member -> !member.localMember())
+                .forEach(member -> {
+                    String targetURL = String.format("http://%s:%d/api/sync/apply-commit/pack",
+                            member.getAddress().getHost(),
+                            8080);
+                    redirectService.sendCommandToNode(targetURL, cards, HttpMethod.POST);
+                });
+    }
 
+    @Transactional
+    public void applyPackCommit(List<Card> cards) {
+        System.out.println("APLICA NO BANCO: Follower");
+        cards.forEach(card -> {
+            cardRepository.findById(card.getId()).ifPresent(dbCard -> {
+                dbCard.setUser(card.getUser());
+                cardRepository.save(dbCard);
+            });
+        });
     }
 
     @Transactional
