@@ -14,19 +14,19 @@ public class Deck {
     private UUID user;
 
     @Column(name = "card_id1")
-    private String card1;
+    private UUID card1;
 
     @Column(name = "card_id2")
-    private String card2;
+    private UUID card2;
 
     @Column(name = "card_id3")
-    private String card3;
+    private UUID card3;
 
     @Column(name = "card_id4")
-    private String card4;
+    private UUID card4;
 
     @Column(name = "card_id5")
-    private String card5;
+    private UUID card5;
 
     public Deck() {}
 
@@ -48,43 +48,43 @@ public class Deck {
         this.user = user;
     }
 
-    public String getCard1() {
+    public UUID getCard1() {
         return card1;
     }
 
-    public void setCard1(String card1) {
+    public void setCard1(UUID card1) {
         this.card1 = card1;
     }
 
-    public String getCard2() {
+    public UUID getCard2() {
         return card2;
     }
 
-    public void setCard2(String card2) {
+    public void setCard2(UUID card2) {
         this.card2 = card2;
     }
 
-    public String getCard3() {
+    public UUID getCard3() {
         return card3;
     }
 
-    public void setCard3(String card3) {
+    public void setCard3(UUID card3) {
         this.card3 = card3;
     }
 
-    public String getCard4() {
+    public UUID getCard4() {
         return card4;
     }
 
-    public void setCard4(String card4) {
+    public void setCard4(UUID card4) {
         this.card4 = card4;
     }
 
-    public String getCard5() {
+    public UUID getCard5() {
         return card5;
     }
 
-    public void setCard5(String card5) {
+    public void setCard5(UUID card5) {
         this.card5 = card5;
     }
 }
