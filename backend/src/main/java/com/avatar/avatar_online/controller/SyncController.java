@@ -5,6 +5,7 @@ import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.model.CardExport;
+import com.avatar.avatar_online.raft.model.DeckExport;
 import com.avatar.avatar_online.raft.model.UserExport;
 import com.avatar.avatar_online.raft.service.DatabaseSyncService;
 import org.springframework.http.ResponseEntity;
@@ -61,5 +62,11 @@ public class SyncController {
     public List<CardExport> exportCards() {
         System.out.println("🌍 Requisição de exportação de cartas recebida. Exportando dados...");
         return databaseSyncService.performLeaderCardSync();
+    }
+
+    @GetMapping("/export/decks")
+    public List<DeckExport> exportDecks() {
+        System.out.println("🌍 Requisição de exportação de decks recebida. Exportando dados...");
+        return databaseSyncService.performLeaderDeckSync();
     }
 }
