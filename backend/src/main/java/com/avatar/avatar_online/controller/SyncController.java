@@ -1,6 +1,8 @@
 package com.avatar.avatar_online.controller;
 
 import com.avatar.avatar_online.models.Card;
+import com.avatar.avatar_online.models.Deck;
+import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.model.CardExport;
 import com.avatar.avatar_online.raft.model.UserExport;
@@ -36,6 +38,16 @@ public class SyncController {
             return ResponseEntity.ok().body("");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("{\"error\": \"Erro ao Commitar pack: " + e.getMessage() + "\"}");
+        }
+    }
+
+    @PostMapping("/apply-commit/deck")
+    public ResponseEntity<?> applyDeckCommit (@RequestBody SetDeckCommmand command){
+        try {
+            databaseSyncService.applyDeckUpdateCommand(command);
+            return ResponseEntity.ok().body("");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("{\"error\": \"Erro ao Commitar atualização de deck: " + e.getMessage() + "\"}");
         }
     }
 
