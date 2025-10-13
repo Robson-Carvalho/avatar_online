@@ -227,6 +227,7 @@ public class DatabaseSyncService {
         deckRepository.save(deck);
     }
 
+    @Async
     public void propagateDeckUpdateCommand(SetDeckCommmand command) {
         System.out.println("PROPAGA");
         hazelcast.getCluster().getMembers().stream()
@@ -271,6 +272,7 @@ public class DatabaseSyncService {
         return selectedCards;
     }
 
+    @Async
     public void propagateOpenPackCommand(List<Card> cards){
         System.out.println("PROPAGA");
         hazelcast.getCluster().getMembers().stream()
@@ -316,7 +318,7 @@ public class DatabaseSyncService {
         deckRepository.save(newDeck);
     }
 
-
+    @Async
     public void propagateUserSignUpCommand(UserSignUpCommand command){
         hazelcast.getCluster().getMembers().stream()
                 .filter(member -> !member.localMember())
