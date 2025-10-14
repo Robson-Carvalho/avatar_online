@@ -49,11 +49,12 @@ public class UserService {
             boolean response = cPCommitService.tryCommitUserSignUp(command);
 
             if(!response){
-                return ResponseEntity.badRequest().body("");
+                return ResponseEntity.badRequest().body("Erro interno: Falha ao processar requisição. " +
+                        "Email ou senha podem já estar sendo utilizados.");
             }
 
             System.out.println("✅ Usuário criado pelo líder: ");
-            return ResponseEntity.ok().body("");
+            return ResponseEntity.ok().body(command.getPlayerId());
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");

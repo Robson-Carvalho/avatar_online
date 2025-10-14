@@ -105,11 +105,11 @@ public class CPCommitService {
         System.out.println("ESSA PORRA CHEGOU NO TRYCOMMIT");
 
         if (userRepository.existsByEmail(newCommand.getEmail())) {
-            return ResponseEntity.badRequest().body("{\"error\": \"Email já cadastrado\"}").hasBody();
+            return false;
         }
 
         if (newCommand.getNickname() != null && userRepository.existsByNickname(newCommand.getNickname())) {
-            return ResponseEntity.badRequest().body("{\"error\": \"Nickname já cadastrado\"}").hasBody();
+            return false;
         }
 
         if(!packLock.tryLock()){
