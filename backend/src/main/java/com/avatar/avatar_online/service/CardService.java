@@ -44,13 +44,14 @@ public class CardService {
 
             System.out.println("Chegou aqui essa desgraça");
 
-            boolean response = cPCommitService.tryCommitPackOpening(command);
+            List<Card> response = cPCommitService.tryCommitPackOpening(command);
 
-            if(!response){
-                return ResponseEntity.badRequest().body("");
+            if(response.isEmpty()){
+                return ResponseEntity.badRequest().body("Erro: Não foi possível processar a solicitação de " +
+                        "abertura de pacote");
             }
 
-            return ResponseEntity.ok().body("Pack gerado com sucesso.");
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");

@@ -65,7 +65,7 @@ public class CPCommitService {
         }
     }
 
-    public boolean tryCommitPackOpening(OpenPackCommand newCommand){
+    public List<Card> tryCommitPackOpening(OpenPackCommand newCommand){
         System.out.println("chegou antes do lock");
         FencedLock packLock = hazelcast.getCPSubsystem().getLock(PACK_LOCK);
 
@@ -73,7 +73,7 @@ public class CPCommitService {
 
         if(!packLock.tryLock()){
             System.out.println("⚠️ Não conseguiu o Lock. Outro nó está processando.");
-            return false;
+            return List.of();
         }
 
         try{
@@ -87,10 +87,10 @@ public class CPCommitService {
             // 2. PROPAGAÇÃO HTTP PARA OS SEGUIDORES
             syncService.propagateOpenPackCommand(cards);
 
-            return true;
+            return cards;
         } catch (Exception e) {
             System.err.println("❌ Erro ao comitar comando CP: " + e.getMessage());
-            return false;
+            return List.of();
         } finally {
             // 3. Libera o Lock
             packLock.unlock();
