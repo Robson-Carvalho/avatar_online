@@ -17,7 +17,6 @@ public class CardDTO {
     private int defense;
     private RarityCard rarity;
     private String description;
-    private UUID userId; // apenas o ID do usuário
 
     public CardDTO(Card card){
         this.id = card.getId();
@@ -29,7 +28,6 @@ public class CardDTO {
         this.defense = card.getDefense();
         this.rarity = card.getRarity();
         this.description = card.getDescription();
-        this.userId = card.getUser() != null ? card.getUser().getId() : null;
     }
 
     // getters
@@ -42,5 +40,4 @@ public class CardDTO {
     public int getDefense() { return defense; }
     public RarityCard getRarity() { return rarity; }
     public String getDescription() { return description; }
-    public UUID getUserId() { return userId; }
 }
