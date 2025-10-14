@@ -31,14 +31,13 @@ public class CommandProcessorService {
     @Autowired
     private UserService userService;
 
-    UUID user_UUID;
-
-    ResponsePubSub operation;
-
     String Kafka_channel = "server-to-client";
 
     @KafkaListener(topics = "client-to-server", groupId = "logic-group")
     public void processClientCommand(String message, @Header(KafkaHeaders.RECEIVED_KEY) String clientId){
+
+        UUID user_UUID = null;
+        ResponsePubSub operation = null;
 
         try{
             ClientMessageDTO messageDTO = objectMapper.readValue(message, ClientMessageDTO.class);
@@ -72,11 +71,7 @@ public class CommandProcessorService {
             return;
         }
 
-        if(operation == ResponsePubSub.SIGNUP_RESPONSE) {
-            createPublish(clientId);
-        } else if (operation == ResponsePubSub.LOGIN_RESPONSE) {
-            createPublish(clientId);
-        }
+        createPublish(clientId, user_UUID, operation);
     }
 
     // Classe para padronizar a construção de Response
@@ -88,7 +83,7 @@ public class CommandProcessorService {
         return serverEventDTO;
     }
 
-    public void createPublish(String clientId){
+    public void createPublish(String clientId, UUID user_UUID, ResponsePubSub operation) {
         Map<String, Object> payload = Map.of(
                 "Status", "OK",
                 "clientId", user_UUID
