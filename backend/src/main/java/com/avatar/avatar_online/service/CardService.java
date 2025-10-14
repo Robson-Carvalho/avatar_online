@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.service;
 
+import com.avatar.avatar_online.DTOs.CardDTO;
 import com.avatar.avatar_online.DTOs.PackDTO;
 import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CardService {
@@ -44,12 +46,16 @@ public class CardService {
 
             System.out.println("Chegou aqui essa desgraça");
 
-            List<Card> response = cPCommitService.tryCommitPackOpening(command);
+            List<Card> cards = cPCommitService.tryCommitPackOpening(command);
 
-            if(response.isEmpty()){
+            if(cards.isEmpty()){
                 return ResponseEntity.badRequest().body("Erro: Não foi possível processar a solicitação de " +
                         "abertura de pacote");
             }
+
+            List<CardDTO> response = cards.stream()
+                    .map(CardDTO::new)
+                    .collect(Collectors.toList());
 
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {
