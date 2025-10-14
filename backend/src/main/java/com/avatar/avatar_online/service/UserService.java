@@ -41,8 +41,6 @@ public class UserService {
                 return redirectService.redirectToLeader("/api/users", user, HttpMethod.POST);
             }
 
-            System.out.println("Chegou aqui essa desgraça");
-
             UserSignUpCommand command = new UserSignUpCommand(UUID.randomUUID(), "SIGN_USER",UUID.randomUUID(), UUID.randomUUID(), user.getName(),
                     user.getEmail(), user.getNickname(), user.getPassword());
 
@@ -53,7 +51,6 @@ public class UserService {
                         "Email ou senha podem já estar sendo utilizados.");
             }
 
-            System.out.println("✅ Usuário criado pelo líder: ");
             return ResponseEntity.ok().body(command.getPlayerId());
         } catch (Exception e) {
             return ResponseEntity.internalServerError()

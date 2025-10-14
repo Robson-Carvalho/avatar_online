@@ -44,8 +44,6 @@ public class CardService {
             }
             OpenPackCommand command = new OpenPackCommand(UUID.randomUUID(), "OPEN_PACK", UUID.fromString(packDTO.getPlayerId()));
 
-            System.out.println("Chegou aqui essa desgraça");
-
             List<Card> cards = cPCommitService.tryCommitPackOpening(command);
 
             if(cards.isEmpty()){

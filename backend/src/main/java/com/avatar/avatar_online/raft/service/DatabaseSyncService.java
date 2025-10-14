@@ -222,14 +222,11 @@ public class DatabaseSyncService {
         deck.setCard4(command.getCard4Id());
         deck.setCard5(command.getCard5Id());
 
-        System.out.println("APLICA NO BANCO");
-
         deckRepository.save(deck);
     }
 
     @Async
     public void propagateDeckUpdateCommand(SetDeckCommmand command) {
-        System.out.println("PROPAGA");
         hazelcast.getCluster().getMembers().stream()
                 .filter(member -> !member.localMember())
                 .forEach(member -> {
@@ -263,8 +260,6 @@ public class DatabaseSyncService {
             throw new RuntimeException("Usuário não encontrado com ID: " + userId);
         }
 
-        System.out.println("APLICA NO BANCO");
-
         User user = userOptional.get();
         selectedCards.forEach(card -> card.setUser(user));
         cardRepository.saveAll(selectedCards);
@@ -274,7 +269,6 @@ public class DatabaseSyncService {
 
     @Async
     public void propagateOpenPackCommand(List<Card> cards){
-        System.out.println("PROPAGA");
         hazelcast.getCluster().getMembers().stream()
                 .filter(member -> !member.localMember())
                 .forEach(member -> {
@@ -287,7 +281,6 @@ public class DatabaseSyncService {
 
     @Transactional
     public void applyPackCommit(List<Card> cards) {
-        System.out.println("APLICA NO BANCO: Follower");
         cards.forEach(card -> {
             cardRepository.findById(card.getId()).ifPresent(dbCard -> {
                 dbCard.setUser(card.getUser());
@@ -311,8 +304,6 @@ public class DatabaseSyncService {
         newDeck.setId(command.getDeckId());
         newUser.setId(command.getPlayerId());
         newDeck.setUser(newUser.getId());
-
-        System.out.println("APLICA NO BANCO");
 
         userRepository.save(newUser);
         deckRepository.save(newDeck);

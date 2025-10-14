@@ -50,12 +50,8 @@ public class DeckService {
                 return redirectService.redirectToLeader("/api/deck", deckDTO, HttpMethod.POST);
             }
 
-            System.out.println("ATUALIZANDO DECK DO USUÁRIO: " +  deckDTO.getUserId());
-
             SetDeckCommmand command = new SetDeckCommmand(UUID.randomUUID(), deckDTO.getUserId(), "UPDATE_DECK", deckDTO.getCard1Id(),
                     deckDTO.getCard2Id(), deckDTO.getCard3Id(), deckDTO.getCard4Id(), deckDTO.getCard5Id());
-
-            System.out.println("CONFERINDO ID DO USUÁRIO NO COMMAND: " +  command.getUserId());
 
             boolean response = cPCommitService.tryCommitUpdateDeck(command);
 
@@ -63,7 +59,6 @@ public class DeckService {
                 return ResponseEntity.badRequest().body("");
             }
 
-            System.out.println("✅ Deck atualizado pelo líder: ");
             return ResponseEntity.ok().body("");
 
         } catch (Exception e) {

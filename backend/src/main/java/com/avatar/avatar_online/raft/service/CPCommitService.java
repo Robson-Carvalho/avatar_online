@@ -37,10 +37,7 @@ public class CPCommitService {
     }
 
     public boolean tryCommitUpdateDeck(SetDeckCommmand newCommand) {
-        System.out.println("chegou antes do lock");
         FencedLock decklock = hazelcast.getCPSubsystem().getLock(DECK_LOCK);
-
-        System.out.println("ESSA PORRA CHEGOU NO TRYCOMMIT");
 
         if (!decklock.tryLock()) {
             System.out.println("⚠️ Não conseguiu o Lock. Outro nó está processando.");
@@ -66,10 +63,7 @@ public class CPCommitService {
     }
 
     public List<Card> tryCommitPackOpening(OpenPackCommand newCommand){
-        System.out.println("chegou antes do lock");
         FencedLock packLock = hazelcast.getCPSubsystem().getLock(PACK_LOCK);
-
-        System.out.println("ESSA PORRA CHEGOU NO TRYCOMMIT");
 
         if(!packLock.tryLock()){
             System.out.println("⚠️ Não conseguiu o Lock. Outro nó está processando.");
@@ -98,11 +92,8 @@ public class CPCommitService {
     }
 
     public boolean tryCommitUserSignUp(UserSignUpCommand newCommand){
-        System.out.println("chegou antes do lock");
-
         FencedLock packLock = hazelcast.getCPSubsystem().getLock(USER_LOCK);
 
-        System.out.println("ESSA PORRA CHEGOU NO TRYCOMMIT");
 
         if (userRepository.existsByEmail(newCommand.getEmail())) {
             return false;
