@@ -31,6 +31,14 @@ public class HazelcastConfig {
 
         config.setClusterName("avatar-cluster");
         config.setInstanceName("avatar-node-" + nodeId);
+
+        config.setProperty("hazelcast.network.heartbeat.interval.seconds", "3");
+
+        config.setProperty("hazelcast.network.max.no.heartbeat.seconds", "10");
+
+        config.setProperty("hazelcast.socket.connect.timeout.millis", "2000");
+
+        config.setProperty("hazelcast.internal.member.connect.timeout.millis", "2000");
         config.setProperty("hazelcast.tcp.join.timeout.seconds", "1");
 
         config.setProperty("hazelcast.shutdownhook.enabled", "false");

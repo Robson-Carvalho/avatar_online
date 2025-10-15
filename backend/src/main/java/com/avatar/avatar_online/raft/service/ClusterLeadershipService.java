@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -68,48 +69,67 @@ public class ClusterLeadershipService {
     }
 
     private void performLeaderElection() {
-        try {
-            IMap<String, String> electionMap = hazelcast.getMap(LEADER_ELECTION_MAP);
+        IMap<String, String> electionMap = hazelcast.getMap(LEADER_ELECTION_MAP);
 
-            // Tenta se tornar líder se não houver líder atual
-            String currentLeader = electionMap.get(LEADER_KEY);
+        String previousLeaderId = electionMap.putIfAbsent(LEADER_KEY, currentNodeId, 30, TimeUnit.SECONDS);
 
-            if (currentLeader == null) {
-                // Não há líder - tenta se tornar líder
-                electionMap.put(LEADER_KEY, currentNodeId, 30, TimeUnit.SECONDS);
-                System.out.println("🗳️  Tentando me tornar líder...");
+        if (previousLeaderId == null || previousLeaderId.equals(currentNodeId)) {
 
-                // Aguarda um pouco e verifica se conseguiu
-                Thread.sleep(1000);
-                currentLeader = electionMap.get(LEADER_KEY);
+            if (!isLeader.get() || previousLeaderId == null) {
+
+                if (isLogUpToDate()) {
+
+                    long newTerm = leaderRegistryService.incrementTerm();
+
+                    onBecomeLeader(newTerm);
+                } else {
+                    System.out.println("❌ Eleição falhou: Nó " + currentNodeId +
+                            " possui Termo/Log desatualizado. Removendo lock.");
+                    electionMap.remove(LEADER_KEY, currentNodeId); // Remove o próprio lock
+                    return;
+                }
             }
 
-            // Verifica se é o líder atual
-            boolean shouldBeLeader = currentNodeId.equals(currentLeader);
+            if (isLeader.get()) {
+                electionMap.put(LEADER_KEY, currentNodeId, 30, TimeUnit.SECONDS);
+            }
 
-            if (shouldBeLeader && !isLeader.get()) {
-                onBecomeLeader();
-            } else if (!shouldBeLeader && isLeader.get()) {
+        } else {
+            LeaderInfo currentLeader = leaderRegistryService.getCurrentLeader();
+
+            if (isLeader.get() && (currentLeader == null || !currentLeader.getNodeId().equals(currentNodeId))) {
                 onLostLeadership();
             }
-
-            // Se é o líder, renova o registro
-            if (shouldBeLeader) {
-                electionMap.put(LEADER_KEY, currentNodeId, 30, TimeUnit.SECONDS);
-            }
-
-        } catch (Exception e) {
-            System.err.println("❌ Erro na eleição de liderança: " + e.getMessage());
         }
     }
 
-    private void onBecomeLeader() {
+    private boolean isLogUpToDate() {
+        long myIndex = leaderRegistryService.getMyLastCommittedIndex();
+
+        Map<String, Long> allLogs = leaderRegistryService.getAllNodeLogIndices();
+
+        long maxIndex = allLogs.values().stream()
+                .max(Long::compare)
+                .orElse(0L);
+        boolean upToDate = (myIndex >= maxIndex);
+
+        if (!upToDate) {
+            System.out.println("⚠️ Validação de Log: Meu índice (" + myIndex +
+                    ") é menor que o índice máximo (" + maxIndex + ").");
+        }
+
+        return upToDate;
+    }
+
+    private void onBecomeLeader(long term) {
         isLeader.set(true);
         String nodeInfo = hazelcast.getCluster().getLocalMember().getAddress().toString();
-        System.out.println("🎯 EU SOU O LÍDER AGORA! Nó: " + nodeInfo);
+        System.out.println("🎯 EU SOU O LÍDER AGORA! Nó: " + nodeInfo + ", Termo: " + term);
 
         // Registra como líder no cluster
-        leaderRegistryService.registerAsLeader();
+        leaderRegistryService.registerAsLeader(term);
+
+        leaderRegistryService.updateLastCommittedIndex(leaderRegistryService.getMyLastCommittedIndex());
 
         startLeaderSync();
 
@@ -142,7 +162,6 @@ public class ClusterLeadershipService {
     private void performInitialLeaderSync() {
         try {
             DatabaseSyncService databaseSyncService = applicationContext.getBean(DatabaseSyncService.class);
-            // Método alternativo para forçar sync sem criar dependência circular
             new Thread(() -> {
                 try {
                     Thread.sleep(2000);

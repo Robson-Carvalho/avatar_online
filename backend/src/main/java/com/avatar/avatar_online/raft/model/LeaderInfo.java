@@ -6,13 +6,15 @@ public class LeaderInfo {
     private int port;
     private long lastHeartbeat;
     private String httpAddress;
+    private long term;
 
-    public LeaderInfo(String nodeId, String host, int port) {
+    public LeaderInfo(String nodeId, String host, int port, long term) {
         this.nodeId = nodeId;
         this.host = host;
         this.port = port;
         this.lastHeartbeat = System.currentTimeMillis();
         this.httpAddress = "http://" + host + ":" + port;
+        this.term = term;
     }
 
     // Getters e Setters
@@ -39,9 +41,11 @@ public class LeaderInfo {
         return (System.currentTimeMillis() - lastHeartbeat) > timeoutMs;
     }
 
+    public long getTerm() { return term; }
+
     @Override
     public String toString() {
-        return "LeaderInfo{nodeId='" + nodeId + "', host='" + host + "', port=" + port +
+        return "LeaderInfo{nodeId='" + nodeId + "', term=" + term + ", host='" + host + "', port=" + port +
                 ", httpAddress='" + httpAddress + "', lastHeartbeat=" + lastHeartbeat + "}";
     }
 }
