@@ -56,7 +56,8 @@ const WebSocketService = {
             case 'LOGIN_RESPONSE':
                 if (data.Status === 'OK') {
                     showNotify("success", "Login realizado com sucesso!");
-                    // Exemplo: redirecionar para a página principal
+                  // Exemplo: redirecionar para a página principal
+                    sessionStorage.setItem('userUUID', data.userUUID);
                     window.location.href = '../screens/dashboard.html';
                 } else {
                      showNotify("error", data.error || "Falha no login.");
@@ -103,8 +104,8 @@ const WebSocketService = {
     disconnect: function() {
         if (this.stompClient) {
             this.stompClient.deactivate();
-            this.isConnected = false;
-            console.log("Desconectado.");
+          this.isConnected = false;
+          showNotify("warning", "Desconectou do servidor!");
         }
     }
 };
