@@ -68,13 +68,13 @@ public class ClusterLeadershipService {
             } finally {
                 electionActive.set(false);
             }
-        }, 0, 10, TimeUnit.SECONDS);
+        }, 0, 3, TimeUnit.SECONDS);
     }
 
     private void performLeaderElection() {
         IMap<String, String> electionMap = hazelcast.getMap(LEADER_ELECTION_MAP);
 
-        String previousLeaderId = electionMap.putIfAbsent(LEADER_KEY, currentNodeId, 30, TimeUnit.SECONDS);
+        String previousLeaderId = electionMap.putIfAbsent(LEADER_KEY, currentNodeId, 10, TimeUnit.SECONDS);
 
         if (previousLeaderId == null || previousLeaderId.equals(currentNodeId)) {
 
@@ -94,7 +94,7 @@ public class ClusterLeadershipService {
             }
 
             if (isLeader.get()) {
-                electionMap.put(LEADER_KEY, currentNodeId, 30, TimeUnit.SECONDS);
+                electionMap.put(LEADER_KEY, currentNodeId, 10, TimeUnit.SECONDS);
             }
 
         } else {
