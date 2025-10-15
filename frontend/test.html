@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Avatar Online - Cliente STOMP (Cadastro e Re-login)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8" onload="init()">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow-xl">
+    <h2 class="text-3xl font-bold mb-4 text-indigo-700">Avatar Online: Login (Microsserviços/Kafka)</h2>
+    
+    <div class="mb-6 border-b pb-4 space-y-2">
+        <label for="serverAddressInput" class="block text-sm font-medium text-gray-700">Endereço do Servidor Spring:</label>
+        <input type="text" id="serverAddressInput" value="http://localhost:8080" 
+               class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+    </div>
+
+    <div class="mb-6 bg-gray-50 p-3 rounded-md space-y-1">
+        <p class="text-xs font-semibold text-gray-700">Status da Conexão:</p>
+        <p id="connectionStatus" class="text-sm font-medium text-red-500">Desconectado</p>
+        <p id="currentIdDisplay" class="text-sm font-mono break-all text-gray-600">ID Atual: N/A</p>
+    </div>
+
+    <h3 class="text-xl font-semibold mb-3 text-gray-800">Dados para Cadastro (`/signup`):</h3>
+    <div class="space-y-3 mb-6">
+        <input type="text" id="nameInput" placeholder="Nome (Name)" value="Nome Completo"
+               class="w-full p-2 border border-gray-300 rounded-md">
+        <input type="text" id="nicknameInput" placeholder="Nickname" value="tester_nick"
+               class="w-full p-2 border border-gray-300 rounded-md">
+        <input type="email" id="emailInput" placeholder="E-mail" value="teste@exemplo.com"
+               class="w-full p-2 border border-gray-300 rounded-md">
+        <input type="password" id="passwordInput" placeholder="Senha (Password)" value="Senha123!"
+               class="w-full p-2 border border-gray-300 rounded-md">
+    </div>
+
+    <div class="flex space-x-4 mb-6">
+      <button onclick="sendSignUp()" 
+              class="flex-1 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 disabled:opacity-50"
+              id="sendSignUpBtn" disabled>
+        Enviar Cadastro (Troca de ID)
+      </button>
+      <button onclick="disconnect()" 
+              class="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition duration-150 disabled:opacity-50"
+              id="disconnectBtn" disabled>
+        Desconectar Manualmente
+      </button>
+    </div>
+
+    <h3 class="text-xl font-semibold mb-2 text-gray-800">Log de Mensagens:</h3>
+    <pre id="log" class="bg-gray-800 text-green-300 p-4 rounded-md overflow-x-auto text-sm h-64 border border-gray-700"></pre>
+  </div>
+
+  <script>
+    let stompClient = null;
+    let currentPrincipalId = "";
+    
+    const SEND_SIGNUP_BTN = document.getElementById("sendSignUpBtn");
+    const DISCONNECT_BTN = document.getElementById("disconnectBtn");
+    const CONNECTION_STATUS = document.getElementById("connectionStatus");
+    const CURRENT_ID_DISPLAY = document.getElementById("currentIdDisplay");
+
+    // Gera um ID anônimo simples
+    function generateAnonId() {
+        return 'anon-' + Math.random().toString(36).substring(2, 15);
+    }
+
+    function log(msg) {
+      const logElement = document.getElementById("log");
+      const timestamp = new Date().toLocaleTimeString();
+      logElement.textContent = `[${timestamp}] ${msg}\n` + logElement.textContent;
+    }
+    
+    // --- Funções de UI ---
+
+    function updateUI(connected, isAnonymous = true) {
+        SEND_SIGNUP_BTN.disabled = !connected;
+        DISCONNECT_BTN.disabled = !connected;
+        
+        if (connected) {
+            CONNECTION_STATUS.textContent = "Conectado";
+            CONNECTION_STATUS.className = "text-sm font-medium text-green-500";
+            CURRENT_ID_DISPLAY.textContent = `ID Atual: ${currentPrincipalId}`;
+            CURRENT_ID_DISPLAY.className = isAnonymous ? "text-sm font-mono break-all text-gray-600" : "text-sm font-mono break-all text-purple-600 font-bold";
+        } else {
+            CONNECTION_STATUS.textContent = "Desconectado";
+            CONNECTION_STATUS.className = "text-sm font-medium text-red-500";
+            CURRENT_ID_DISPLAY.textContent = `ID Atual: N/A`;
+        }
+    }
+
+    // --- Funções de Conexão e Roteamento ---
+
+    function connect(idToUse) {
+      if (stompClient && stompClient.connected) {
+        log(`Já está conectado com ID ${currentPrincipalId}.`);
+        return;
+      }
+      
+      const serverAddress = document.getElementById("serverAddressInput").value;
+      const isAnon = idToUse.startsWith('anon-');
+      
+      const socket = new SockJS(serverAddress + "/gateway-connect?" + idToUse); 
+      stompClient = Stomp.over(socket);
+
+      stompClient.connect({
+        login: idToUse, 
+        passcode: 'ignore' 
+      }, 
+      function (frame) {
+        currentPrincipalId = frame.headers['user-name'] || idToUse;
+        log(`Conexão BEM-SUCEDIDA! ID da Sessão: ${currentPrincipalId} ${isAnon ? '(ANÔNIMO)' : '(AUTENTICADO)'}`);
+
+        const subscriptionTopic = `/user/topic/update`;
+
+        stompClient.subscribe(subscriptionTopic, function (message) {
+          handleServerResponse(message.body);
+        });
+        
+        log(`INSCRITO no tópico privado de resposta: ${subscriptionTopic}`);
+        
+        updateUI(true, isAnon);
+      },
+      function (error) {
+        log("ERRO de Conexão: " + error);
+        updateUI(false);
+      });
+    }
+    
+    function disconnect() {
+        if (stompClient) {
+            const disconnectedId = currentPrincipalId;
+            stompClient.disconnect(() => {
+                log(`🛑 Desconexão BEM-SUCEDIDA do ID: ${disconnectedId}`);
+                stompClient = null;
+                currentPrincipalId = "";
+                updateUI(false);
+            });
+        }
+    }
+
+    function handleServerResponse(jsonBody) {
+        log("<<< EVENTO RECEBIDO (Unicast) >>> \n" + jsonBody);
+        
+        try {
+            const response = JSON.parse(jsonBody);
+            const status = response.eventType;
+            const payload = JSON.parse(response.data); 
+            
+            if (status === "SIGNUP_RESPONSE" && payload.clientId) {
+                const newUserId = payload.clientId;
+
+                log(`✅ CADASTRO BEM-SUCEDIDO. Novo ID Autenticado: ${newUserId}`);
+                
+                disconnect(); 
+                
+                setTimeout(() => {
+                    log(`Iniciando reconexão automática com ID permanente: ${newUserId}`);
+                    connect(newUserId);
+                }, 500);
+                
+            } else if (status === "ERROR_RESPONSE") {
+                log(`❌ ERRO de Cadastro: ${payload.message}`);
+            } else if(status === "LOGIN_RESPONSE"){
+               const newUserId = payload.clientId;
+
+               log(`✅ LOGIN BEM-SUCEDIDO. Novo ID Autenticado: ${newUserId}`);
+                
+                disconnect(); 
+                
+                setTimeout(() => {
+                    log(`Iniciando reconexão automática com ID permanente: ${newUserId}`);
+                    connect(newUserId);
+                }, 500);
+            
+              }else {
+                log(`AVISO: Resposta desconhecida do servidor. Comando: ${status}`);
+            }
+        } catch (e) {
+            log("ERRO ao processar JSON da resposta: " + e.message);
+        }
+    }
+
+    function sendSignUp() {
+      if (!stompClient || !stompClient.connected) {
+        log("ERRO: Não conectado. Tente recarregar a página.");
+        return;
+      }
+      
+      const signUpPayload = {
+        nickname: document.getElementById("nicknameInput").value,
+        password: document.getElementById("passwordInput").value
+      };
+
+      const clientMessageDTO = {
+        clientID: currentPrincipalId, 
+        commandType: "signIn",
+        payload: JSON.stringify(signUpPayload)
+      };
+      
+      const destination = "/app/signin";
+
+      stompClient.send(destination, {}, JSON.stringify(clientMessageDTO));
+      log(`>>> COMANDO ENVIADO para ${destination} (Key: ${currentPrincipalId})`);
+    }
+
+    function init() {
+        currentPrincipalId = generateAnonId();
+        connect(currentPrincipalId);
+    }
+  </script>
+</body>
+</html>
