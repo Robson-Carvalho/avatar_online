@@ -37,6 +37,11 @@ public class CPCommitService {
     }
 
     public boolean tryCommitUpdateDeck(SetDeckCommmand newCommand) {
+        if(hazelcast.getCluster().getMembers().size() < 2) {
+            System.out.println("LOGS: TAMANHO DE CLUSTER INSUFICIENTE PARA REALIZAR OPERAÇÕES CRÍTICAS.");
+            return false;
+        }
+
         try{
            syncService.applyDeckUpdateCommand(newCommand);
 
@@ -44,12 +49,17 @@ public class CPCommitService {
 
            return true;
         } catch (Exception e) {
-            System.err.println("❌ Erro ao comitar comando CP: " + e.getMessage());
+            System.err.println("❌ Erro ao comitar comando CP aaaa: " + e.getMessage());
             return false;
         }
     }
 
     public List<Card> tryCommitPackOpening(OpenPackCommand newCommand){
+        if(hazelcast.getCluster().getMembers().size() < 2) {
+            System.out.println("LOGS: TAMANHO DE CLUSTER INSUFICIENTE PARA REALIZAR OPERAÇÕES CRÍTICAS.");
+            return List.of();
+        }
+
         try{
             // 1. APLICAÇÃO NO BD LOCAL (DO LÍDER DA TRANSAÇÃO)
             List<Card> cards = syncService.applyOpenPackCommand(newCommand);
@@ -65,6 +75,10 @@ public class CPCommitService {
     }
 
     public boolean tryCommitUserSignUp(UserSignUpCommand newCommand){
+        if(hazelcast.getCluster().getMembers().size() < 2) {
+            System.out.println("LOGS: TAMANHO DE CLUSTER INSUFICIENTE PARA REALIZAR OPERAÇÕES CRÍTICAS.");
+            return false;
+        }
 
         if (userRepository.existsByEmail(newCommand.getEmail())) {
             return false;
