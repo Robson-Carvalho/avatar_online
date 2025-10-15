@@ -37,18 +37,7 @@ public class CPCommitService {
     }
 
     public boolean tryCommitUpdateDeck(SetDeckCommmand newCommand) {
-        FencedLock decklock = hazelcast.getCPSubsystem().getLock(DECK_LOCK);
-
-        if (!decklock.tryLock()) {
-            System.out.println("⚠️ Não conseguiu o Lock. Outro nó está processando.");
-            return false;
-        }
-
         try{
-           IAtomicReference<SetDeckCommmand> commandRef = hazelcast.getCPSubsystem().getAtomicReference(LAST_COMMAND_REF);
-
-           commandRef.set(newCommand);
-
            syncService.applyDeckUpdateCommand(newCommand);
 
            syncService.propagateDeckUpdateCommand(newCommand);
@@ -57,24 +46,11 @@ public class CPCommitService {
         } catch (Exception e) {
             System.err.println("❌ Erro ao comitar comando CP: " + e.getMessage());
             return false;
-        } finally {
-            decklock.unlock();
         }
     }
 
     public List<Card> tryCommitPackOpening(OpenPackCommand newCommand){
-        FencedLock packLock = hazelcast.getCPSubsystem().getLock(PACK_LOCK);
-
-        if(!packLock.tryLock()){
-            System.out.println("⚠️ Não conseguiu o Lock. Outro nó está processando.");
-            return List.of();
-        }
-
         try{
-            IAtomicReference<OpenPackCommand> commandRef = hazelcast.getCPSubsystem().getAtomicReference(LAST_COMMAND_REF);
-
-            commandRef.set(newCommand);
-
             // 1. APLICAÇÃO NO BD LOCAL (DO LÍDER DA TRANSAÇÃO)
             List<Card> cards = syncService.applyOpenPackCommand(newCommand);
 
@@ -85,15 +61,10 @@ public class CPCommitService {
         } catch (Exception e) {
             System.err.println("❌ Erro ao comitar comando CP: " + e.getMessage());
             return List.of();
-        } finally {
-            // 3. Libera o Lock
-            packLock.unlock();
         }
     }
 
     public boolean tryCommitUserSignUp(UserSignUpCommand newCommand){
-        FencedLock packLock = hazelcast.getCPSubsystem().getLock(USER_LOCK);
-
 
         if (userRepository.existsByEmail(newCommand.getEmail())) {
             return false;
@@ -102,17 +73,7 @@ public class CPCommitService {
         if (newCommand.getNickname() != null && userRepository.existsByNickname(newCommand.getNickname())) {
             return false;
         }
-
-        if(!packLock.tryLock()){
-            System.out.println("⚠️ Não conseguiu o Lock. Outro nó está processando.");
-            return false;
-        }
-
         try{
-            IAtomicReference<UserSignUpCommand> commandRef = hazelcast.getCPSubsystem().getAtomicReference(LAST_COMMAND_REF);
-
-            commandRef.set(newCommand);
-
             // Aplica mudança no próprio DB
             syncService.applyUserSignUpCommand(newCommand);
 
@@ -122,9 +83,6 @@ public class CPCommitService {
         } catch (Exception e) {
             System.err.println("❌ Erro ao comitar comando CP: " + e.getMessage());
             return false;
-        } finally {
-            // 3. Libera o Lock
-            packLock.unlock();
         }
     }
 }

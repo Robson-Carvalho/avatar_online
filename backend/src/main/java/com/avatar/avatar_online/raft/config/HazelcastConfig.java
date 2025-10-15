@@ -51,10 +51,6 @@ public class HazelcastConfig {
         electionMapConfig.setName("leader-election")
                 .setTimeToLiveSeconds(30);
 
-
-        config.getCPSubsystemConfig()
-                .setCPMemberCount(3);
-
         config.addMapConfig(leaderMapConfig);
         config.addMapConfig(electionMapConfig);
 
