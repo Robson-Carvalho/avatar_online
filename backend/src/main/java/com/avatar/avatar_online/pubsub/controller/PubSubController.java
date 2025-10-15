@@ -15,37 +15,20 @@ public class PubSubController {
     @Autowired
     private GatewayService gatewayService;
 
+    /**
+     * **[REATORADO]** Endpoint único para todos os comandos vindos do cliente.
+     */
     @MessageMapping("/command")
-    public void receiveCommand(@Payload ClientMessageDTO rawMessage, Principal principal) {
-
-        String clientId;
-
-        if (principal != null) {
-            clientId = principal.getName().trim();
-            System.out.println("Received message from: " + clientId + " | payload: " + rawMessage.getPayload());
-        } else {
-            System.out.println("WARN: Comando recebido sem usuário autenticado. Usando ID de convidado.");
-            clientId = "GUEST_" + Thread.currentThread().threadId();
-        }
-
-
-        System.out.println("Enviando pro gateway hein");
-        gatewayService.handleClientCommand(clientId, rawMessage);
-    }
-
-    @MessageMapping("/signup")
-    public void signup(@Payload ClientMessageDTO rawMessage, Principal principal) {
-        if (principal == null) {
+    public void receiveCommand(@Payload ClientMessageDTO message, Principal principal) {
+        // **[SEGURANÇA]** Garante que a mensagem só será processada se houver um usuário (Principal) autenticado na sessão WebSocket.
+        if (principal == null || principal.getName() == null) {
+            System.err.println("WARN: Mensagem recebida sem um Principal válido. Mensagem descartada.");
             return;
         }
-        gatewayService.handleSignUp(rawMessage, principal.getName());
-    }
 
-    @MessageMapping("/signin")
-    public void signin(@Payload ClientMessageDTO rawMessage, Principal principal) {
-        if (principal == null) {
-            return;
-        }
-        gatewayService.handleSignIn(rawMessage, principal.getName());
+        String principalId = principal.getName();
+        System.out.println("Comando '" + message.getCommandType() + "' recebido de: " + principalId);
+
+        gatewayService.forwardClientMessageToKafka(message, principalId);
     }
 }

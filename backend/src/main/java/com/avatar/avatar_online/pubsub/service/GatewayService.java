@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class GatewayService {
+    private static final String TOPIC_CLIENT_TO_SERVER = "client-to-server";
+    private static final String TOPIC_SERVER_TO_CLIENT = "server-to-client";
+    private static final String WEBSOCKET_USER_DESTINATION = "/topic/update";
 
     @Autowired
     private PublisherService publisherService;
@@ -18,51 +21,36 @@ public class GatewayService {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-
     @Autowired
     private ObjectMapper objectMapper;
 
-    public void handleClientCommand(String clientID, ClientMessageDTO RawMessage){
+    public void forwardClientMessageToKafka(ClientMessageDTO message, String principalId) {
         try {
-            String jsonMessage = objectMapper.writeValueAsString(RawMessage);
-            System.out.println("Mensagem passou pelo gateway hein!");
-            publisherService.publish("client-to-server", jsonMessage, clientID);
+            // Garante que o ID do cliente no DTO é o da sessão segura, e não um enviado pelo cliente.
+            message.setClientID(principalId);
+            String jsonMessage = objectMapper.writeValueAsString(message);
+            publisherService.publish(TOPIC_CLIENT_TO_SERVER, jsonMessage, principalId);
         } catch (JsonProcessingException e) {
-            System.out.println("erro ao processar mensagem do cliente: " + e.getMessage());
+            System.err.println("Gateway Error: Falha ao serializar mensagem do cliente. " + e.getMessage());
+            // Opcional: Enviar uma mensagem de erro de volta ao cliente.
         }
     }
 
-    public void handleSignUp(ClientMessageDTO rawMessage, String principalId){
+    @KafkaListener(topics = TOPIC_SERVER_TO_CLIENT, groupId = "gateway-group")
+    public void routeServerEventToClient(String serverEventJson) {
         try {
-            String jsonMessage = objectMapper.writeValueAsString(rawMessage);
-            publisherService.publish("client-to-server", jsonMessage, principalId);
+            ServerEventDTO event = objectMapper.readValue(serverEventJson, ServerEventDTO.class);
+            String recipientId = event.getRecipientId();
+
+            if (recipientId != null && !recipientId.trim().isEmpty()) {
+                System.out.println("Gateway: Roteando evento '" + event.getEventType() + "' para o cliente: " + recipientId);
+                // Envia para o destino privado do usuário
+                simpMessagingTemplate.convertAndSendToUser(recipientId, WEBSOCKET_USER_DESTINATION, serverEventJson);
+            } else {
+                System.err.println("Gateway Warning: Mensagem do servidor recebida sem um recipientId. Descartando.");
+            }
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void handleSignIn(ClientMessageDTO rawMessage, String principalId){
-        try{
-            String jsonMessage = objectMapper.writeValueAsString(rawMessage);
-            publisherService.publish("client-to-server", jsonMessage, principalId);
-        }catch (JsonProcessingException e){
-            throw new RuntimeException(e); //Deixando assim por enquanto
-        }
-    }
-
-    @KafkaListener(topics = "server-to-client", groupId = "gateway-group")
-    public void routeServerToCliente(String message) {
-        try {
-            ServerEventDTO event = objectMapper.readValue(message, ServerEventDTO.class);
-
-            String id = event.getRecipientId().trim();
-            String destiny = "/topic/update";
-
-            System.out.println("Enviando mensagem para: " + id.trim());
-            simpMessagingTemplate.convertAndSendToUser(id, destiny, message);
-
-        } catch (JsonProcessingException e) {
-            System.out.println("erro ao processar mensagem do servidor: " + e.getMessage());
+            System.err.println("Gateway Error: Falha ao desserializar evento do servidor. " + e.getMessage());
         }
     }
 }

@@ -18,83 +18,88 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
-// PubSub Subscriber
 @Service
 public class CommandProcessorService {
 
+    private static final String KAFKA_TOPIC_OUT = "server-to-client";
+
     @Autowired
     private PublisherService publisherService;
-
     @Autowired
     private ObjectMapper objectMapper;
-
     @Autowired
     private UserService userService;
 
-    String Kafka_channel = "server-to-client";
-
     @KafkaListener(topics = "client-to-server", groupId = "logic-group")
-    public void processClientCommand(String message, @Header(KafkaHeaders.RECEIVED_KEY) String clientId){
-
-        UUID user_UUID = null;
-        ResponsePubSub operation = null;
-
-        try{
-            ClientMessageDTO messageDTO = objectMapper.readValue(message, ClientMessageDTO.class);
-            String commandType = messageDTO.getCommandType();
-            if(commandType.equals("signUp")){
-                SignUpDTO signUpDTO = objectMapper.readValue(messageDTO.getPayload(), SignUpDTO.class);
-                operation = ResponsePubSub.SIGNUP_RESPONSE;
-                user_UUID = userService.signUpProcessment(signUpDTO);
-            } else if(commandType.equals("signIn")){
-                SignInDTO signInDTO = objectMapper.readValue(messageDTO.getPayload(), SignInDTO.class);
-                operation = ResponsePubSub.LOGIN_RESPONSE;
-                user_UUID = userService.signInProcessment(signInDTO);
-            }
-        } catch(Exception e){
-            System.out.println(e.getMessage());
-            user_UUID = null;
-            operation = null;
+    public void processClientCommand(String messageJson, @Header(KafkaHeaders.RECEIVED_KEY) String clientId) {
+        ServerEventDTO responseEvent;
+        try {
+            ClientMessageDTO messageDTO = objectMapper.readValue(messageJson, ClientMessageDTO.class);
+            responseEvent = handleCommand(clientId, messageDTO);
+        } catch (JsonProcessingException e) {
+            System.err.println("CommandProcessor Error: Falha ao desserializar comando. " + e.getMessage());
+            responseEvent = buildErrorResponse(clientId, "Comando mal formatado ou inválido.");
+        } catch (Exception e) {
+            System.err.println("CommandProcessor Error: Erro inesperado ao processar comando. " + e.getMessage());
+            responseEvent = buildErrorResponse(clientId, "Erro interno no servidor.");
         }
 
-        if (user_UUID == null) {
-            Map<String, Object> errorPayload = Collections.singletonMap("error", "Invalid command");
-            try{
-            String payloadJson = objectMapper.writeValueAsString(errorPayload);
-            ServerEventDTO eventMessage = buildResponse(clientId, ResponsePubSub.ERROR_RESPONSE, payloadJson);
-
-                String response = objectMapper.writeValueAsString(eventMessage);
-                publisherService.publish(Kafka_channel, response, clientId);
-            } catch (JsonProcessingException e){
-                System.out.println("Error ao processar ServerEventDTO como string: " + e.getMessage());
-            }
-            return;
-        }
-
-        createPublish(clientId, user_UUID, operation);
+        publishResponse(clientId, responseEvent);
     }
 
-    // Classe para padronizar a construção de Response
-    public ServerEventDTO buildResponse(String clientId, ResponsePubSub responsePubSub, String payload) {
+    private ServerEventDTO handleCommand(String clientId, ClientMessageDTO messageDTO) throws JsonProcessingException {
+        String commandType = messageDTO.getCommandType();
+        if (commandType == null) {
+            return buildErrorResponse(clientId, "O tipo do comando não pode ser nulo.");
+        }
+
+        UUID userUuid;
+        ResponsePubSub operation;
+
+        switch (commandType) {
+            case "signUp":
+                SignUpDTO signUpDTO = objectMapper.readValue(messageDTO.getPayload(), SignUpDTO.class);
+                userUuid = userService.signUp(signUpDTO);
+                operation = ResponsePubSub.SIGNUP_RESPONSE;
+                break;
+
+            case "signIn":
+                SignInDTO signInDTO = objectMapper.readValue(messageDTO.getPayload(), SignInDTO.class);
+                userUuid = userService.signIn(signInDTO);
+                operation = ResponsePubSub.LOGIN_RESPONSE;
+                break;
+
+            default:
+                return buildErrorResponse(clientId, "Tipo de comando desconhecido: " + commandType);
+        }
+
+        if (userUuid != null) {
+            Map<String, Object> successPayload = Map.of("Status", "OK", "userUUID", userUuid.toString());
+            return buildResponse(clientId, operation, successPayload);
+        } else {
+            return buildErrorResponse(clientId, "Falha na operação: credenciais inválidas ou usuário já existente.");
+        }
+    }
+
+    private void publishResponse(String clientId, ServerEventDTO event) {
+        try {
+            String responseJson = objectMapper.writeValueAsString(event);
+            publisherService.publish(KAFKA_TOPIC_OUT, responseJson, clientId);
+        } catch (JsonProcessingException e) {
+            System.err.println("CommandProcessor FATAL: Falha ao serializar resposta do servidor. " + e.getMessage());
+        }
+    }
+
+    private ServerEventDTO buildResponse(String clientId, ResponsePubSub responseType, Object payload) {
         ServerEventDTO serverEventDTO = new ServerEventDTO();
         serverEventDTO.setRecipientId(clientId);
-        serverEventDTO.setEventType(responsePubSub.toString());
+        serverEventDTO.setEventType(responseType.toString());
         serverEventDTO.setData(payload);
         return serverEventDTO;
     }
 
-    public void createPublish(String clientId, UUID user_UUID, ResponsePubSub operation) {
-        Map<String, Object> payload = Map.of(
-                "Status", "OK",
-                "clientId", user_UUID
-        );
-        try {
-            String payloadJson = objectMapper.writeValueAsString(payload);
-            ServerEventDTO eventMessage = buildResponse(clientId, operation, payloadJson);
-            String response = objectMapper.writeValueAsString(eventMessage);
-            publisherService.publish(Kafka_channel, response, clientId);
-        } catch (JsonProcessingException e) {
-            System.out.println("Error ao processar ServerEventDTO como string: " + e.getMessage());
-        }
+    private ServerEventDTO buildErrorResponse(String clientId, String errorMessage) {
+        Map<String, Object> errorPayload = Collections.singletonMap("error", errorMessage);
+        return buildResponse(clientId, ResponsePubSub.ERROR_RESPONSE, errorPayload);
     }
 }

@@ -21,7 +21,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
         // Gateway -> Cliente
         config.enableSimpleBroker("/topic");
-
         // Cliente -> Controller
         config.setApplicationDestinationPrefixes("/app");
 
@@ -31,19 +30,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/gateway-connect")
-                .setHandshakeHandler(new DefaultHandshakeHandler(){
+                .setHandshakeHandler(new DefaultHandshakeHandler() {
                     @Override
-                    protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes){
-                        String clientID = request.getURI().getQuery();
-                        if (clientID == null){
-                            clientID = "anon-" + UUID.randomUUID();
-                        }
-                        String finalClientID = clientID;
-                        System.out.println("handshake URI: " + request.getURI());
-                        System.out.println("Principal definido: " + finalClientID);
-                        return () -> finalClientID;
+                    protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes) {
+                        // Gera um ID de sessão único e seguro no servidor, removendo o controle do cliente sobre a identidade da conexão.
+                        final String sessionId = UUID.randomUUID().toString();
+                        System.out.println("Nova conexão WebSocket estabelecida. Session ID: " + sessionId);
+                        return () -> sessionId;
                     }
                 })
-                .setAllowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*").withSockJS();
+                .setAllowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*")
+                .withSockJS();
     }
 }
