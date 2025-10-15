@@ -26,8 +26,6 @@ public class LeaderRegistryService {
     private static final String CURRENT_TERM_MAP = "current-term-map";
     private static final String TERM_KEY = "last-known-term";
     private static final String TERM_LOCK_KEY = "term-lock";
-    private static final String LOG_INDEX_MAP = "node-log-index";
-    private static final String LOG_INDEX_KEY_PREFIX = "log-index-node-";
 
     @Value("${app.server.port:8080}")
     private int serverPort;
@@ -35,7 +33,7 @@ public class LeaderRegistryService {
     @Autowired
     public LeaderRegistryService(HazelcastInstance hazelcast, NodeIDConfig nodeIDConfig) {
         this.hazelcast = hazelcast;
-        this.nodeId = nodeIDConfig.getNodeId(); // ← Agora funciona!
+        this.nodeId = nodeIDConfig.getNodeId();
     }
 
     public LeaderRegistryService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast, String nodeId) {
@@ -179,46 +177,5 @@ public class LeaderRegistryService {
         } finally {
             termMap.unlock(TERM_LOCK_KEY);
         }
-    }
-
-    /**
-     * Atualiza o índice do último log commitado deste nó.
-     * Isso deve ser chamado sempre que o nó commitar uma nova operação.
-     */
-    public void updateLastCommittedIndex(long index) {
-        IMap<String, Long> logMap = hazelcast.getMap(LOG_INDEX_MAP);
-        String key = LOG_INDEX_KEY_PREFIX + nodeId;
-        logMap.put(key, index);
-    }
-
-    /**
-     * Obtém o índice do último log commitado de um nó específico.
-     */
-    public long getLastCommittedIndex(String targetNodeId) {
-        IMap<String, Long> logMap = hazelcast.getMap(LOG_INDEX_MAP);
-        String key = LOG_INDEX_KEY_PREFIX + targetNodeId;
-        return logMap.getOrDefault(key, 0L);
-    }
-
-    /**
-     * Obtém o índice do último log commitado deste nó.
-     */
-    public long getMyLastCommittedIndex() {
-        return getLastCommittedIndex(this.nodeId);
-    }
-
-    /**
-     * Coleta os índices de todos os nós do cluster para a eleição.
-     */
-    public Map<String, Long> getAllNodeLogIndices() {
-        IMap<String, Long> logMap = hazelcast.getMap(LOG_INDEX_MAP);
-
-        // Filtra apenas as chaves de log-index e retorna
-        return logMap.entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(LOG_INDEX_KEY_PREFIX))
-                .collect(Collectors.toMap(
-                        entry -> entry.getKey().replace(LOG_INDEX_KEY_PREFIX, ""),
-                        Map.Entry::getValue
-                ));
     }
 }

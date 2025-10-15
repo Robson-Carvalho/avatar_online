@@ -1,6 +1,7 @@
 package com.avatar.avatar_online.raft.service;
 
 import com.avatar.avatar_online.raft.model.LeaderInfo;
+import com.avatar.avatar_online.service.LogConsensusService;
 import com.hazelcast.cluster.MembershipEvent;
 import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.core.HazelcastInstance;
@@ -22,6 +23,7 @@ public class ClusterLeadershipService {
     private final HazelcastInstance hazelcast;
     private final LeaderRegistryService leaderRegistryService;
     private final ApplicationContext applicationContext;
+    private final LogConsensusService  logConsensusService;
 
     private ScheduledExecutorService electionScheduler;
     private ScheduledExecutorService cleanupScheduler;
@@ -34,10 +36,11 @@ public class ClusterLeadershipService {
 
     public ClusterLeadershipService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast,
                                     LeaderRegistryService leaderRegistryService,
-                                    ApplicationContext applicationContext) {
+                                    ApplicationContext applicationContext, LogConsensusService logConsensusService) {
         this.hazelcast = hazelcast;
         this.leaderRegistryService = leaderRegistryService;
         this.applicationContext = applicationContext;
+        this.logConsensusService = logConsensusService;
     }
 
     public void init() {
@@ -104,9 +107,9 @@ public class ClusterLeadershipService {
     }
 
     private boolean isLogUpToDate() {
-        long myIndex = leaderRegistryService.getMyLastCommittedIndex();
+        long myIndex = logConsensusService.getMyLastCommittedIndex();
 
-        Map<String, Long> allLogs = leaderRegistryService.getAllNodeLogIndices();
+        Map<String, Long> allLogs = logConsensusService.getAllNodeLogIndices();
 
         long maxIndex = allLogs.values().stream()
                 .max(Long::compare)
@@ -129,7 +132,7 @@ public class ClusterLeadershipService {
         // Registra como líder no cluster
         leaderRegistryService.registerAsLeader(term);
 
-        leaderRegistryService.updateLastCommittedIndex(leaderRegistryService.getMyLastCommittedIndex());
+        logConsensusService.updateLastCommittedIndex(logConsensusService.getMyLastCommittedIndex());
 
         startLeaderSync();
 
