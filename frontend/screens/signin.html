@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Avatar - Sign In</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-cyan-100 min-h-screen flex items-center justify-center font-sans">
 <div class="container mx-auto px-4">
@@ -56,8 +54,12 @@
         </form>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
 <script src="../scripts/global/websocket.js"></script>
-<script src="../scripts/global/showNotify.js"></script>
+<script src="../scripts/global/showNotify.js"></script> <!-- Se você tiver este arquivo -->
 <script src="../scripts/signIn/index.js"></script>
 </body>
 </html>
