@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket com Spring Boot</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    #messages {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 10px;
+      height: 300px;
+      overflow-y: scroll;
+    }
+
+    .message {
+      background-color: #f1f1f1;
+      padding: 5px;
+      margin-bottom: 5px;
+      border-radius: 5px;
+    }
+
+    .private-reply {
+      background-color: #e2f0fb;
+      border-left: 3px solid #3498db;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Teste de WebSocket Pub/Sub</h1>
+
+  <div>
+    <label for="name">Seu Nome:</label>
+    <input type="text" id="name" placeholder="Digite seu nome">
+  </div>
+  <br>
+  <div>
+    <label for="message">Mensagem:</label>
+    <input type="text" id="message" placeholder="Digite uma mensagem">
+    <button id="sendBtn">Enviar para Processamento</button>
+  </div>
+
+  <div id="messages">
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
