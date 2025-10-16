@@ -1,7 +1,7 @@
 package com.avatar.avatar_online.raft.service;
 
+import com.avatar.avatar_online.raft.interfaces.LeaderStatusQueryService;
 import com.avatar.avatar_online.raft.model.LeaderInfo;
-import com.avatar.avatar_online.service.LogConsensusService;
 import com.hazelcast.cluster.MembershipEvent;
 import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.core.HazelcastInstance;
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
-public class ClusterLeadershipService {
+public class ClusterLeadershipService implements LeaderStatusQueryService {
 
     private final HazelcastInstance hazelcast;
     private final LeaderRegistryService leaderRegistryService;
@@ -78,7 +78,7 @@ public class ClusterLeadershipService {
 
         String previousLeaderId = electionMap.putIfAbsent(LEADER_KEY, currentNodeId, 10, TimeUnit.SECONDS);
 
-        if (previousLeaderId == null || previousLeaderId.equals(currentNodeId)) {
+        if ((previousLeaderId == null || previousLeaderId.equals(currentNodeId)) && getClusterSize() > 1) {
 
             if (!isLeader.get() || previousLeaderId == null) {
 

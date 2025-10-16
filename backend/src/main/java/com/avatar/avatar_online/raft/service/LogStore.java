@@ -1,7 +1,6 @@
 package com.avatar.avatar_online.raft.service;
 
 import com.avatar.avatar_online.raft.model.LogEntry;
-import com.avatar.avatar_online.service.LogConsensusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,9 +24,12 @@ public class LogStore {
 
     private final LogConsensusService logConsensusService;
 
+    private final CommandExecutorService commandExecutorService;
+
     @Autowired
-    public LogStore(LogConsensusService logConsensusService) {
+    public LogStore(LogConsensusService logConsensusService, CommandExecutorService commandExecutorService) {
         this.logConsensusService = logConsensusService;
+        this.commandExecutorService = commandExecutorService;
     }
 
     /**
@@ -60,20 +62,26 @@ public class LogStore {
         return lastLogIndex.get();
     }
 
-    /**
-     * Marca o log até o índice fornecido como commitado.
-     * Este método TAMBÉM é responsável por notificar o cluster do novo estado commitado.
-     * @param index O índice do log que acaba de ser commitado.
-     */
-    public void markCommitted(long index) {
-        if (index > lastCommittedIndex.get() && index <= lastLogIndex.get()) {
+    public void markCommitted(long newCommitIndex) {
+        long oldCommitIndex = lastCommittedIndex.get();
 
-            System.out.println("✅ Log commitado localmente até o índice: " + index +
-                    " | Aplicando estado de negócio...");
+        if (newCommitIndex > oldCommitIndex && newCommitIndex <= lastLogIndex.get()) {
 
-            lastCommittedIndex.set(index);
 
-            logConsensusService.updateLastCommittedIndex(index);
+            for (long i = oldCommitIndex + 1; i <= newCommitIndex; i++) {
+                LogEntry entry = logEntries.get(i);
+                if (entry != null) {
+                    commandExecutorService.executeCommand(entry);
+                }
+            }
+
+            // CORREÇÃO: Atualiza o índice commitado localmente APÓS a aplicação
+            lastCommittedIndex.set(newCommitIndex);
+
+            // Anuncia o novo estado de consenso
+            logConsensusService.updateLastCommittedIndex(newCommitIndex);
+
+            System.out.println("✅ Log commitado e aplicado até o índice: " + newCommitIndex);
         }
     }
 

@@ -8,13 +8,14 @@ import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.model.CardExport;
 import com.avatar.avatar_online.raft.model.DeckExport;
+import com.avatar.avatar_online.raft.model.LogEntry;
 import com.avatar.avatar_online.raft.model.UserExport;
 import com.avatar.avatar_online.repository.CardRepository;
 import com.avatar.avatar_online.repository.DeckRepository;
 import com.avatar.avatar_online.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hazelcast.cluster.Member;
 import com.hazelcast.core.HazelcastInstance;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -22,9 +23,12 @@ import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +40,8 @@ public class DatabaseSyncService {
     private final ClusterLeadershipService leadershipService;
     private final HazelcastInstance hazelcast;
     private final RedirectService redirectService;
+
+    private static final long REPLICATION_TIMEOUT_SECONDS = 5;
 
     public DatabaseSyncService(UserRepository userRepository, DeckRepository deckRepository,
                                ClusterLeadershipService leadershipService,
@@ -242,6 +248,8 @@ public class DatabaseSyncService {
         int packSize = 5;
         UUID userId = command.getPlayerId();
 
+        // Em vez de gerar isso aqui, a gente gera antes quais cartas serão retiradas e dps envia para todo mundo
+
         List<Card> availableCards = cardRepository.findAll()
                 .stream()
                 .filter(card -> card.getUser() == null)
@@ -319,5 +327,67 @@ public class DatabaseSyncService {
                             8080);
                     redirectService.sendCommandToNode(targetURL, command, HttpMethod.POST);
                 });
+    }
+
+    public boolean propagateLogEntry(LogEntry entry) { //Verificando essa lógica ainda
+
+        Set<Member> allMembers = hazelcast.getCluster().getMembers();
+
+        Set<Member> followers = allMembers.stream()
+                .filter(member -> !member.localMember())
+                .collect(Collectors.toSet());
+
+        int clusterSize = allMembers.size();
+        int majorityThreshold = (clusterSize / 2) + 1;
+
+        if (clusterSize <= 1) return true; // Líder é a maioria
+
+        System.out.println("📤 Iniciando replicação para " + followers.size() +
+                " seguidores. Maioria: " + majorityThreshold);
+
+        List<CompletableFuture<Boolean>> futures = followers.stream()
+                .map(member -> CompletableFuture.supplyAsync(() -> {
+
+                    String host = member.getAddress().getHost();
+                    int port = 8080;
+
+                    String targetUrl = String.format("http://%s:%d/api/sync/append-entries", host, port);
+
+                    try {
+                        System.out.println("   -> Enviando Log " + entry.getIndex() + " para: " + targetUrl);
+
+                        redirectService.sendCommandToNode(targetUrl, entry, HttpMethod.POST);
+
+                        return true;
+
+                    } catch (Exception e) {
+                        System.err.println("❌ Falha na replicação para nó " + member + ": " + e.getMessage());
+                        return false;
+                    }
+                }))
+                .toList();
+
+        int successCount = 1;
+        for (CompletableFuture<Boolean> future : futures) {
+            try {
+                if (future.get(REPLICATION_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                    successCount++;
+                }
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                System.err.println("⏳ Timeout/Exceção na resposta da replicação.");
+            }
+        }
+
+        boolean majorityReached = successCount >= majorityThreshold;
+
+        if (majorityReached) {
+            System.out.println("🎉 SUCESSO! Log persistido em " + successCount +
+                    " nós (Maioria alcançada: " + majorityThreshold + ").");
+        } else {
+            System.out.println("🚨 FALHA NA MAIORIA! Apenas " + successCount +
+                    " nós responderam (Necessário: " + majorityThreshold + ").");
+        }
+
+        return majorityReached;
     }
 }

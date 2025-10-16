@@ -1,9 +1,10 @@
-package com.avatar.avatar_online.service;
+package com.avatar.avatar_online.raft.service;
 
 import com.avatar.avatar_online.raft.config.NodeIDConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -21,7 +22,7 @@ public class LogConsensusService {
     private static final String LOG_INDEX_KEY_PREFIX = "log-index-node-";
 
     @Autowired
-    public LogConsensusService(HazelcastInstance hazelcast, NodeIDConfig nodeIDConfig) {
+    public LogConsensusService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast, NodeIDConfig nodeIDConfig) {
         this.hazelcast = hazelcast;
         this.nodeId = nodeIDConfig.getNodeId();
         this.logMap = hazelcast.getMap(LOG_INDEX_MAP);
