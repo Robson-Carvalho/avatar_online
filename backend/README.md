@@ -12,6 +12,12 @@ Para iniciar **todas as instâncias** do cluster (múltiplos nós e bancos de da
 docker-compose -f cluster-test.yml up --build
 ```
 
+No windows.
+
+```bash
+docker-compose -f docker-compose-windows up --build
+```
+
 Esse comando irá:
 
 * Criar e subir todos os containers definidos no arquivo `cluster-test.yml`;

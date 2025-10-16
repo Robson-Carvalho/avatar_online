@@ -2,8 +2,6 @@ package com.avatar.avatar_online.service;
 
 import com.avatar.avatar_online.DTOs.UserDTO;
 import com.avatar.avatar_online.models.User;
-import com.avatar.avatar_online.pubsub.SignInDTO;
-import com.avatar.avatar_online.pubsub.SignUpDTO;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.service.CPCommitService;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
@@ -61,15 +59,15 @@ public class UserService {
         }
     }
 
-    public UUID signUp(SignUpDTO payload){
-        Optional<User> user = this.findByNickname(payload.getNickname());
-        return user.map(User::getId).orElse(null);
-    }
-
-    public UUID signIn(SignInDTO payload){
-        Optional<User> user = this.findByNickname(payload.getNickname());
-        return user.map(User::getId).orElse(null);
-    }
+//    public UUID signUp(SignUpDTO payload){
+//        Optional<User> user = this.findByNickname(payload.getNickname());
+//        return user.map(User::getId).orElse(null);
+//    }
+//
+//    public UUID signIn(SignInDTO payload){
+//        Optional<User> user = this.findByNickname(payload.getNickname());
+//        return user.map(User::getId).orElse(null);
+//    }
 
     public Optional<User> findById(UUID id) {
         return userRepository.findById(id);
