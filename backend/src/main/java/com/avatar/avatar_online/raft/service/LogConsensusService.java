@@ -21,11 +21,17 @@ public class LogConsensusService {
     private static final String LOG_INDEX_MAP = "node-log-index";
     private static final String LOG_INDEX_KEY_PREFIX = "log-index-node-";
 
+    // Mapa de Logs Finais (para a eleição - OBRIGATÓRIO)
+    private final IMap<String, Long> logEndMap;
+    private static final String LOG_END_INDEX_MAP = "node-log-end-index";
+    private static final String LOG_END_KEY_PREFIX = "log-end-index-node-";
+
     @Autowired
     public LogConsensusService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast, NodeIDConfig nodeIDConfig) {
         this.hazelcast = hazelcast;
         this.nodeId = nodeIDConfig.getNodeId();
         this.logMap = hazelcast.getMap(LOG_INDEX_MAP);
+        this.logEndMap = hazelcast.getMap(LOG_END_INDEX_MAP);
     }
 
     /**
@@ -63,6 +69,27 @@ public class LogConsensusService {
                 .filter(entry -> entry.getKey().startsWith(LOG_INDEX_KEY_PREFIX))
                 .collect(Collectors.toMap(
                         entry -> entry.getKey().replace(LOG_INDEX_KEY_PREFIX, ""),
+                        Map.Entry::getValue));
+    }
+
+    /**
+     * Atualiza o índice do último log persistido (Log End) deste nó.
+     * Deve ser chamado sempre que uma LogEntry for anexada/replicada.
+     */
+    public void updateLastLogIndex(long index) {
+        String key = LOG_END_KEY_PREFIX + nodeId;
+        this.logEndMap.put(key, index);
+    }
+
+    /**
+     * Coleta os índices dos últimos logs PERSISTIDOS de todos os nós para a eleição.
+     */
+    public Map<String, Long> getAllNodeLastLogIndices() {
+        // Usa o NOVO mapa, logEndMap
+        return logEndMap.entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith(LOG_END_KEY_PREFIX))
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().replace(LOG_END_KEY_PREFIX, ""),
                         Map.Entry::getValue));
     }
 }

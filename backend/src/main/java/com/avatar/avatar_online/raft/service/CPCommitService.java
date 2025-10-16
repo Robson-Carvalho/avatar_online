@@ -4,6 +4,7 @@ import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
+import com.avatar.avatar_online.raft.model.CommitNotificationRequest;
 import com.avatar.avatar_online.raft.model.LogEntry;
 import com.avatar.avatar_online.repository.UserRepository;
 import com.hazelcast.core.HazelcastInstance;
@@ -112,6 +113,8 @@ public class CPCommitService {
             }
 
             logStore.markCommitted(newIndex);
+
+            syncService.notifyFollowers(new CommitNotificationRequest(newIndex));
 
             // FAZER UMA CHAMADA A UMA FUNÇÃO DE PROPAGAÇÃO INFORMANDO QUE O COMMIT DEVE SER APLICADNO
             // MAIS UM ENDPOIN

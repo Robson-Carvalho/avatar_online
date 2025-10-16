@@ -44,6 +44,7 @@ public class LogStore {
         logEntries.put(entry.getIndex(), entry);
         lastLogIndex.set(entry.getIndex());
         lastLogTerm.set(entry.getTerm());
+        logConsensusService.updateLastLogIndex(entry.getIndex());
     }
 
     /**

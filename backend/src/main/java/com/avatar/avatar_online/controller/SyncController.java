@@ -4,10 +4,7 @@ import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
-import com.avatar.avatar_online.raft.model.CardExport;
-import com.avatar.avatar_online.raft.model.DeckExport;
-import com.avatar.avatar_online.raft.model.LogEntry;
-import com.avatar.avatar_online.raft.model.UserExport;
+import com.avatar.avatar_online.raft.model.*;
 import com.avatar.avatar_online.raft.service.DatabaseSyncService;
 import com.avatar.avatar_online.raft.service.LogStore;
 import org.springframework.http.HttpStatus;
@@ -92,5 +89,18 @@ public class SyncController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("{\"success\": false, \"error\": \"Falha interna: " + e.getMessage() + "\"}");
         }
+    }
+
+    @PostMapping("/commit-notification")
+    public ResponseEntity<String> notifyCommit(@RequestBody CommitNotificationRequest request) {
+        long leaderCommitIndex = request.getCommitIndex();
+        long localCommitIndex = logStore.getLastCommitIndex();
+
+        if (leaderCommitIndex > localCommitIndex) {
+            long newCommitIndex = Math.min(leaderCommitIndex, logStore.getLastIndex());
+            logStore.markCommitted(newCommitIndex);
+        }
+
+        return ResponseEntity.ok().body("OK");
     }
 }

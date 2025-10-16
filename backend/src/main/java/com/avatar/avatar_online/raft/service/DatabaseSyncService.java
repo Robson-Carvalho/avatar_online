@@ -6,10 +6,7 @@ import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
-import com.avatar.avatar_online.raft.model.CardExport;
-import com.avatar.avatar_online.raft.model.DeckExport;
-import com.avatar.avatar_online.raft.model.LogEntry;
-import com.avatar.avatar_online.raft.model.UserExport;
+import com.avatar.avatar_online.raft.model.*;
 import com.avatar.avatar_online.repository.CardRepository;
 import com.avatar.avatar_online.repository.DeckRepository;
 import com.avatar.avatar_online.repository.UserRepository;
@@ -389,5 +386,17 @@ public class DatabaseSyncService {
         }
 
         return majorityReached;
+    }
+
+    @Async
+    public void notifyFollowers(CommitNotificationRequest request){
+        hazelcast.getCluster().getMembers().stream()
+                .filter(member -> !member.localMember())
+                .forEach(member -> {
+                    String targetURL = String.format("http://%s:%d/api/sync/commit-notification",
+                            member.getAddress().getHost(),
+                            8080);
+                    redirectService.sendCommandToNode(targetURL, request, HttpMethod.POST);
+                });
     }
 }

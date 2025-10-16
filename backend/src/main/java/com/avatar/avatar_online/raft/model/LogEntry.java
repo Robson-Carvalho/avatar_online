@@ -1,9 +1,13 @@
 package com.avatar.avatar_online.raft.model;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 public class LogEntry {
 
     private long term;
     private long index;
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
     private Object command;
     private boolean commited;
 
