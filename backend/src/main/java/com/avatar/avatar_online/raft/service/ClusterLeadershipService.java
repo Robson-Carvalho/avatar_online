@@ -24,6 +24,7 @@ public class ClusterLeadershipService {
     private final LeaderRegistryService leaderRegistryService;
     private final ApplicationContext applicationContext;
     private final LogConsensusService  logConsensusService;
+    private final LogStore logStore;
 
     private ScheduledExecutorService electionScheduler;
     private ScheduledExecutorService cleanupScheduler;
@@ -36,11 +37,12 @@ public class ClusterLeadershipService {
 
     public ClusterLeadershipService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast,
                                     LeaderRegistryService leaderRegistryService,
-                                    ApplicationContext applicationContext, LogConsensusService logConsensusService) {
+                                    ApplicationContext applicationContext, LogConsensusService logConsensusService, LogStore logStore) {
         this.hazelcast = hazelcast;
         this.leaderRegistryService = leaderRegistryService;
         this.applicationContext = applicationContext;
         this.logConsensusService = logConsensusService;
+        this.logStore = logStore;
     }
 
     public void init() {
@@ -132,7 +134,7 @@ public class ClusterLeadershipService {
         // Registra como líder no cluster
         leaderRegistryService.registerAsLeader(term);
 
-        logConsensusService.updateLastCommittedIndex(logConsensusService.getMyLastCommittedIndex());
+        logConsensusService.updateLastCommittedIndex(logStore.getLastCommitIndex());
 
         startLeaderSync();
 

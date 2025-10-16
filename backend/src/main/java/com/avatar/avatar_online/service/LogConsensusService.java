@@ -15,6 +15,8 @@ public class LogConsensusService {
     private final HazelcastInstance hazelcast;
     private final String nodeId;
 
+    private final IMap<String, Long> logMap;
+
     private static final String LOG_INDEX_MAP = "node-log-index";
     private static final String LOG_INDEX_KEY_PREFIX = "log-index-node-";
 
@@ -22,6 +24,7 @@ public class LogConsensusService {
     public LogConsensusService(HazelcastInstance hazelcast, NodeIDConfig nodeIDConfig) {
         this.hazelcast = hazelcast;
         this.nodeId = nodeIDConfig.getNodeId();
+        this.logMap = hazelcast.getMap(LOG_INDEX_MAP);
     }
 
     /**
@@ -29,18 +32,16 @@ public class LogConsensusService {
      * Isso deve ser chamado sempre que o nó commitar uma nova operação.
      */
     public void updateLastCommittedIndex(long index) {
-        IMap<String, Long> logMap = hazelcast.getMap(LOG_INDEX_MAP);
         String key = LOG_INDEX_KEY_PREFIX + nodeId;
-        logMap.put(key, index);
+        this.logMap.put(key, index);
     }
 
     /**
      * Obtém o índice do último log commitado de um nó específico.
      */
     public long getLastCommittedIndex(String targetNodeId) {
-        IMap<String, Long> logMap = hazelcast.getMap(LOG_INDEX_MAP);
         String key = LOG_INDEX_KEY_PREFIX + targetNodeId;
-        return logMap.getOrDefault(key, 0L);
+        return this.logMap.getOrDefault(key, 0L);
     }
 
     /**

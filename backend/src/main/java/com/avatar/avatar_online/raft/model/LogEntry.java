@@ -1,4 +1,4 @@
-package com.avatar.avatar_online.raft.logs;
+package com.avatar.avatar_online.raft.model;
 
 public class LogEntry {
 
