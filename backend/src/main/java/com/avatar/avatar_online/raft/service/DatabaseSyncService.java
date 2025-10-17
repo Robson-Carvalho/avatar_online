@@ -37,6 +37,9 @@ public class DatabaseSyncService {
     private final ClusterLeadershipService leadershipService;
     private final HazelcastInstance hazelcast;
     private final RedirectService redirectService;
+    private final LogConsensusService logConsensusService; // Pode dar dependencia circular
+    private final LogStore logStore; // Pode dar dependencia circular
+    private final LeaderRegistryService leaderRegistryService;
 
     private static final long REPLICATION_TIMEOUT_SECONDS = 5;
 
@@ -44,13 +47,16 @@ public class DatabaseSyncService {
                                ClusterLeadershipService leadershipService,
                                LeaderDiscoveryService discoveryService, CardRepository cardRepository,
                                @Qualifier("hazelcastInstance") HazelcastInstance hazelcast,
-                               RedirectService redirectService) {
+                               RedirectService redirectService, LogConsensusService logConsensusService, LogStore logStore, LeaderRegistryService leaderRegistryService) {
         this.userRepository = userRepository;
         this.deckRepository = deckRepository;
         this.leadershipService = leadershipService;
         this.cardRepository = cardRepository;
         this.hazelcast = hazelcast;
         this.redirectService = redirectService;
+        this.logConsensusService = logConsensusService;
+        this.logStore = logStore;
+        this.leaderRegistryService = leaderRegistryService;
     }
 
     @Async
@@ -314,48 +320,78 @@ public class DatabaseSyncService {
         deckRepository.save(newDeck);
     }
 
-    @Async
-    public void propagateUserSignUpCommand(UserSignUpCommand command){
-        hazelcast.getCluster().getMembers().stream()
-                .filter(member -> !member.localMember())
-                .forEach(member -> {
-                    String targetURL = String.format("http://%s:%d/api/sync/apply-commit/users",
-                            member.getAddress().getHost(),
-                            8080);
-                    redirectService.sendCommandToNode(targetURL, command, HttpMethod.POST);
-                });
-    }
-
-    public boolean propagateLogEntry(LogEntry entry) { //Verificando essa lógica ainda
+    public boolean propagateLogEntry(LogEntry entry) {
 
         Set<Member> allMembers = hazelcast.getCluster().getMembers();
+        Set<Member> followers = allMembers.stream().filter(member -> !member.localMember()).collect(Collectors.toSet());
 
-        Set<Member> followers = allMembers.stream()
-                .filter(member -> !member.localMember())
-                .collect(Collectors.toSet());
-
-        int clusterSize = allMembers.size();
-        int majorityThreshold = (clusterSize / 2) + 1;
-
-        if (clusterSize <= 1) return true; // Líder é a maioria
-
-        System.out.println("📤 Iniciando replicação para " + followers.size() +
-                " seguidores. Maioria: " + majorityThreshold);
+        // 🚨 Este método agora inicia o ciclo de replicação, mas a nova entrada só será
+        // commitada se a MAIORIA já tiver atingido o índice.
+        // O foco primário deste método é garantir que todos os logs, INCLUINDO 'entry', sejam replicados.
 
         List<CompletableFuture<Boolean>> futures = followers.stream()
                 .map(member -> CompletableFuture.supplyAsync(() -> {
+                    UUID followerId = member.getUuid();
+                    String targetUrl = String.format("http://%s:%d/api/sync/append-entries", member.getAddress().getHost(), 8080);
 
-                    String host = member.getAddress().getHost();
-                    int port = 8080;
+                    // 1. 🚨 NOVO: Obtém o índice exato a ser enviado para ESTE seguidor.
+                    long nextIndexForFollower = logConsensusService.getNextIndex(followerId);
 
-                    String targetUrl = String.format("http://%s:%d/api/sync/append-entries", host, port);
+                    // 2. Determinar os logs a enviar e os índices de consistência
+                    // A RPC enviará logs a partir do nextIndexForFollower.
+                    List<LogEntry> entriesToSend = logStore.getEntriesFrom(nextIndexForFollower);
+
+                    // O ponto de consistência é o índice anterior (nextIndex - 1)
+                    long prevLogIndex = nextIndexForFollower - 1;
+                    long prevLogTerm = logStore.getTermOfIndex(prevLogIndex);
+
+                    // 3. Constrói a RPC COMPLETA
+                    AppendEntriesRequest request = new AppendEntriesRequest(
+                            leaderRegistryService.getCurrentTerm(),
+                            logStore.getLastCommitIndex(),
+                            prevLogIndex,
+                            prevLogTerm,
+                            entriesToSend // 🚨 Agora pode enviar 0, 1 ou N logs
+                    );
 
                     try {
-                        System.out.println("   -> Enviando Log " + entry.getIndex() + " para: " + targetUrl);
+                        System.out.println("   -> Enviando logs a partir do índice " + nextIndexForFollower +
+                                " (PrevIndex: " + prevLogIndex + ") para: " + targetUrl);
 
-                        redirectService.sendCommandToNode(targetUrl, entry, HttpMethod.POST);
+                        ResponseEntity<AppendEntriesResponse> responseEntity = redirectService.sendCommandToNode(
+                                targetUrl, request, HttpMethod.POST, AppendEntriesResponse.class);
 
-                        return true;
+                        if (!responseEntity.getStatusCode().is2xxSuccessful() || responseEntity.getBody() == null) {
+                            throw new RuntimeException("Resposta inválida ou erro HTTP.");
+                        }
+
+                        AppendEntriesResponse response = responseEntity.getBody();
+
+                        // 4. Processa a Resposta do Raft (O Reparo)
+                        if (response.isSuccess()) {
+
+                            int entriesSentCount = entriesToSend.size();
+                            if (entriesSentCount > 0) {
+                                // 🚨 Reparo de Log BEM-SUCEDIDO: Atualiza os índices.
+                                long newMatchIndex = prevLogIndex + entriesSentCount;
+                                logConsensusService.updateIndexesOnSuccess(followerId, newMatchIndex);
+                                System.out.println("✅ Log sync em " + followerId + ". Novo MatchIndex: " + newMatchIndex);
+                            }
+
+                            return true;
+
+                        } else if (response.isLogMismatch()) {
+
+                            logConsensusService.decrementNextIndex(followerId);
+                            long newNextIndex = logConsensusService.getNextIndex(followerId);
+
+                            System.err.println("❌ Log Mismatch com " + followerId + ". Recuando NextIndex para: " + newNextIndex);
+                            return false;
+
+                        } else {
+                            System.out.println("Falha genérica ou termo obsoleto no nó: " + followerId);
+                            return false;
+                        }
 
                     } catch (Exception e) {
                         System.err.println("❌ Falha na replicação para nó " + member + ": " + e.getMessage());
@@ -364,7 +400,8 @@ public class DatabaseSyncService {
                 }))
                 .toList();
 
-        int successCount = 1;
+        // 5. Contagem de Maioria e Commit (Lógica Original)
+        int successCount = 1; // O líder conta a si mesmo
         for (CompletableFuture<Boolean> future : futures) {
             try {
                 if (future.get(REPLICATION_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
@@ -375,14 +412,16 @@ public class DatabaseSyncService {
             }
         }
 
+        int clusterSize = allMembers.size();
+        int majorityThreshold = (clusterSize / 2) + 1;
+
         boolean majorityReached = successCount >= majorityThreshold;
 
         if (majorityReached) {
-            System.out.println("🎉 SUCESSO! Log persistido em " + successCount +
-                    " nós (Maioria alcançada: " + majorityThreshold + ").");
+            System.out.println("🎉 SUCESSO! Log persistido em " + successCount + " nós (Maioria alcançada: " + majorityThreshold + ").");
+
         } else {
-            System.out.println("🚨 FALHA NA MAIORIA! Apenas " + successCount +
-                    " nós responderam (Necessário: " + majorityThreshold + ").");
+            System.out.println("🚨 FALHA NA MAIORIA! Apenas " + successCount + " nós responderam (Necessário: " + majorityThreshold + ").");
         }
 
         return majorityReached;

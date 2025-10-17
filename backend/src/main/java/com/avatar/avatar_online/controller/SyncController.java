@@ -73,22 +73,55 @@ public class SyncController {
     }
 
     @PostMapping("/append-entries")
-    public ResponseEntity<String> appendEntries(@RequestBody LogEntry entry) {
-        try {
+    public ResponseEntity<AppendEntriesResponse> appendEntries(@RequestBody AppendEntriesRequest request) {
+        long prevLogIndex = request.getPrevLogIndex();
 
-            logStore.append(entry);
+        if (prevLogIndex > 0) {
+            long requiredTerm = logStore.getTermOfIndex(prevLogIndex);
 
-            return ResponseEntity.ok().body("{\"success\": true, \"index\": " + entry.getIndex() + "}");
+            if (requiredTerm != request.getPrevLogTerm()) {
+                System.err.println("❌ Log Inconsistente no índice " + prevLogIndex +
+                        ". Esperado Termo: " + requiredTerm +
+                        ", Recebido Termo: " + request.getPrevLogTerm());
 
-        } catch (IllegalArgumentException e) {
-            System.err.println("❌ Falha de Consistência (AppendEntries): " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("{\"success\": false, \"error\": \"Inconsistência de Log: " + e.getMessage() + "\"}");
-        } catch (Exception e) {
-            System.err.println("❌ Erro ao persistir LogEntry: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"success\": false, \"error\": \"Falha interna: " + e.getMessage() + "\"}");
+                return ResponseEntity.ok(AppendEntriesResponse.logMismatch());
+            }
         }
+
+        if (request.getEntries() != null && !request.getEntries().isEmpty()) {
+
+            int index = 0;
+            for (LogEntry entry : request.getEntries()) {
+                long newEntryIndex = entry.getIndex();
+
+                if (logStore.getLastIndex() >= newEntryIndex) {
+                    long currentTermAtIndex = logStore.getTermOfIndex(newEntryIndex);
+
+                    if (currentTermAtIndex != entry.getTerm()) {
+                        System.out.println("⚠️ Conflito no Log. Truncando a partir do índice: " + newEntryIndex);
+                        logStore.truncateLog(newEntryIndex);
+                        break;
+                    }
+                }
+                index++;
+            }
+
+            for (LogEntry entry : request.getEntries()) {
+                if (logStore.getLastIndex() >= entry.getIndex() && logStore.getTermOfIndex(entry.getIndex()) == entry.getTerm()) {
+                    continue;
+                }
+                logStore.append(entry);
+            }
+        }
+
+        // 4. Avançar o Commit Index (Regra R-AE.5)
+        long leaderCommitIndex = request.getLeaderCommitIndex();
+        if (leaderCommitIndex > logStore.getLastCommitIndex()) {
+            long newCommitIndex = Math.min(leaderCommitIndex, logStore.getLastIndex());
+            logStore.markCommitted(newCommitIndex);
+        }
+
+        return ResponseEntity.ok(AppendEntriesResponse.success());
     }
 
     @PostMapping("/commit-notification")

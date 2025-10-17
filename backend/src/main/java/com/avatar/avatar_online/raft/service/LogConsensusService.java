@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +27,9 @@ public class LogConsensusService {
     private final IMap<String, Long> logEndMap;
     private static final String LOG_END_INDEX_MAP = "node-log-end-index";
     private static final String LOG_END_KEY_PREFIX = "log-end-index-node-";
+
+    private final Map<UUID, Long> matchIndex = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> nextIndex = new ConcurrentHashMap<>();
 
     @Autowired
     public LogConsensusService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast, NodeIDConfig nodeIDConfig) {
@@ -91,5 +96,43 @@ public class LogConsensusService {
                 .collect(Collectors.toMap(
                         entry -> entry.getKey().replace(LOG_END_KEY_PREFIX, ""),
                         Map.Entry::getValue));
+    }
+
+    // --- Métodos para Reparo de LOG ---
+
+    /**
+     * Obtém o próximo índice para o Seguidor. Se não existir, retorna 1.
+     */
+    public long getNextIndex(UUID followerUuid) {
+        return nextIndex.getOrDefault(followerUuid, 1L);
+    }
+
+    /**
+     * 🚨 CHAMADO QUANDO HÁ FALHA DE logMismatch. Decrementa o nextIndex em 1.
+     */
+    public void decrementNextIndex(UUID followerUuid) {
+        nextIndex.computeIfPresent(followerUuid, (k, v) -> Math.max(1, v - 1));
+    }
+
+    /**
+     * CHAMADO APÓS SUCESSO DO APPENDENTRIES.
+     */
+    public void updateIndexesOnSuccess(UUID followerUuid, long newMatchIndex) {
+        matchIndex.put(followerUuid, newMatchIndex);
+        nextIndex.put(followerUuid, newMatchIndex + 1);
+    }
+
+    public void initializeLeaderState(long lastLogIndex) {
+        long initialNextIndex = lastLogIndex + 1;
+
+        // Pega todos os membros do cluster (exceto o próprio líder)
+        hazelcast.getCluster().getMembers().stream()
+                .filter(member -> !member.localMember())
+                .map(member -> member.getUuid()) // Se estiver usando UUID como chave
+                .forEach(followerUuid -> {
+                    nextIndex.put(followerUuid, initialNextIndex);
+                    matchIndex.put(followerUuid, 0L); // matchIndex começa em 0
+                    System.out.println("-> Inicializando nextIndex para " + followerUuid + " em: " + initialNextIndex);
+                });
     }
 }

@@ -1,5 +1,7 @@
 package com.avatar.avatar_online.raft.service;
 
+import com.avatar.avatar_online.raft.model.AppendEntriesRequest;
+import com.avatar.avatar_online.raft.model.AppendEntriesResponse;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -61,4 +63,31 @@ public class RedirectService {
         }
     }
 
+    public ResponseEntity<AppendEntriesResponse> sendCommandToNode(
+            String targetURL,
+            Object command,
+            HttpMethod method,
+            Class<AppendEntriesResponse> responseType) {
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Object> requestEntity = new HttpEntity<>(command, headers);
+
+            ResponseEntity<AppendEntriesResponse> responseEntity = restTemplate.exchange(
+                    targetURL,
+                    method,
+                    requestEntity,
+                    responseType
+            );
+
+            System.out.println("✅ Comando enviado para: " + targetURL);
+            return responseEntity;
+        } catch (Exception e) {
+            System.err.println("❌ Falha ao enviar comando para " + targetURL + ": " + e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
 }

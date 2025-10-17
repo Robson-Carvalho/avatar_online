@@ -136,6 +136,9 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
 
         logConsensusService.updateLastCommittedIndex(logStore.getLastCommitIndex());
 
+        long lastLogIndex = logStore.getLastIndex();
+        logConsensusService.initializeLeaderState(lastLogIndex);
+
         startLeaderSync();
 
         // Força sincronização inicial
