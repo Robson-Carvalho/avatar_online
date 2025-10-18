@@ -1,4 +1,4 @@
-function createUser(name = "Elinaldo", nickname="L", email="L@gmail.com", password="123456") {
+function createUser(name, nickname, email, password) {
     if (!stompClient || !stompClient.connected) {
         alert("⚠️ Não conectado ao servidor!");
         return;
@@ -18,18 +18,16 @@ function createUser(name = "Elinaldo", nickname="L", email="L@gmail.com", passwo
     log(`📤 Enviado: ${data.operationType}`);
 }
 
-function loginUser(name = "Elinaldo", nickname="L", email="L@gmail.com", password="123456") {
+function loginUser(nickname, password) {
     if (!stompClient || !stompClient.connected) {
         alert("⚠️ Não conectado ao servidor!");
         return;
     }
     
     const data = {
-      operationType: "CREATE_USER", 
+      operationType: "LOGIN_USER", 
       payload: {
-        name,
         nickname,
-        email,
         password
       }
     }
