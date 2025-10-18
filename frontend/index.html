@@ -1,24 +1,153 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste WebSocket STOMP</title>
+    <title>Avatar Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <link rel="stylesheet" href="./styles/styles.css">
 </head>
 
 <body>
-    <h2>🧪 Teste WebSocket com Spring + STOMP</h2>
-    <div id="log">Log de mensagens:</div>
-    <button onclick="createUser()">Criar usuário</button>
+    <div id="container-loading"
+        class="hidden min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div
+            class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 w-full max-w-md border border-slate-100 text-center">
+            <div class="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-slate-200 shadow-sm">
+                <img src="https://d2d7ho1ae66ldi.cloudfront.net/ArquivoNoticias/21587cd0-e5fc-11ed-aa6e-9587410378a2/avatar-a-lenda-de-aang-animacao.jpg"
+                    alt="Avatar Online" class="w-full h-full object-cover">
+            </div>
 
-    
-    <script src="./scripts/globalState.js"></script>
+            <div class="flex flex-col items-center space-y-4">
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-indigo-400 border-t-transparent"></div>
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Avatar Online</h2>
+                    <p class="text-slate-600 text-lg">Tentando conectar com o servidor...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="container-signIn"
+        class="hidden min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 w-full max-w-md border border-slate-100">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Entrar</h2>
+                <p class="text-slate-600">Acesse sua conta</p>
+            </div>
+
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-slate-700 text-sm font-medium mb-2">Nickname</label>
+                    <input id="nickname-login" type="text"
+                        class="w-full bg-white/60 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-slate-700 text-sm font-medium mb-2">Password</label>
+                    <input id="password-login" type="password"
+                        class="w-full bg-white/60 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all">
+                </div>
+
+                <button type="submit" onclick="handleLogin(event)"
+                    class="w-full bg-gradient-to-r from-indigo-400 to-purple-400 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md">
+                    🔐 Entrar
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <span class="text-slate-600">Já tem conta?</span>
+                <button onclick="showSignUp()"
+                    class="text-indigo-500 hover:text-indigo-600 font-medium ml-1 underline transition-colors">
+                    Register
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="container-signUp"
+        class="hidden min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 w-full max-w-md border border-slate-100">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Registrar</h2>
+                <p class="text-slate-600">Crie sua conta</p>
+            </div>
+
+            <form class="space-y-4">
+                <div>
+                    <label class="block text-slate-700 text-sm font-medium mb-2">Name</label>
+                    <input type="text" id="name-register"
+                        class="w-full bg-white/60 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-slate-700 text-sm font-medium mb-2">Nickname</label>
+                    <input type="text" id="nickname-register"
+                        class="w-full bg-white/60 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-slate-700 text-sm font-medium mb-2">Email</label>
+                    <input type="email" id="email-register"
+                        class="w-full bg-white/60 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-slate-700 text-sm font-medium mb-2">Password</label>
+                    <input type="password" id="password-register"
+                        class="w-full bg-white/60 border border-slate-200 rounded-lg px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent transition-all">
+                </div>
+
+                <button type="submit" onclick="handleRegister(event)"
+                    class="w-full bg-gradient-to-r from-indigo-400 to-purple-400 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md">
+                    📝 Registrar
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <span class="text-slate-600">Já tem uma conta?</span>
+                <button onclick="showSignIn()"
+                    class="text-indigo-500 hover:text-indigo-600 font-medium ml-1 underline transition-colors">
+                    Entrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="container-dashboard"
+        class="hidden min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col">
+        <header
+            class="w-full bg-white/80 backdrop-blur-lg shadow-lg border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+            <div class="flex flex-col">
+                <span class="text-2xl font-bold text-slate-800">
+                    Avatar Online
+                </span>
+                <span id="user_id" class="text-sm font-regular text-slate-600">
+                    
+                </span>
+                
+            </div>
+
+            <nav class="space-x-6">
+                <button class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Jogar</button>
+                <button class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Montar Deck</button>
+                <button class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Cartas</button>
+                <button onclick="logout()" class="text-slate-700 hover:text-rose-500 font-medium transition-colors">Sair</button>
+            </nav>
+        </header>
+    </div>
+
+    <script src="./scripts/view/loading.js"></script>
+
+    <script src="./scripts/notify/index.js"></script>
+    <script src="./scripts/handlers/received.js"></script>
+    <script src="./scripts/handlers/send.js"></script>
+    <script src="./scripts/handlers/send.js"></script>
     <script src="./scripts/pub_sub.js"></script>
     <script src="./scripts/operations/user.js"></script>
 </body>
-
 </html>
