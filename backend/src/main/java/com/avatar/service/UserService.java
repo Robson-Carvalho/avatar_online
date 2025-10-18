@@ -58,15 +58,23 @@ public class UserService {
         }
     }
 
-//    public UUID signUp(SignUpDTO payload){
-//        Optional<User> user = this.findByNickname(payload.getNickname());
-//        return user.map(User::getId).orElse(null);
-//    }
-//
-//    public UUID signIn(SignInDTO payload){
-//        Optional<User> user = this.findByNickname(payload.getNickname());
-//        return user.map(User::getId).orElse(null);
-//    }
+    public ResponseEntity<?> createUserFake(UserDTO user) {
+        try {
+           boolean response = true;
+
+            if(!response){
+                return ResponseEntity.badRequest().body("Erro interno: Falha ao processar requisição. " +
+                        "Email ou senha podem já estar sendo utilizados.");
+            }
+
+            User userFake = new User(UUID.randomUUID(), user.getName(), user.getEmail(), user.getNickname(), user.getPassword());
+
+            return ResponseEntity.ok().body(userFake);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");
+        }
+    }
 
     public Optional<User> findById(UUID id) {
         return userRepository.findById(id);
