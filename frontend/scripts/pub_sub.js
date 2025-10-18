@@ -14,7 +14,7 @@ function connect() {
     log("🎛️ Conectando ao servidor...");
 
     try {
-        const socket = new SockJS("http://127.0.0.1:8080/ws");
+        const socket = new SockJS("http://127.0.0.1:8081/ws");
         stompClient = Stomp.over(socket);
         stompClient.debug = null;
         

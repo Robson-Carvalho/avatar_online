@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <link rel="stylesheet" href="./styles/styles.css">
+
 </head>
 
 <body>
@@ -31,6 +32,16 @@
             </div>
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+
 
     <div id="container-signIn"
         class="hidden min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
@@ -68,6 +79,20 @@
             </div>
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <div id="container-signUp"
         class="hidden min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
@@ -118,6 +143,21 @@
         </div>
     </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div id="container-dashboard"
         class="hidden min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col">
         <header
@@ -126,26 +166,155 @@
                 <span class="text-2xl font-bold text-slate-800">
                     Avatar Online
                 </span>
-                <span id="user_id" class="text-sm font-regular text-slate-600">
-                    
-                </span>
-                
+    
+                <p>
+                    <span class="font-medium text-slate-800">
+                        User ID:
+                    </span>
+                    <span id="user_id" class="text-sm font-regular text-slate-600">
+                    </span>
+                </p>
+    
+                <p>
+                    <span class="font-medium text-slate-800">
+                        Nickname:
+                    </span>
+                    <span id="nickname_dash" class="text-sm font-regular text-slate-600">
+                    </span>
+                </p>
             </div>
-
+    
             <nav class="space-x-6">
-                <button class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Jogar</button>
-                <button class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Montar Deck</button>
-                <button class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Cartas</button>
-                <button onclick="logout()" class="text-slate-700 hover:text-rose-500 font-medium transition-colors">Sair</button>
+                <button onclick="joinInGame()" class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Jogar</button>
+                <button onclick="openModal('deck-modal')"
+                    class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Deck</button>
+                <button onclick="openModal('package-modal')"
+                    class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Pacote</button>
+                <button onclick="openModal('cards-modal')"
+                    class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Cartas</button>
+                <button onclick="logout()"
+                    class="text-slate-700 hover:text-rose-500 font-medium transition-colors">Sair</button>
             </nav>
         </header>
+
+
+    
+        <div class="px-6 py-4">
+            <p class="text-ms font-medium text-slate-600">Domine os quatro elementos! 🌀</p>
+        </div>
+
+        <div id="loading_join_game"></div>
+
+
+        <div id="battlefield"></div>
+
+    
+       <!-- Overlay -->
+        <div id="modal-overlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity duration-300"></div>
+    
+        <!-- Modal Deck -->
+        <div id="deck-modal"
+            class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-4xl bg-white rounded-xl shadow-2xl z-50 transition-all duration-300 scale-95 opacity-0">
+            <div class="flex items-center justify-between p-6 border-b border-slate-200">
+                <h3 class="text-xl font-bold text-slate-800">Montar Deck</h3>
+                <button onclick="closeModal('deck-modal')" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                
+            </div>
+            <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
+                <button onclick="closeModal('deck-modal')"
+                    class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors">Cancelar</button>
+                <button class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">Salvar Deck</button>
+            </div>
+        </div>
+
+
+
+
+
+
+    
+
+        <!-- Modal Pacote -->
+        <div id="package-modal"
+            class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-4xl bg-white rounded-xl shadow-2xl z-50 transition-all duration-300 scale-95 opacity-0">
+            <div class="flex items-center justify-between p-6 border-b border-slate-200">
+                <h3 class="text-xl font-bold text-slate-800">Pacote de Cartas</h3>
+                <button onclick="closeModal('package-modal')" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 max-h-96 overflow-y-auto">
+                <p class="text-slate-600 mb-4">Suas 5 cartas adquiridas:</p>
+        
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- cartas aqui -->
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
+                <button onclick="closeModal('package-modal')"
+                    class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors">Fechar</button>
+            </div>
+        </div>
+
+
+
+
+    
+        <!-- Modal Cartas -->
+        <div id="cards-modal"
+            class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-4xl bg-white rounded-xl shadow-2xl z-50 transition-all duration-300 scale-95 opacity-0">
+            <div class="flex items-center justify-between p-6 border-b border-slate-200">
+                <h3 class="text-xl font-bold text-slate-800">Minhas Cartas</h3>
+                <button onclick="closeModal('cards-modal')" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 max-h-96 overflow-y-auto">
+                <p class="text-slate-600 mb-4">Suas cartas coletadas:</p>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                   <!-- cartas aqui -->
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
+                <button onclick="closeModal('cards-modal')"
+                    class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors">Fechar</button>
+            </div>
+        </div>
+
+
+
+
+
+
+
     </div>
 
-    <script src="./scripts/view/loading.js"></script>
 
+
+
+
+
+
+    
+    <script src="./scripts/game/index.js"></script>
+    <script src="./scripts/global/index.js"></script>
+    <script src="./scripts/view/loading.js"></script>
     <script src="./scripts/notify/index.js"></script>
     <script src="./scripts/handlers/received.js"></script>
-    <script src="./scripts/handlers/send.js"></script>
     <script src="./scripts/handlers/send.js"></script>
     <script src="./scripts/pub_sub.js"></script>
     <script src="./scripts/operations/user.js"></script>

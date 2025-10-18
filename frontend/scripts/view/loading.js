@@ -52,3 +52,64 @@ function logout() {
     localStorage.removeItem('user_avatar_online');
     updateViewsBasedOnConnection();
 }
+
+
+// MÉTODOS LÓGICOS DENTRO DO CONTAINER DASHBOARD
+
+
+function openModal(modalId) {
+    const overlay = document.getElementById('modal-overlay');
+    const modal = document.getElementById(modalId);
+    
+    // Mostrar overlay
+    overlay.classList.remove('hidden');
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    
+    // Animar entrada
+    setTimeout(() => {
+        overlay.classList.add('opacity-100');
+        modal.classList.remove('scale-95', 'opacity-0');
+        modal.classList.add('scale-100', 'opacity-100');
+    }, 10);
+}
+
+function closeModal(modalId) {
+    const overlay = document.getElementById('modal-overlay');
+    const modal = document.getElementById(modalId);
+    
+    // Animar saída
+    modal.classList.remove('scale-100', 'opacity-100');
+    modal.classList.add('scale-95', 'opacity-0');
+    
+    overlay.classList.remove('opacity-100');
+    
+    // Esconder após animação
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        overlay.classList.add('hidden');
+    }, 300);
+}
+
+// Fechar modal clicando no overlay
+document.getElementById('modal-overlay').addEventListener('click', function() {
+    closeAllModals();
+});
+
+// Fechar com ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeAllModals();
+    }
+});
+
+function closeAllModals() {
+    const modals = ['deck-modal', 'package-modal', 'cards-modal'];
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (!modal.classList.contains('hidden')) {
+            closeModal(modalId);
+        }
+    });
+}

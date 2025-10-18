@@ -17,5 +17,6 @@ function handlerMain(message) {
 
 function handleLoginUserOrCreateUserSuccess(data) {
   localStorage.setItem("user_avatar_online", JSON.stringify(data.data))
+  updateUserDisplay();
   updateViewsBasedOnConnection()
 }
