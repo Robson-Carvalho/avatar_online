@@ -13,28 +13,25 @@ services:
     volumes:
       - postgres_data_node:/var/lib/postgresql/data
     networks:
-      - kafka-network
+      - avatar-network
 
   app:
     build: .
     container_name: avatar-node
-    depends_on: # ADICIONADO: 'redis' na lista de dependências
+    depends_on:
       - db
     environment:
-      - APP_CLUSTER_PORT=5701
       - APP_SERVER_PORT=8080
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/avatar_db
       - SPRING_DATASOURCE_USERNAME=avatar_user
       - SPRING_DATASOURCE_PASSWORD=senha123
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - SPRING_DATA_REDIS_HOST=redis # NOVO: Variável para o host do Redis
     ports:
       - "8080:8080"
     networks:
-      - kafka-network
+      - avatar-network
 
 networks:
-  kafka-network:
+  avatar-network:
     driver: bridge
 
 volumes:
