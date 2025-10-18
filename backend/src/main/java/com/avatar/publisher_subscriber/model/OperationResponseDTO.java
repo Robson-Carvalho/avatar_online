@@ -15,6 +15,7 @@ public class OperationResponseDTO {
 
     public OperationResponseDTO(String operationType,OperationStatus operationStatus, String message, Object data) {
         this.operationType = operationType;
+        this.operationStatus = operationStatus;
         this.message = message;
         this.data = data;
     }
