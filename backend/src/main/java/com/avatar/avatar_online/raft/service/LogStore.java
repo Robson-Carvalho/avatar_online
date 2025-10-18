@@ -86,18 +86,6 @@ public class LogStore {
     }
 
     /**
-     * Retorna todas as entradas de log que foram persistidas, mas ainda não commitadas.
-     * Usado para a replicação.
-     * @return Uma lista de LogEntries não commitadas.
-     */
-    public List<LogEntry> getUncommittedEntries() {
-        return logEntries.entrySet().stream()
-                .filter(entry -> entry.getKey() > lastCommittedIndex.get())
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toList());
-    }
-
-    /**
      * Obtém uma lista de entradas a partir de um índice específico (incluindo o startIndex).
      * Usado para a replicação de log.
      */

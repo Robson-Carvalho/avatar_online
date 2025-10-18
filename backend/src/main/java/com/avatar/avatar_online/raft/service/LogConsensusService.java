@@ -85,18 +85,6 @@ public class LogConsensusService {
         this.logEndMap.put(key, index);
     }
 
-    /**
-     * Coleta os índices dos últimos logs PERSISTIDOS de todos os nós para a eleição.
-     */
-    public Map<String, Long> getAllNodeLastLogIndices() {
-        // Usa o NOVO mapa, logEndMap
-        return logEndMap.entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(LOG_END_KEY_PREFIX))
-                .collect(Collectors.toMap(
-                        entry -> entry.getKey().replace(LOG_END_KEY_PREFIX, ""),
-                        Map.Entry::getValue));
-    }
-
     // --- Métodos para Reparo de LOG ---
 
     /**

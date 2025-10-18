@@ -47,8 +47,6 @@ public class LeaderRegistryService {
         String currentHost = hazelcast.getCluster().getLocalMember().getAddress().getHost();
         LeaderInfo leaderInfo = new LeaderInfo(nodeId, currentHost, serverPort, term);
 
-
-
         IMap<String, LeaderInfo> leaderMap = hazelcast.getMap(LEADER_REGISTRY_MAP);
         leaderMap.put(LEADER_KEY, leaderInfo);
 
@@ -83,14 +81,6 @@ public class LeaderRegistryService {
         }
 
         return leader;
-    }
-
-    /**
-     * Verifica se este nó é o líder registrado
-     */
-    public boolean isRegisteredLeader() {
-        LeaderInfo leader = getCurrentLeader();
-        return leader != null && leader.getNodeId().equals(nodeId);
     }
 
     public void putInLeaderMap(LeaderInfo currentLeader) {

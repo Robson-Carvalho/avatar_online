@@ -10,20 +10,13 @@ import com.hazelcast.core.HazelcastInstance;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CPCommitService {
 
     private final HazelcastInstance hazelcast;
-
-    private static final String PACK_LOCK = "pack-lock";
-
-    private static final String USER_LOCK = "user-lock";
-
-    private static final String DECK_LOCK = "deck-lock";
-
-    private static final String LAST_COMMAND_REF =  "last-db-command";
 
     private final DatabaseSyncService syncService;
 
@@ -44,41 +37,11 @@ public class CPCommitService {
     }
 
     public boolean tryCommitUpdateDeck(SetDeckCommmand newCommand) {
-        if(hazelcast.getCluster().getMembers().size() < 2) {
-            System.out.println("LOGS: TAMANHO DE CLUSTER INSUFICIENTE PARA REALIZAR OPERAÇÕES CRÍTICAS.");
-            return false;
-        }
-
-        try{
-           syncService.applyDeckUpdateCommand(newCommand);
-
-           syncService.propagateDeckUpdateCommand(newCommand);
-
-           return true;
-        } catch (Exception e) {
-            System.err.println("❌ Erro ao comitar comando CP aaaa: " + e.getMessage());
-            return false;
-        }
+        return true;
     }
 
     public List<Card> tryCommitPackOpening(OpenPackCommand newCommand){
-        if(hazelcast.getCluster().getMembers().size() < 2) {
-            System.out.println("LOGS: TAMANHO DE CLUSTER INSUFICIENTE PARA REALIZAR OPERAÇÕES CRÍTICAS.");
-            return List.of();
-        }
-
-        try{
-            // 1. APLICAÇÃO NO BD LOCAL (DO LÍDER DA TRANSAÇÃO)
-            List<Card> cards = syncService.applyOpenPackCommand(newCommand);
-
-            // 2. PROPAGAÇÃO HTTP PARA OS SEGUIDORES
-            syncService.propagateOpenPackCommand(cards);
-
-            return cards;
-        } catch (Exception e) {
-            System.err.println("❌ Erro ao comitar comando CP: " + e.getMessage());
-            return List.of();
-        }
+        return new ArrayList<>();
     }
 
     public boolean tryCommitUserSignUp(UserSignUpCommand newCommand){ //Verificando essa lógica ainda

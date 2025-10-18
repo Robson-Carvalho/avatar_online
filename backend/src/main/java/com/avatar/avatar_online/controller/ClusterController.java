@@ -100,17 +100,6 @@ public class ClusterController {
         return info;
     }
 
-    @PostMapping("/election/force")
-    public ResponseEntity<?> forceElection() {
-        try {
-            leadershipService.forceElection();
-            return ResponseEntity.ok("{\"message\": \"Eleição forçada iniciada\"}");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\": \"Erro ao forçar eleição: " + e.getMessage() + "\"}");
-        }
-    }
-
     @PostMapping("/election/resign")
     public ResponseEntity<?> resignLeadership() {
         try {

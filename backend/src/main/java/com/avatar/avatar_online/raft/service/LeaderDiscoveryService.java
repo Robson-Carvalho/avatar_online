@@ -38,21 +38,6 @@ public class LeaderDiscoveryService {
         return Optional.empty();
     }
 
-    /**
-     * Verifica se o líder está acessível
-     */
-    public boolean isLeaderAccessible() {
-        Optional<String> leaderAddress = getLeaderHttpAddress();
-        return leaderAddress.isPresent();
-    }
-
-    /**
-     * Obtém informações completas do líder
-     */
-    public LeaderInfo getLeaderInfo() {
-        return leaderRegistryService.getCurrentLeader();
-    }
-
     public String getCurrentNodeInfo() {
         LeaderInfo leader = leaderRegistryService.getCurrentLeader();
         String leaderStatus = leadershipService.isLeader() ? "LÍDER" : "SEGUIDOR";

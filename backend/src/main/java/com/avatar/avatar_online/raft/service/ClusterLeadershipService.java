@@ -22,7 +22,6 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
 
     private final HazelcastInstance hazelcast;
     private final LeaderRegistryService leaderRegistryService;
-    private final ApplicationContext applicationContext;
     private final LogConsensusService  logConsensusService;
     private final LogStore logStore;
     private final DatabaseSyncService syncService; // Injetado no construtor
@@ -41,10 +40,10 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
 
     public ClusterLeadershipService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast,
                                     LeaderRegistryService leaderRegistryService,
-                                    ApplicationContext applicationContext, LogConsensusService logConsensusService, LogStore logStore, DatabaseSyncService syncService) {
+                                    LogConsensusService logConsensusService, LogStore logStore,
+                                    DatabaseSyncService syncService) {
         this.hazelcast = hazelcast;
         this.leaderRegistryService = leaderRegistryService;
-        this.applicationContext = applicationContext;
         this.logConsensusService = logConsensusService;
         this.logStore = logStore;
         this.syncService = syncService;
@@ -147,38 +146,6 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
         startHeartbeatScheduler();
     }
 
-    /**
-     *  ACESSO INDIRETO AO DatabaseSyncService
-     */
-    private void startLeaderSync() {
-        try {
-            DatabaseSyncService databaseSyncService = applicationContext.getBean(DatabaseSyncService.class);
-            //databaseSyncService.startLeaderSync();
-        } catch (Exception e) {
-            System.err.println("❌ Erro ao iniciar sincronização do líder: " + e.getMessage());
-        }
-    }
-
-    /**
-     *  ACESSO INDIRETO AO DatabaseSyncService
-     */
-    private void performInitialLeaderSync() {
-        try {
-            DatabaseSyncService databaseSyncService = applicationContext.getBean(DatabaseSyncService.class);
-            new Thread(() -> {
-                try {
-                    Thread.sleep(2000);
-                    // Usa reflexão ou método público para sincronização
-                    //databaseSyncService.forceSync();
-                } catch (Exception e) {
-                    System.err.println("❌ Erro na sincronização inicial: " + e.getMessage());
-                }
-            }).start();
-        } catch (Exception e) {
-            System.err.println("❌ Erro ao acessar serviço de sincronização: " + e.getMessage());
-        }
-    }
-
     private void onLostLeadership() {
         isLeader.set(false);
         System.out.println("👥 Perdi a liderança. Agora sou seguidor.");
@@ -187,18 +154,6 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
         leaderRegistryService.unregisterAsLeader();
 
         stopHeartbeatScheduler();
-    }
-
-    /**
-     *  ACESSO INDIRETO AO DatabaseSyncService
-     */
-    private void stopLeaderSync() {
-        try {
-            DatabaseSyncService databaseSyncService = applicationContext.getBean(DatabaseSyncService.class);
-            //databaseSyncService.stopLeaderSync();
-        } catch (Exception e) {
-            System.err.println("❌ Erro ao parar sincronização: " + e.getMessage());
-        }
     }
 
     private void startCleanupTask() {
@@ -234,27 +189,10 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
                 String newMemberId = event.getMember().getUuid().toString();
                 System.out.println("🟢 Novo nó entrou: " + event.getMember() + " [ID: " + newMemberId + "]");
 
-                if (isLeader.get()) {
-                    // Como líder, sincroniza o novo nó
-                    syncNewNode();
-                } else {
                     // Se este nó é o novo nó que entrou, sincroniza com líder
                     if (newMemberId.equals(currentNodeId)) {
                         System.out.println("🆕 Este é o novo nó - sincronizando com líder...");
-                        // Aguarda um pouco para o cluster estabilizar
-                        new Thread(() -> {
-                            try {
-                                Thread.sleep(10000); // 10 segundos
-                                syncNewNode();
-                            } catch (InterruptedException e) {
-                                Thread.currentThread().interrupt();
-                            }
-                        }).start();
-                    } else {
-                        // Nó existente detectou outro novo nó - verifica sincronização
-                        checkSyncNeeded();
                     }
-                }
             }
 
             @Override
@@ -269,44 +207,9 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
                 if (removedMemberId.equals(currentLeader)) {
                     System.out.println("⚡ Líder saiu - forçando nova eleição");
                     electionMap.remove(LEADER_KEY);
-
-                    // Aguarda um pouco antes da nova eleição
-                    new Thread(() -> {
-                        try {
-                            Thread.sleep(5000);
-                            performLeaderElection();
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }).start();
                 }
             }
         });
-    }
-
-    /**
-     *  ACESSO INDIRETO PARA SINCRONIZAÇÃO
-     */
-    private void syncNewNode() {
-        try {
-            System.out.println("📡 Sincronizando dados com nós (seguidores)");
-            DatabaseSyncService databaseSyncService = applicationContext.getBean(DatabaseSyncService.class);
-            //databaseSyncService.syncNewNode();
-        } catch (Exception e) {
-            System.err.println("❌ Erro ao sincronizar novo nó: " + e.getMessage());
-        }
-    }
-
-    /**
-     *  ACESSO INDIRETO PARA VERIFICAÇÃO DE SINCRONIZAÇÃO
-     */
-    private void checkSyncNeeded() {
-        try {
-            DatabaseSyncService databaseSyncService = applicationContext.getBean(DatabaseSyncService.class);
-            //databaseSyncService.checkSyncNeeded();
-        } catch (Exception e) {
-            System.err.println("❌ Erro ao verificar sincronização: " + e.getMessage());
-        }
     }
 
     public boolean isLeader() {
@@ -353,24 +256,6 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
         // Verifica se o líder ainda está no cluster
         return hazelcast.getCluster().getMembers().stream()
                 .anyMatch(member -> member.getUuid().toString().equals(currentLeader));
-    }
-
-    /**
-     * Força uma nova eleição de liderança
-     */
-    public void forceElection() {
-        System.out.println("⚡ Forçando nova eleição de liderança");
-        IMap<String, String> electionMap = hazelcast.getMap(LEADER_ELECTION_MAP);
-        electionMap.remove(LEADER_KEY);
-
-        new Thread(() -> {
-            try {
-                Thread.sleep(1000);
-                performLeaderElection();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }).start();
     }
 
     private void startHeartbeatScheduler() {

@@ -16,60 +16,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/sync")
 public class SyncController {
-    private final DatabaseSyncService databaseSyncService;
     private final LogStore logStore;
 
-    public SyncController(DatabaseSyncService databaseSyncService, LogStore logStore) {
-        this.databaseSyncService = databaseSyncService;
+    public SyncController(LogStore logStore) {
         this.logStore = logStore;
-    }
-
-    @PostMapping("/apply-commit/users")
-    public ResponseEntity<?> applyUserCommit (@RequestBody UserSignUpCommand command){
-        try {
-            databaseSyncService.applyUserSignUpCommand(command);
-            return ResponseEntity.ok().body("");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("{\"error\": \"Erro ao Commitar usuários: " + e.getMessage() + "\"}");
-        }
-    }
-
-    @PostMapping("/apply-commit/pack")
-    public ResponseEntity<?> applyPackCommit (@RequestBody List<Card> cards){
-        try {
-            databaseSyncService.applyPackCommit(cards);
-            return ResponseEntity.ok().body("");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("{\"error\": \"Erro ao Commitar pack: " + e.getMessage() + "\"}");
-        }
-    }
-
-    @PostMapping("/apply-commit/deck")
-    public ResponseEntity<?> applyDeckCommit (@RequestBody SetDeckCommmand command){
-        try {
-            databaseSyncService.applyDeckUpdateCommand(command);
-            return ResponseEntity.ok().body("");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("{\"error\": \"Erro ao Commitar atualização de deck: " + e.getMessage() + "\"}");
-        }
-    }
-
-    @GetMapping("/export/users")
-    public List<UserExport> exportUsers() {
-        System.out.println("🌍 Requisição de exportação de usuários recebida. Exportando dados...");
-        return databaseSyncService.performLeaderSync();
-    }
-
-    @GetMapping("/export/cards")
-    public List<CardExport> exportCards() {
-        System.out.println("🌍 Requisição de exportação de cartas recebida. Exportando dados...");
-        return databaseSyncService.performLeaderCardSync();
-    }
-
-    @GetMapping("/export/decks")
-    public List<DeckExport> exportDecks() {
-        System.out.println("🌍 Requisição de exportação de decks recebida. Exportando dados...");
-        return databaseSyncService.performLeaderDeckSync();
     }
 
     @PostMapping("/append-entries")
