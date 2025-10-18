@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
+import java.util.Optional;
 
 @Component
 public class HandleUser {
@@ -32,7 +32,7 @@ public class HandleUser {
 
         try {
             // Lembrar de trocar pelo método real
-            ResponseEntity<?> response = userService.createUserFake(user);
+            ResponseEntity<?> response = userService.createUser(user);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Usuário criado com sucesso!", response.getBody());
@@ -48,20 +48,21 @@ public class HandleUser {
         }
     }
 
-    // Lembrar de atualizar para o fluxo correto
     public OperationResponseDTO handleLoginUser(OperationRequestDTO operation) {
         String nickname = (String) operation.getPayload().get("nickname");
         String password = (String) operation.getPayload().get("password");
 
         try {
+            Optional<User> user = userService.login(nickname, password);
 
-            User user = new User(UUID.randomUUID(), "Elinaldo", nickname, "sparta@gmail.com", password);
+            if(user.isEmpty()){
+                return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "E-mail e/ou senha incorretos", null);
+            }
 
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Login realizado com sucesso!", user);
 
         } catch (Exception e) {
-            return new OperationResponseDTO(operation.getOperationType(),OperationStatus.ERROR, "Erro inesperado: " + e.getMessage(), null
-            );
+            return new OperationResponseDTO(operation.getOperationType(),OperationStatus.ERROR, "Erro inesperado: " + e.getMessage(), null);
         }
     }
 }
