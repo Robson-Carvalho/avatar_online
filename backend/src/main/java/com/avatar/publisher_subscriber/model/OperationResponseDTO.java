@@ -1,10 +1,5 @@
 package com.avatar.publisher_subscriber.model;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
 public class OperationResponseDTO {
     private String operationType;
     private OperationStatus operationStatus;
@@ -17,6 +12,38 @@ public class OperationResponseDTO {
         this.operationType = operationType;
         this.operationStatus = operationStatus;
         this.message = message;
+        this.data = data;
+    }
+
+    public String getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(String operationType) {
+        this.operationType = operationType;
+    }
+
+    public OperationStatus getOperationStatus() {
+        return operationStatus;
+    }
+
+    public void setOperationStatus(OperationStatus operationStatus) {
+        this.operationStatus = operationStatus;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
         this.data = data;
     }
 }

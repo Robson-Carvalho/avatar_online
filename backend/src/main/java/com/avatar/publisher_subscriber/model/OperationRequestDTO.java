@@ -1,18 +1,32 @@
 package com.avatar.publisher_subscriber.model;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.Map;
 
-@Setter
-@Getter
 public class OperationRequestDTO {
     private String operationType;
     private Map<String, Object> payload; // conteúdo variável por operação
 
-    public OperationRequestDTO(OperationType String, Map<String, Object> payload) {
+    public OperationRequestDTO() {}
+
+    public OperationRequestDTO(String operationType, Map<String, Object> payload) {
         this.operationType = operationType;
         this.payload = payload;
     }
+
+    public String getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(String operationType) {
+        this.operationType = operationType;
+    }
+
+    public Map<String, Object> getPayload() {
+        return payload;
+    }
+
+    public void setPayload(Map<String, Object> payload) {
+        this.payload = payload;
+    }
 }
+
