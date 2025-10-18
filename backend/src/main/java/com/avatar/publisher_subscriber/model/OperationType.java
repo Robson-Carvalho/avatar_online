@@ -1,0 +1,18 @@
+package com.avatar.publisher_subscriber.model;
+
+public enum OperationType {
+    CREATE_USER,
+    LOGIN_USER,
+    OPEN_PACKAGE,
+    UPDATE_DECK,
+    NEXT_TURN_IN_GAME,
+    PLAY_CARD,
+    JOIN_GAME,
+    LEAVE_GAME,
+    GET_DECK,
+    GET_CARDS,
+    GET_PLAYERS,
+    GET_PLAYER_ID,
+    GET_CARDS_BY_PLAYER_ID,
+    EXCHANGE_LETTER
+}

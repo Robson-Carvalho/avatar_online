@@ -26,6 +26,7 @@ public class OperationController {
         System.out.println("📥 Recebida operação de " + userId + ": " + message.getOperation());
 
         // Lógica simulada
+
         String result = "Servidor processou a operação: " + message.getOperation();
 
         // Envia resposta só para o usuário que enviou
