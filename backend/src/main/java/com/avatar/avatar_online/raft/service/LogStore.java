@@ -77,10 +77,8 @@ public class LogStore {
                 }
             }
 
-            // CORREÇÃO: Atualiza o índice commitado localmente APÓS a aplicação
             lastCommittedIndex.set(newCommitIndex);
 
-            // Anuncia o novo estado de consenso
             logConsensusService.updateLastCommittedIndex(newCommitIndex);
 
             System.out.println("✅ Log commitado e aplicado até o índice: " + newCommitIndex);

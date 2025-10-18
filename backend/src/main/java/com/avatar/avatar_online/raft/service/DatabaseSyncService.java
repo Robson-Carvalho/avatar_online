@@ -266,9 +266,9 @@ public class DatabaseSyncService {
 
         try {
             if (!entriesToSend.isEmpty()) {
-                System.out.println("   -> Enviando logs a partir do índice " + nextIndexForFollower + " para: " + member.getAddress().getHost());
+                //System.out.println("   -> Enviando logs a partir do índice " + nextIndexForFollower + " para: " + member.getAddress().getHost());
             } else {
-                System.out.println("   -> Enviando Heartbeat para: " + member.getAddress().getHost());
+                //System.out.println("   -> Enviando Heartbeat para: " + member.getAddress().getHost());
             }
 
             ResponseEntity<AppendEntriesResponse> responseEntity = redirectService.sendCommandToNode(
@@ -302,7 +302,7 @@ public class DatabaseSyncService {
                 return false;
 
             } else {
-                System.out.println("Falha genérica ou termo obsoleto no nó: " + followerId);
+                //System.out.println("Falha genérica ou termo obsoleto no nó: " + followerId);
                 return false;
             }
 

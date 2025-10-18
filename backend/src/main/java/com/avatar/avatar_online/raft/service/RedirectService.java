@@ -58,7 +58,6 @@ public class RedirectService {
             HttpEntity<Object> requestEntity = new HttpEntity<>(command, headers);
 
             restTemplate.exchange(targetURL, method, requestEntity, String.class);
-            System.out.println("✅ Comando enviado para: " + targetURL);
         } catch (Exception e) {
             System.err.println("❌ Falha ao enviar comando para " + targetURL + ": " + e.getMessage());
         }
@@ -82,7 +81,6 @@ public class RedirectService {
                     responseType
             );
 
-            System.out.println("✅ Comando enviado para: " + targetURL);
             return responseEntity;
         } catch (Exception e) {
             System.err.println("❌ Falha ao enviar comando para " + targetURL + ": " + e.getMessage());

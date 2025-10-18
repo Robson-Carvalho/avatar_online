@@ -379,6 +379,9 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
         );
         heartbeatScheduler.scheduleAtFixedRate(() -> {
             try {
+                LeaderInfo currentLeader = leaderRegistryService.getCurrentLeader();
+                currentLeader.updateHeartbeat();
+                leaderRegistryService.putInLeaderMap(currentLeader);
                 syncService.sendHeartbeat();
             } catch (Exception e) {
                 System.err.println("❌ Erro no Heartbeat do líder: " + e.getMessage());

@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 public class LeaderRegistryService {
     private final HazelcastInstance hazelcast;
     private final String nodeId;
-    private ScheduledExecutorService heartbeatScheduler;
     private static final String LEADER_REGISTRY_MAP = "leader-registry";
     private static final String LEADER_KEY = "current-leader";
     private static final String CURRENT_TERM_MAP = "current-term-map";
@@ -41,11 +40,6 @@ public class LeaderRegistryService {
         this.nodeId = nodeId;
     }
 
-    @PostConstruct
-    public void init() {
-        this.heartbeatScheduler = Executors.newSingleThreadScheduledExecutor();
-    }
-
     /**
      * Registra este nó como líder no cluster
      */
@@ -59,9 +53,6 @@ public class LeaderRegistryService {
         leaderMap.put(LEADER_KEY, leaderInfo);
 
         System.out.println("✅ Registrado como líder: " + leaderInfo);
-
-        // Inicia heartbeat para manter o registro
-        startHeartbeat();
     }
 
     /**
@@ -75,8 +66,6 @@ public class LeaderRegistryService {
             leaderMap.remove(LEADER_KEY);
             System.out.println("🗑️  Registro de líder removido");
         }
-
-        stopHeartbeat();
     }
 
     /**
@@ -104,38 +93,9 @@ public class LeaderRegistryService {
         return leader != null && leader.getNodeId().equals(nodeId);
     }
 
-    /**
-     * Atualiza heartbeat do líder
-     */
-    private void startHeartbeat() {
-        heartbeatScheduler.scheduleAtFixedRate(() -> {
-            try {
-                LeaderInfo currentLeader = getCurrentLeader();
-                if (currentLeader != null && currentLeader.getNodeId().equals(nodeId)) {
-                    // Atualiza heartbeat
-                    currentLeader.updateHeartbeat();
-                    IMap<String, LeaderInfo> leaderMap = hazelcast.getMap(LEADER_REGISTRY_MAP);
-                    leaderMap.put(LEADER_KEY, currentLeader);
-                    System.out.println("💓 Heartbeat do líder atualizado");
-                }
-            } catch (Exception e) {
-                System.err.println("❌ Erro no heartbeat: " + e.getMessage());
-            }
-        }, 0, 10, TimeUnit.SECONDS); // Heartbeat a cada 10 segundos
-    }
-
-    private void stopHeartbeat() {
-        if (heartbeatScheduler != null) {
-            heartbeatScheduler.shutdown();
-            try {
-                if (!heartbeatScheduler.awaitTermination(5, TimeUnit.SECONDS)) {
-                    heartbeatScheduler.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                heartbeatScheduler.shutdownNow();
-                Thread.currentThread().interrupt();
-            }
-        }
+    public void putInLeaderMap(LeaderInfo currentLeader) {
+        IMap<String, LeaderInfo> leaderMap = hazelcast.getMap(LEADER_REGISTRY_MAP);
+        leaderMap.put(LEADER_KEY, currentLeader);
     }
 
     /**
