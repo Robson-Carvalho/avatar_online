@@ -1,0 +1,10 @@
+.git
+**/target/
+**/.mvn
+**/mvnw
+**/mvnw.cmd
+**/.gitignore
+**/README.md
+Dockerfile
+**/*.iml
+**/.idea
