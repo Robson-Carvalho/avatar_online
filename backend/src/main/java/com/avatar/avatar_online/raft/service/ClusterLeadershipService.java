@@ -8,7 +8,6 @@ import com.hazelcast.core.HazelcastInstance;
 
 import com.hazelcast.map.IMap;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -113,7 +112,7 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
     }
 
     private boolean isLogUpToDate() {
-        long myIndex = logConsensusService.getMyLastCommittedIndex();
+        long myIndex = logStore.getLastIndex();
 
         Map<String, Long> allLogs = logConsensusService.getAllNodeLogIndices();
 

@@ -71,6 +71,8 @@ public class CPCommitService {
                 return false;
             }
 
+            Thread.sleep(5000);
+
             logStore.tryAdvanceCommitIndex(currentTerm,  logStore.getLastIndex());
 
             return true;
