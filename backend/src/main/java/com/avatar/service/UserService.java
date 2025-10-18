@@ -76,6 +76,20 @@ public class UserService {
         }
     }
 
+    public Optional<User> login(String nickname, String password) {
+        Optional<User> user = this.findByNickname(nickname);
+
+        if(user.isPresent()){
+            if(user.get().getPassword().equals(password)){
+                return user;
+            }
+
+            return Optional.empty();
+        }
+
+        return Optional.empty();
+    }
+
     public Optional<User> findById(UUID id) {
         return userRepository.findById(id);
     }
