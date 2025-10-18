@@ -6,19 +6,23 @@ const log = (msg) => {
     console.log(msg);
 };
 
+let attempts = 0;
 let stompClient = null;
 
 connect();
 
-function connect() {
+function connect(host="127.0.0.1") {
     log("🎛️ Conectando ao servidor...");
 
     try {
-        const socket = new SockJS("http://127.0.0.1:8081/ws");
+        const socket = new SockJS(`http://${host}:8081/ws`);
+
+
         stompClient = Stomp.over(socket);
         stompClient.debug = null;
         
-        socket.onopen = function() {
+        socket.onopen = function () {
+            attempts=0;
             log("🔗 Socket aberto com sucesso");
             updateViewsBasedOnConnection();
         };
@@ -57,13 +61,29 @@ function connect() {
     }
 }
 
+
+let useLocalhost = true;
 function attemptReconnect() {
     log(`🔄 Tentando reconexão!`);
     updateViewsBasedOnConnection();
+
+    let hostBase = "172.16.201.";
     
     setTimeout(() => {
         if (!stompClient || !stompClient.connected) {
-            connect();
+            let targetHost;
+            
+            if (useLocalhost) {
+                targetHost = "127.0.0.1";
+                console.log("🎯 Target host: " + targetHost);
+            } else {
+                attempts = (attempts % 30) + 1; // Mantém entre 1-30
+                targetHost = hostBase + attempts.toString();
+                console.log("🎯 Target host: " + targetHost);
+            }
+            
+            useLocalhost = !useLocalhost;
+            connect(targetHost);
         }
-    }, 2000);
+    }, 1000);
 }

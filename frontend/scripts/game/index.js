@@ -1,0 +1,3 @@
+function joinInGame() {
+  alert("O")
+}

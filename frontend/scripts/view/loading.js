@@ -1,8 +1,6 @@
 function updateViewsBasedOnConnection() {
   const isConnected = stompClient !== null && stompClient.connected;
     
-  console.log("🔄 Atualizando views - Conectado:", isConnected);
-    
   if (!isConnected) {
     document.getElementById("container-loading").classList.remove("hidden");
     document.getElementById("container-signIn").classList.add("hidden");

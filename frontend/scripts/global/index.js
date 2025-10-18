@@ -5,7 +5,6 @@ function updateUserDisplay() {
   if (data) {
     try {
       const user = JSON.parse(data);
-      console.log('Atualizando display para usuário:', user);
       
       document.getElementById("user_id").innerText = user.id;
       document.getElementById("nickname_dash").innerText = user.nickname;
