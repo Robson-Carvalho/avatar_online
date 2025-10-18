@@ -1,45 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Avatar Online</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste WebSocket STOMP</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <link rel="stylesheet" href="./styles/styles.css">
 </head>
 
-<body class="bg-gradient-to-br from-blue-50 to-cyan-100 min-h-screen flex items-center justify-center font-sans">
-    <div class="container mx-auto px-4">
-        <div class="max-w-sm mx-auto bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
-            <div class="flex flex-col items-center space-y-6">
-                <div class="relative">
-                    <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                        <img src="https://d2d7ho1ae66ldi.cloudfront.net/ArquivoNoticias/21587cd0-e5fc-11ed-aa6e-9587410378a2/avatar-a-lenda-de-aang-animacao.jpg"
-                            alt="Avatar Aang" class="w-full h-full object-cover">
-                    </div>
-                    <!-- ID adicionado para o indicador de status -->
-                    <div id="status-indicator"
-                        class="absolute bottom-3 right-3 w-4 h-4 bg-gray-400 rounded-full border-2 border-white transition-colors duration-500">
-                    </div>
-                </div>
+<body>
+    <h2>🧪 Teste WebSocket com Spring + STOMP</h2>
+    <div id="log">Log de mensagens:</div>
+    <button onclick="sendOperation()">Enviar operação</button>
 
-                <div class="text-center space-y-2">
-                    <h1 class="text-2xl font-bold text-gray-800">Avatar Online</h1>
-                    <p class="text-gray-600 text-lg">Domine os quatro elementos</p>
-                </div>
-
-                <a id="journey-button" href="#" role="button"
-                    class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 text-center text-lg shadow-md hover:shadow-lg transform hover:scale-105">
-                    Verificando Servidor...
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
-    <script src="./scripts/global/websocket.js"></script>
-    <script src="./scripts/home/index.js"></script>
+    
+    <script src="./scripts/index.js"></script>
 </body>
 
 </html>
