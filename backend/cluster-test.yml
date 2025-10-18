@@ -1,7 +1,6 @@
 version: '3.9'
 
 # Define uma rede customizada para que os contêineres possam se comunicar
-# usando seus nomes de serviço (ex: 'app1' pode se conectar a 'db1').
 networks:
   avatar-net:
     driver: bridge
@@ -16,16 +15,13 @@ services:
     networks:
       - avatar-net
     environment:
-      - APP_SERVER_PORT=8080 # Porta interna do contêiner
-      - APP_CLUSTER_PORT=5701 # Porta interna do Hazelcast
+      - APP_SERVER_PORT=8080
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db1:5432/avatar_db
       - SPRING_DATASOURCE_USERNAME=avatar_user
       - SPRING_DATASOURCE_PASSWORD=senha123
-      # Variável para o Hazelcast descobrir os outros nós. Sua aplicação precisa ler isso.
-      - HAZELCAST_MEMBERS=avatar-node-1:5701,avatar-node-2:5701,avatar-node-3:5701
+      - NODE_NAME=node-1
     ports:
-      - "8081:8080" # Expõe a porta 8080 do contêiner na porta 8081 da sua máquina
-      - "5701:5701" # Expõe a porta 5701 do contêiner na porta 5701 da sua máquina
+      - "8081:8080"
 
   db1:
     image: postgres:17
@@ -37,10 +33,9 @@ services:
       POSTGRES_USER: avatar_user
       POSTGRES_PASSWORD: senha123
     ports:
-      - "5433:5432" # Expõe a porta 5432 do contêiner na porta 5433 da sua máquina
+      - "5433:5432"
     volumes:
       - postgres_data_node1:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # --- NÓ 2 ---
   app2:
@@ -52,14 +47,12 @@ services:
       - avatar-net
     environment:
       - APP_SERVER_PORT=8080
-      - APP_CLUSTER_PORT=5701
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db2:5432/avatar_db
       - SPRING_DATASOURCE_USERNAME=avatar_user
       - SPRING_DATASOURCE_PASSWORD=senha123
-      - HAZELCAST_MEMBERS=avatar-node-1:5701,avatar-node-2:5701,avatar-node-3:5701
+      - NODE_NAME=node-2
     ports:
-      - "8082:8080" # Porta 8082 da sua máquina
-      - "5702:5701" # Porta 5702 da sua máquina
+      - "8082:8080"
 
   db2:
     image: postgres:17
@@ -71,10 +64,9 @@ services:
       POSTGRES_USER: avatar_user
       POSTGRES_PASSWORD: senha123
     ports:
-      - "5434:5432" # Porta 5434 da sua máquina
+      - "5434:5432"
     volumes:
       - postgres_data_node2:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   # --- NÓ 3 ---
   app3:
@@ -86,14 +78,12 @@ services:
       - avatar-net
     environment:
       - APP_SERVER_PORT=8080
-      - APP_CLUSTER_PORT=5701
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db3:5432/avatar_db
       - SPRING_DATASOURCE_USERNAME=avatar_user
       - SPRING_DATASOURCE_PASSWORD=senha123
-      - HAZELCAST_MEMBERS=avatar-node-1:5701,avatar-node-2:5701,avatar-node-3:5701
+      - NODE_NAME=node-3
     ports:
-      - "8083:8080" # Porta 8083 da sua máquina
-      - "5703:5701" # Porta 5703 da sua máquina
+      - "8083:8080"
 
   db3:
     image: postgres:17
@@ -105,10 +95,9 @@ services:
       POSTGRES_USER: avatar_user
       POSTGRES_PASSWORD: senha123
     ports:
-      - "5435:5432" # Porta 5435 da sua máquina
+      - "5435:5432"
     volumes:
       - postgres_data_node3:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
   postgres_data_node1:
