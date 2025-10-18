@@ -123,17 +123,4 @@ public class SyncController {
 
         return ResponseEntity.ok(AppendEntriesResponse.success());
     }
-
-    @PostMapping("/commit-notification")
-    public ResponseEntity<String> notifyCommit(@RequestBody CommitNotificationRequest request) {
-        long leaderCommitIndex = request.getCommitIndex();
-        long localCommitIndex = logStore.getLastCommitIndex();
-
-        if (leaderCommitIndex > localCommitIndex) {
-            long newCommitIndex = Math.min(leaderCommitIndex, logStore.getLastIndex());
-            logStore.markCommitted(newCommitIndex);
-        }
-
-        return ResponseEntity.ok().body("OK");
-    }
 }

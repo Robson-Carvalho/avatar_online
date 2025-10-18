@@ -7,8 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -125,14 +124,17 @@ public class LogConsensusService {
     public void initializeLeaderState(long lastLogIndex) {
         long initialNextIndex = lastLogIndex + 1;
 
-        // Pega todos os membros do cluster (exceto o próprio líder)
         hazelcast.getCluster().getMembers().stream()
                 .filter(member -> !member.localMember())
-                .map(member -> member.getUuid()) // Se estiver usando UUID como chave
+                .map(member -> member.getUuid())
                 .forEach(followerUuid -> {
                     nextIndex.put(followerUuid, initialNextIndex);
-                    matchIndex.put(followerUuid, 0L); // matchIndex começa em 0
+                    matchIndex.put(followerUuid, 0L);
                     System.out.println("-> Inicializando nextIndex para " + followerUuid + " em: " + initialNextIndex);
                 });
+    }
+
+    public Collection<Long> getMatchIndexValues(){
+        return matchIndex.values();
     }
 }

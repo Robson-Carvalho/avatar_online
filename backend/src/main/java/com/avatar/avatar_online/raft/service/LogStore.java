@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -141,5 +142,22 @@ public class LogStore {
         }
         System.out.println("🔥 Logs truncados a partir do índice: " + index +
                 ". Novo último índice: " + lastLogIndex.get());
+    }
+
+    public void tryAdvanceCommitIndex(long currentTerm, long lastLogIndex) {
+        List<Long> indices = new ArrayList<>(logConsensusService.getMatchIndexValues());
+
+        indices.add(lastLogIndex);
+
+        Collections.sort(indices);
+
+        int majorityIndex = indices.size() / 2;
+        long newCommitIndex = indices.get(majorityIndex);
+
+        long currentCommitIndex = getLastCommitIndex();
+
+        if (newCommitIndex > currentCommitIndex && getTermOfIndex(newCommitIndex) == currentTerm) {
+            markCommitted(newCommitIndex);
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.avatar.avatar_online.raft.service;
 
 import com.avatar.avatar_online.raft.model.AppendEntriesRequest;
 import com.avatar.avatar_online.raft.model.AppendEntriesResponse;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -14,7 +15,7 @@ public class RedirectService {
     private final LeaderDiscoveryService leaderDiscoveryService;
     private final RestTemplate restTemplate;
 
-    public RedirectService(LeaderDiscoveryService leaderDiscoveryService,
+    public RedirectService(@Lazy LeaderDiscoveryService leaderDiscoveryService,
                            RestTemplate restTemplate) {
         this.leaderDiscoveryService = leaderDiscoveryService;
         this.restTemplate = restTemplate;

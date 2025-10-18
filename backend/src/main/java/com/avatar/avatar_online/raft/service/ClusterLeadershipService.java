@@ -25,24 +25,29 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
     private final ApplicationContext applicationContext;
     private final LogConsensusService  logConsensusService;
     private final LogStore logStore;
+    private final DatabaseSyncService syncService; // Injetado no construtor
 
+    private ScheduledExecutorService heartbeatScheduler;
     private ScheduledExecutorService electionScheduler;
     private ScheduledExecutorService cleanupScheduler;
     private AtomicBoolean isLeader = new AtomicBoolean(false);
     private AtomicBoolean electionActive = new AtomicBoolean(false);
+    private String currentNodeId;
 
     private static final String LEADER_ELECTION_MAP = "leader-election";
     private static final String LEADER_KEY = "current-leader-node";
-    private String currentNodeId;
+    private static final long HEARTBEAT_INTERVAL_MS = 100;
+
 
     public ClusterLeadershipService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast,
                                     LeaderRegistryService leaderRegistryService,
-                                    ApplicationContext applicationContext, LogConsensusService logConsensusService, LogStore logStore) {
+                                    ApplicationContext applicationContext, LogConsensusService logConsensusService, LogStore logStore, DatabaseSyncService syncService) {
         this.hazelcast = hazelcast;
         this.leaderRegistryService = leaderRegistryService;
         this.applicationContext = applicationContext;
         this.logConsensusService = logConsensusService;
         this.logStore = logStore;
+        this.syncService = syncService;
     }
 
     public void init() {
@@ -139,17 +144,7 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
         long lastLogIndex = logStore.getLastIndex();
         logConsensusService.initializeLeaderState(lastLogIndex);
 
-        startLeaderSync();
-
-        // Força sincronização inicial
-        new Thread(() -> {
-            try {
-                Thread.sleep(3000); // Aguarda 3 segundos
-                performInitialLeaderSync();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }).start();
+        startHeartbeatScheduler();
     }
 
     /**
@@ -191,8 +186,7 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
         // Remove registro de líder
         leaderRegistryService.unregisterAsLeader();
 
-        //  ACESSO INDIRETO PARA PARAR SINCRONIZAÇÃO
-        stopLeaderSync();
+        stopHeartbeatScheduler();
     }
 
     /**
@@ -377,5 +371,25 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
                 Thread.currentThread().interrupt();
             }
         }).start();
+    }
+
+    private void startHeartbeatScheduler() {
+        this.heartbeatScheduler = Executors.newSingleThreadScheduledExecutor(
+                r -> new Thread(r, "Raft-Heartbeat-Leader")
+        );
+        heartbeatScheduler.scheduleAtFixedRate(() -> {
+            try {
+                syncService.sendHeartbeat();
+            } catch (Exception e) {
+                System.err.println("❌ Erro no Heartbeat do líder: " + e.getMessage());
+            }
+        }, 0, HEARTBEAT_INTERVAL_MS, TimeUnit.MILLISECONDS);
+    }
+
+    private void stopHeartbeatScheduler() {
+        if (heartbeatScheduler != null) {
+            heartbeatScheduler.shutdownNow();
+            this.heartbeatScheduler = null;
+        }
     }
 }

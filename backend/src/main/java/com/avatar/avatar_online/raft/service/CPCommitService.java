@@ -4,14 +4,10 @@ import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
-import com.avatar.avatar_online.raft.model.CommitNotificationRequest;
 import com.avatar.avatar_online.raft.model.LogEntry;
 import com.avatar.avatar_online.repository.UserRepository;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.cp.IAtomicReference;
-import com.hazelcast.cp.lock.FencedLock;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -105,19 +101,14 @@ public class CPCommitService {
 
             logStore.append(newLogEntry);
 
-            boolean majorityReplied = syncService.propagateLogEntry(newLogEntry);
+            boolean majorityReplied = syncService.propagateLogEntry();
 
             if(!majorityReplied){
                 System.out.println("Falha na replicação para a maioria. Comando não commmitado.");
                 return false;
             }
 
-            logStore.markCommitted(newIndex);
-
-            syncService.notifyFollowers(new CommitNotificationRequest(newIndex));
-
-            // FAZER UMA CHAMADA A UMA FUNÇÃO DE PROPAGAÇÃO INFORMANDO QUE O COMMIT DEVE SER APLICADNO
-            // MAIS UM ENDPOIN
+            logStore.tryAdvanceCommitIndex(currentTerm,  logStore.getLastIndex());
 
             return true;
         } catch (Exception e) {
