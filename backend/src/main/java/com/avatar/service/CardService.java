@@ -1,6 +1,5 @@
 package com.avatar.service;
 
-import com.avatar.DTOs.CardDTO;
 import com.avatar.DTOs.PackDTO;
 import com.avatar.models.Card;
 import com.avatar.raft.logs.OpenPackCommand;
@@ -14,11 +13,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class CardService {
-
     private final CardRepository cardRepository;
     private final ClusterLeadershipService leadershipService;
     private final RedirectService redirectService;
@@ -42,23 +39,19 @@ public class CardService {
                 System.out.println("🚫 Este nó não é o líder. Redirecionando para o líder...");
                 return redirectService.redirectToLeader("/api/cards/pack", packDTO, HttpMethod.POST);
             }
-            OpenPackCommand command = new OpenPackCommand(UUID.randomUUID(), "OPEN_PACK", UUID.fromString(packDTO.getPlayerId()));
+
+            OpenPackCommand command = new OpenPackCommand(UUID.randomUUID(), "OPEN_PACKAGE", UUID.fromString(packDTO.getPlayerId()));
 
             List<Card> cards = cPCommitService.tryCommitPackOpening(command);
 
             if(cards.isEmpty()){
-                return ResponseEntity.badRequest().body("Erro: Não foi possível processar a solicitação de " +
-                        "abertura de pacote");
+                System.out.println("Não foi possível processar a solicitação de abertura de pacote!");
+                return ResponseEntity.badRequest().body("Não foi possível processar a solicitação de abertura de pacote!");
             }
 
-            List<CardDTO> response = cards.stream()
-                    .map(CardDTO::new)
-                    .collect(Collectors.toList());
-
-            return ResponseEntity.ok().body(response);
+            return ResponseEntity.ok().body(cards);
         } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 }

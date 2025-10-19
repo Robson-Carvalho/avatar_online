@@ -1,5 +1,6 @@
 package com.avatar.publisher_subscriber.controller;
 
+import com.avatar.publisher_subscriber.handlers.HandleCard;
 import com.avatar.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.publisher_subscriber.model.OperationResponseDTO;
 import com.avatar.publisher_subscriber.handlers.HandleUser;
@@ -17,10 +18,12 @@ import java.security.Principal;
 @Controller
 public class OperationController {
     private final HandleUser handleUser;
+    private final HandleCard handleCard;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public OperationController(HandleUser handleUser, SimpMessagingTemplate messagingTemplate) {
+    public OperationController(HandleUser handleUser, HandleCard handleCard, SimpMessagingTemplate messagingTemplate) {
         this.handleUser = handleUser;
+        this.handleCard = handleCard;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -30,7 +33,7 @@ public class OperationController {
         String userId = principal.getName();
         System.out.println("📥 Recebida operação de " + userId + ": " + operation.getOperationType());
 
-        OperationType type = null;
+        OperationType type;
 
         try {
             type = OperationType.valueOf(operation.getOperationType());
@@ -48,6 +51,9 @@ public class OperationController {
                 break;
             case LOGIN_USER:
                 messagingTemplate.convertAndSendToUser(userId, "/queue/response",  handleUser.handleLoginUser(operation));
+                break;
+            case OPEN_PACKAGE:
+                messagingTemplate.convertAndSendToUser(userId, "/queue/response", handleCard.handleOpenPackage(operation));
                 break;
             default:
                 OperationResponseDTO response = new OperationResponseDTO();

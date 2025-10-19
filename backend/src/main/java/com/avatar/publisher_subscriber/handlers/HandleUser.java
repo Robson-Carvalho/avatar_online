@@ -31,7 +31,6 @@ public class HandleUser {
         UserDTO user = new UserDTO(name, nickname, email, password);
 
         try {
-            // Lembrar de trocar pelo método real
             ResponseEntity<?> response = userService.createUser(user);
 
             if (response.getStatusCode().is2xxSuccessful()) {
