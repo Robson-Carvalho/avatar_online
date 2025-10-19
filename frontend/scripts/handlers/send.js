@@ -23,7 +23,11 @@ function handleRegister(event) {
 }
 
 function handleOpenPackage() {
-  
+    const user = getUser()
+
+    if (user != null) {
+        openPackage(user.id)   
+    }
 }
 
 function handleUpdateDeck() {

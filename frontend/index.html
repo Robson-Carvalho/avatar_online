@@ -188,7 +188,7 @@
                 <button onclick="joinInGame()" class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Jogar</button>
                 <button onclick="openModal('deck-modal')"
                     class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Deck</button>
-                <button onclick="openModal('package-modal')"
+                <button onclick="handleOpenPackage()"
                     class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Pacote</button>
                 <button onclick="openModal('cards-modal')"
                     class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">Cartas</button>
@@ -251,6 +251,10 @@
         
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     <!-- cartas aqui -->
+                     <div id="package-cards">
+                        <!-- popular com as cartas ganhadas - localstorage("package-cards")  -->
+
+                     </div>
                 </div>
             </div>
             <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
@@ -286,6 +290,7 @@
     </div>
 
 
+    <script src="./scripts/data/localstorage.js"></script>
     <script src="./scripts/game/index.js"></script>
     <script src="./scripts/global/index.js"></script>
     <script src="./scripts/view/loading.js"></script>
@@ -293,6 +298,8 @@
     <script src="./scripts/handlers/received.js"></script>
     <script src="./scripts/handlers/send.js"></script>
     <script src="./scripts/pub_sub.js"></script>
+    <script src="./scripts/operations/card.js"></script>
+    <script src="./scripts/operations/deck.js"></script>
     <script src="./scripts/operations/user.js"></script>
 </body>
 </html>

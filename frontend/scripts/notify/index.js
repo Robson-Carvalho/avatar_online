@@ -3,6 +3,7 @@ const toastConfig = {
     gravity: "top",
     position: "right",
     stopOnFocus: true,
+    close: true,
     className: "custom-toast",
     escapeMarkup: false
 };
