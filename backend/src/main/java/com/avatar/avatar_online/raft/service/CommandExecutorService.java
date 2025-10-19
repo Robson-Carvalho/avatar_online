@@ -7,19 +7,18 @@ import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.repository.CardRepository;
 import com.avatar.avatar_online.repository.DeckRepository;
 import com.avatar.avatar_online.repository.UserRepository;
+import com.avatar.avatar_online.service.PersistanceService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CommandExecutorService {
 
-    private final UserRepository userRepository;
-    private final DeckRepository deckRepository;
+    private final PersistanceService persistanceService;
 
-    public CommandExecutorService(UserRepository userRepository, DeckRepository deckRepository) {
-        this.userRepository = userRepository;
-        this.deckRepository = deckRepository;
+    public CommandExecutorService(PersistanceService persistanceService) {
 
+        this.persistanceService = persistanceService;
     }
 
     public void executeCommand(LogEntry entry) {
@@ -29,7 +28,7 @@ public class CommandExecutorService {
                 " no índice " + entry.getIndex());
 
         if (command instanceof UserSignUpCommand) {
-            applyUserSignUp((UserSignUpCommand) command);
+            persistanceService.applyUserSignUpCommand((UserSignUpCommand) command);
         }
         // Adicionar outros comandos aqui:
         // else if (command instanceof SetDeckCommmand) {
@@ -38,35 +37,8 @@ public class CommandExecutorService {
         // ...
     }
 
-    @Transactional
-    public void applyUserSignUp(UserSignUpCommand command) {
-        System.out.println("   -> Executando UserSignUp para: " + command.getEmail());
-        applyUserSignUpCommand(command);
-    }
-
     private void applyCard(){
 
     }
 
-    // ... Métodos privados para aplicar outros comandos ...
-
-    @Transactional
-    public void applyUserSignUpCommand(UserSignUpCommand command){
-        User newUser = new User(
-                command.getPlayerId(),
-                command.getName(),
-                command.getNickname(),
-                command.getEmail(),
-                command.getPassword()
-        );
-
-        Deck newDeck = new Deck();
-
-        newDeck.setId(command.getDeckId());
-        newUser.setId(command.getPlayerId());
-        newDeck.setUser(newUser.getId());
-
-        userRepository.save(newUser);
-        deckRepository.save(newDeck);
-    }
 }

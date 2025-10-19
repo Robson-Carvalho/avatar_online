@@ -53,7 +53,6 @@ public class CPCommitService {
         if (userRepository.existsByEmail(newCommand.getEmail())) {
             return false;
         }
-
         if (newCommand.getNickname() != null && userRepository.existsByNickname(newCommand.getNickname())) {
             return false;
         }
@@ -70,8 +69,6 @@ public class CPCommitService {
                 System.out.println("Falha na replicação para a maioria. Comando não commmitado.");
                 return false;
             }
-
-            Thread.sleep(5000);
 
             logStore.tryAdvanceCommitIndex(currentTerm,  logStore.getLastIndex());
 

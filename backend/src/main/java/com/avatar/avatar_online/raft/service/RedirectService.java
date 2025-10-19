@@ -3,6 +3,7 @@ package com.avatar.avatar_online.raft.service;
 import com.avatar.avatar_online.raft.model.AppendEntriesRequest;
 import com.avatar.avatar_online.raft.model.AppendEntriesResponse;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -82,6 +83,9 @@ public class RedirectService {
             );
 
             return responseEntity;
+        } catch (DataIntegrityViolationException e){
+            System.out.println("✅ Idempotência ok: Comando de usuário já aplicado. Retornando sucesso.");
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             System.err.println("❌ Falha ao enviar comando para " + targetURL + ": " + e.getMessage());
 
