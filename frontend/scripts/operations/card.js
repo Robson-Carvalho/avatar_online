@@ -14,3 +14,7 @@ function openPackage(userID) {
     stompClient.send("/app/operation", {}, JSON.stringify(data));
     log(`📤 Enviado: ${data.operationType}`);
 }
+
+function getCards() {
+  
+}

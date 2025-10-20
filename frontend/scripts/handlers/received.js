@@ -35,8 +35,17 @@ function handleOpenPackageSuccess(data) {
   // publicar a resposta no tópico o modal abre ou uma mensagem de erro 
   // e lançada muito antes
   
-  // usar o data para popular o modal de cartas ganhadas
+  // usar o data para popular o modal de cartas ganhadas antes de abrir
   console.log(data)
+
+  const cards = JSON.parse(data.data);
+
+  console.log(cards, "as cartaaas")
+
+  cards.forEach(card => {
+    document.getElementById("package-cards").innerHTML += cardTemplateOpenPackage(card.name, card.element, card.phase, card.attack, card.life, card.defense, card.rarity);
+  });
+
   
   openModal('package-modal'); 
 }

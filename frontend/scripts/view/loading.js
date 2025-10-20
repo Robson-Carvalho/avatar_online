@@ -55,6 +55,9 @@ function logout() {
 // MÉTODOS LÓGICOS DENTRO DO CONTAINER DASHBOARD
 
 
+// lembrar de tirar para teste
+//openModal("package-modal")
+
 function openModal(modalId) {
     const overlay = document.getElementById('modal-overlay');
     const modal = document.getElementById(modalId);
