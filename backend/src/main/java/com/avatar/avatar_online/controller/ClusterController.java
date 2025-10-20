@@ -4,7 +4,6 @@ import com.avatar.avatar_online.raft.model.LeaderInfo;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
 import com.avatar.avatar_online.raft.service.LeaderDiscoveryService;
 import com.avatar.avatar_online.raft.service.LeaderRegistryService;
-import com.avatar.avatar_online.raft.service.DatabaseSyncService;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import org.springframework.beans.factory.annotation.Qualifier;

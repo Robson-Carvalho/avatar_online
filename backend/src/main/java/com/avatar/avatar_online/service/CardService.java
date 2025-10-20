@@ -1,6 +1,5 @@
 package com.avatar.avatar_online.service;
 
-import com.avatar.avatar_online.DTOs.CardDTO;
 import com.avatar.avatar_online.DTOs.PackDTO;
 import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
@@ -16,11 +15,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class CardService {
-
     private final CardRepository cardRepository;
     private final ClusterLeadershipService leadershipService;
     private final RedirectService redirectService;

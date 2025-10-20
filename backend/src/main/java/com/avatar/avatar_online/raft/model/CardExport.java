@@ -5,7 +5,6 @@ import com.avatar.avatar_online.enums.ElementCard; // 🔑 Importar Enums
 import com.avatar.avatar_online.enums.PhaseCard;   // 🔑 Importar Enums
 import com.avatar.avatar_online.enums.RarityCard;  // 🔑 Importar Enums
 import com.avatar.avatar_online.models.User;
-import com.avatar.avatar_online.repository.UserRepository;
 
 import java.util.Map;
 import java.util.UUID;

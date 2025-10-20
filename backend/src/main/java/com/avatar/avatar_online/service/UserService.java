@@ -2,8 +2,6 @@ package com.avatar.avatar_online.service;
 
 import com.avatar.avatar_online.DTOs.UserDTO;
 import com.avatar.avatar_online.models.User;
-import com.avatar.avatar_online.pubsub.SignInDTO;
-import com.avatar.avatar_online.pubsub.SignUpDTO;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.service.CPCommitService;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
@@ -64,14 +62,18 @@ public class UserService {
         }
     }
 
-    @Transactional
-    public UUID signInProcessment(SignInDTO signInDTO){
-        return UUID.randomUUID();
-    }
+    public Optional<User> login(String nickname, String password) {
+        Optional<User> user = this.findByNickname(nickname);
 
-    @Transactional
-    public UUID signUpProcessment(SignUpDTO signInDTO){
-        return UUID.randomUUID();
+        if(user.isPresent()){
+            if(user.get().getPassword().equals(password)){
+                return user;
+            }
+
+            return Optional.empty();
+        }
+
+        return Optional.empty();
     }
 
     public Optional<User> findById(UUID id) {

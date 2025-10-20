@@ -1,7 +1,6 @@
 package com.avatar.avatar_online.controller;
 
 import com.avatar.avatar_online.models.Card;
-import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.model.*;
