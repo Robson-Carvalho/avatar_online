@@ -54,7 +54,10 @@ public class UserService {
                         "Email ou senha podem já estar sendo utilizados.");
             }
 
-            return ResponseEntity.ok().body(command.getPlayerId());
+            User user1 = new User(command.getPlayerId(), user.getName(), user.getNickname(),
+                    user.getEmail(), user.getPassword());
+
+            return ResponseEntity.ok().body(user1);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");
