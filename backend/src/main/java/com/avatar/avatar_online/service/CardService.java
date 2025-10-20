@@ -12,6 +12,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -42,23 +44,42 @@ public class CardService {
                 System.out.println("🚫 Este nó não é o líder. Redirecionando para o líder...");
                 return redirectService.redirectToLeader("/api/cards/pack", packDTO, HttpMethod.POST);
             }
-            OpenPackCommand command = new OpenPackCommand(UUID.randomUUID(), "OPEN_PACK", UUID.fromString(packDTO.getPlayerId()));
 
-            List<Card> cards = cPCommitService.tryCommitPackOpening(command);
+            List<Card> availableCards = cardRepository.findAllByUserIsNull();
 
-            if(cards.isEmpty()){
+            if (availableCards.size() < 5) {
+                throw new RuntimeException("LOGS: Pool de cartas insuficiente para abrir pacote.");
+            }
+
+            List<Card> selectedCards = selectRandomCards(availableCards);
+
+            List<UUID> selectedCardIds = selectedCards.stream()
+                    .map(Card::getId)
+                    .toList();
+
+            OpenPackCommand command = new OpenPackCommand(UUID.randomUUID(), "OPEN_PACK",
+                    UUID.fromString(packDTO.getPlayerId()), selectedCardIds);
+
+            boolean response = cPCommitService.tryCommitPackOpening(command);
+
+            if(!response){
                 return ResponseEntity.badRequest().body("Erro: Não foi possível processar a solicitação de " +
                         "abertura de pacote");
             }
 
-            List<CardDTO> response = cards.stream()
-                    .map(CardDTO::new)
-                    .collect(Collectors.toList());
-
-            return ResponseEntity.ok().body(response);
+            return ResponseEntity.ok().body(selectedCards);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");
         }
+    }
+
+    private List<Card> selectRandomCards(List<Card> sourceList) {
+        // Cria uma cópia para evitar modificar a lista original
+        List<Card> listCopy = new ArrayList<>(sourceList);
+        Collections.shuffle(listCopy); // Embaralha a lista
+
+        // Retorna as primeiras 'count' cartas
+        return listCopy.subList(0, 5);
     }
 }

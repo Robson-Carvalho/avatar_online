@@ -21,8 +21,7 @@ public class CardController {
     @PostMapping("/pack")
     public ResponseEntity<?> getPack(@RequestBody PackDTO packDTO) {
         try {
-            ResponseEntity <?> pack = cardService.generatePack(packDTO);
-            return ResponseEntity.ok().body(pack.getBody());
+            return cardService.generatePack(packDTO);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body("{\"error\": \"Erro ao processar requisição: " + e.getMessage() + "\"}");

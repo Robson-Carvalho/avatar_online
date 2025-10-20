@@ -40,8 +40,33 @@ public class CPCommitService {
         return true;
     }
 
-    public List<Card> tryCommitPackOpening(OpenPackCommand newCommand){
-        return new ArrayList<>();
+    public boolean tryCommitPackOpening(OpenPackCommand newCommand){
+        if(hazelcast.getCluster().getMembers().size() < 2) {
+            System.out.println("LOGS: TAMANHO DE CLUSTER INSUFICIENTE PARA REALIZAR OPERAÇÕES CRÍTICAS.");
+            return false;
+        }
+
+        try{
+            long newIndex = logStore.getLastIndex() + 1;  // Considerar refatorar isso aqui para deixar mais elegante
+            long currentTerm = leaderRegistryService.getCurrentTerm();
+            LogEntry newLogEntry = new LogEntry(currentTerm, newIndex, newCommand, false);
+
+            logStore.append(newLogEntry);
+
+            boolean majorityReplied = syncService.propagateLogEntry();
+
+            if(!majorityReplied){
+                System.out.println("Falha na replicação para a maioria. Comando não commmitado.");
+                return false;
+            }
+
+            logStore.tryAdvanceCommitIndex(currentTerm,  logStore.getLastIndex());
+
+            return true;
+        } catch (Exception e) {
+            System.out.println("❌ Erro ao comitar comando CP: " + e.getMessage());
+            return false;
+        }
     }
 
     public boolean tryCommitUserSignUp(UserSignUpCommand newCommand){ //Verificando essa lógica ainda

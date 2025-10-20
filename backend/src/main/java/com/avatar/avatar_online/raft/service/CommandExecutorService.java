@@ -1,7 +1,9 @@
 package com.avatar.avatar_online.raft.service;
 
+import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.models.User;
+import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.model.LogEntry;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.repository.CardRepository;
@@ -29,12 +31,9 @@ public class CommandExecutorService {
 
         if (command instanceof UserSignUpCommand) {
             persistanceService.applyUserSignUpCommand((UserSignUpCommand) command);
+        } else if (command instanceof OpenPackCommand) {
+            persistanceService.applyOpenPackCommand((OpenPackCommand) command);
         }
-        // Adicionar outros comandos aqui:
-        // else if (command instanceof SetDeckCommmand) {
-        //     applySetDeckCommand((SetDeckCommmand) command);
-        // }
-        // ...
     }
 
     private void applyCard(){
