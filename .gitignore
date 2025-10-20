@@ -17,9 +17,6 @@ build/
 **/gradle-app.setting
 
 # Logs
-logs/
-*.log
-**/logs/
 
 # Runtime data (arquivos locais de configuração)
 **/src/main/resources/application-local.properties
