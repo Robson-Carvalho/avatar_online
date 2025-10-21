@@ -27,6 +27,15 @@ function handlerMain(message) {
   else if (data.operationType === "UPDATE_DECK") {
     handleUpdateDeckSuccess(data.data) 
   }
+
+  else if(data.operationType === "GET_DECK"){
+    handleGetDeckSuccess(data.data)
+  }
+
+}
+
+function handleGetDeckSuccess(data){
+  openModal('deck-modal')
 }
 
 function handleRegisterUserSuccess() {

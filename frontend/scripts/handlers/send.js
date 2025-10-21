@@ -30,8 +30,18 @@ function handleOpenPackage() {
     }
 }
 
+function handleGetDeck(){
+    const user = getUser()
+
+    // pegar as cartas
+
+    if (user != null) {
+        getDeck(user.id)
+    }
+}
+
 function handleUpdateDeck() {
-    // o deck vai me devolver as cartas também.
+    
 }   
 
 function handleJoinInGame() {

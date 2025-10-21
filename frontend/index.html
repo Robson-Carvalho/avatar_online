@@ -148,8 +148,7 @@
         <button onclick="joinInGame()" class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">
           Jogar
         </button>
-        <button onclick="openModal('deck-modal')"
-          class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">
+        <button onclick="handleGetDeck()" class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">
           Deck
         </button>
         <button onclick="handleOpenPackage()"
@@ -179,7 +178,7 @@
     </div>
 
 
-    
+
     <!-- Overlay -->
     <div id="modal-overlay"
       class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity duration-300"></div>
@@ -195,7 +194,46 @@
           </svg>
         </button>
       </div>
-      <div class="p-6"></div>
+
+      <div class="p-6">
+        <!-- área do deck -->
+        <div class="grid grid-cols-5 gap-4">
+          <div
+            class="deck-card-1 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[180px] flex justify-center items-center text-gray-400 select-none">
+            Arraste aqui
+          </div>
+
+          <div
+            class="deck-card-2 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[150px] flex justify-center items-center text-gray-400 select-none">
+            Arraste aqui
+          </div>
+
+          <div
+            class="deck-card-3 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[150px] flex justify-center items-center text-gray-400 select-none">
+            Arraste aqui
+          </div>
+
+          <div
+            class="deck-card-4 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[150px] flex justify-center items-center text-gray-400 select-none">
+            Arraste aqui
+          </div>
+
+          <div
+            class="deck-card-5 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[150px] flex justify-center items-center text-gray-400 select-none">
+            Arraste aqui
+          </div>
+        </div>
+
+
+
+        <!-- área das cartas -->
+        <div class="deck-cards-user">
+          <!-- cartas para puxar e colocar no drag -->
+        </div>
+
+      </div>
+
+
       <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
         <button onclick="closeModal('deck-modal')"
           class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors">
@@ -270,6 +308,9 @@
   <script src="./scripts/handlers/received.js"></script>
   <script src="./scripts/handlers/send.js"></script>
   <script src="./scripts/pub_sub.js"></script>
+  <script src="./scripts/view/dragDeck.js"></script>
+
+  <script src="./scripts/operations/game.js"></script>
   <script src="./scripts/operations/card.js"></script>
   <script src="./scripts/operations/deck.js"></script>
   <script src="./scripts/operations/user.js"></script>

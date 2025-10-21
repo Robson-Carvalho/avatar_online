@@ -10,4 +10,5 @@ function updateUserDisplay(data) {
   }
 }
 
+  
 document.addEventListener("DOMContentLoaded", updateUserDisplay())

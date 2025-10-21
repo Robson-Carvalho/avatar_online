@@ -22,6 +22,8 @@ function updateViewsBasedOnConnection() {
   }
 }
 
+openModal('deck-modal')
+
 function showSignIn() {
     if (stompClient && stompClient.connected) {
         document.getElementById("container-signIn").classList.remove("hidden");
