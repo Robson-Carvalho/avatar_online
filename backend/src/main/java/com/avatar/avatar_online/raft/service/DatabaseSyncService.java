@@ -59,14 +59,21 @@ public class DatabaseSyncService {
                 }))
                 .toList();
 
-        int successCount = 1; // O líder conta a si mesmo
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+        try {
+            allOf.get(REPLICATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            System.err.println("⏳ Timeout/Exceção na resposta da replicação. Processando as respostas disponíveis.");
+        }
+
+        int successCount = 1;
         for (CompletableFuture<Boolean> future : futures) {
-            try {
-                if (future.get(REPLICATION_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+            if (future.isDone() && !future.isCompletedExceptionally()) {
+                if (future.join()) {
                     successCount++;
                 }
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                System.err.println("⏳ Timeout/Exceção na resposta da replicação.");
             }
         }
 
