@@ -1,9 +1,6 @@
 function updateUserDisplay(data) {
   const local = getUser()
 
-  console.log("local", local)
-  console.log("data", data)
-
   if (local != null) {
     document.getElementById("user_id").innerText = local.id;
     document.getElementById("nickname_dash").innerText = local.nickname;

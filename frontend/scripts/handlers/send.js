@@ -31,8 +31,8 @@ function handleOpenPackage() {
 }
 
 function handleUpdateDeck() {
-  
-}
+    // o deck vai me devolver as cartas também.
+}   
 
 function handleJoinInGame() {
   

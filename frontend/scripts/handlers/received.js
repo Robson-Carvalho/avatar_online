@@ -21,11 +21,11 @@ function handlerMain(message) {
   }
 
   else if (data.operationType === "OPEN_PACKAGE") {
-    handleOpenPackageSuccess(data) 
+    handleOpenPackageSuccess(data.data) 
   }
 
   else if (data.operationType === "UPDATE_DECK") {
-    handleUpdateDeckSuccess(data) 
+    handleUpdateDeckSuccess(data.data) 
   }
 }
 
@@ -44,23 +44,35 @@ function handleLoginUserSuccess(data) {
   updateViewsBasedOnConnection()
 }
 
-function handleOpenPackageSuccess(data) {
+function handleOpenPackageSuccess(cards) {
+  document.getElementById("package-cards").innerHTML = "";
+
   showSuccess("Pacote aberto com sucesso");
 
-  console.log(data)
+  if (typeof cards === "string") {
+    try {
+      cards = JSON.parse(cards);
+    } catch (e) {
+      console.error("Erro ao fazer parse do JSON de cards:", e);
+      return;
+    }
+  }
 
-  const cards = JSON.parse(data.data);
-
-  console.log(cards, "as cartaaas")
-
-  document.getElementById("package-cards").innerHTML = "";
   cards.forEach(card => {
-    document.getElementById("package-cards").innerHTML += cardTemplateOpenPackage(card.name, card.element, card.phase, card.attack, card.life, card.defense, card.rarity);
+    document.getElementById("package-cards").innerHTML += cardTemplateOpenPackage(
+      card.name,
+      card.element,
+      card.phase,
+      card.attack,
+      card.life,
+      card.defense,
+      card.rarity
+    );
   });
 
-  
-  openModal('package-modal'); 
+  openModal('package-modal');
 }
+
 
 function handleUpdateDeckSuccess(data) {
   showSuccess("Deck atualizado com sucesso!");
