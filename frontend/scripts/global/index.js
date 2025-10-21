@@ -1,16 +1,15 @@
-// chamado ao realizar login
-function updateUserDisplay() {
-  const data = localStorage.getItem("user_avatar_online");
-  
-  if (data) {
-    try {
-      const user = JSON.parse(data);
-      
-      document.getElementById("user_id").innerText = user.id;
-      document.getElementById("nickname_dash").innerText = user.nickname;
-    } catch (error) {
-      console.error('Erro ao parse user data:', error);
-    }
+function updateUserDisplay(data) {
+  const local = getUser()
+
+  console.log("local", local)
+  console.log("data", data)
+
+  if (local != null) {
+    document.getElementById("user_id").innerText = local.id;
+    document.getElementById("nickname_dash").innerText = local.nickname;
+  }else{
+    document.getElementById("user_id").innerText = data.id;
+    document.getElementById("nickname_dash").innerText = data.nickname;
   }
 }
 

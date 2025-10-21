@@ -10,8 +10,14 @@ function handlerMain(message) {
     showError(`${data.message}`);
   }
 
-  else if(data.operationType === "LOGIN_USER" || data.operationType === "CREATE_USER") {
-    handleLoginUserOrCreateUserSuccess(data)
+  else if (data.operationType === "LOGIN_USER") {
+    localStorage.setItem("user_avatar_online", JSON.stringify(data.data)) 
+    handleLoginUserSuccess(data.data)
+  }
+    
+  else if (data.operationType === "CREATE_USER") {
+    localStorage.setItem("user_avatar_online", JSON.stringify(data.data)) 
+    handleRegisterUserSuccess(data.data)
   }
 
   else if (data.operationType === "OPEN_PACKAGE") {
@@ -23,25 +29,31 @@ function handlerMain(message) {
   }
 }
 
-function handleLoginUserOrCreateUserSuccess(data) {
-  localStorage.setItem("user_avatar_online", JSON.stringify(data.data))
-  updateUserDisplay();
+function handleRegisterUserSuccess() {
+  showSuccess("Conta criada com sucesso!");
+  showSignIn()
+}
+
+function handleLoginUserSuccess(data) {
+  try {   
+    updateUserDisplay(data);
+  } catch (error) {
+    console.error("error: ", error)
+  }
+
   updateViewsBasedOnConnection()
 }
 
 function handleOpenPackageSuccess(data) {
   showSuccess("Pacote aberto com sucesso");
-  // a ideia é, o botão envia a ação para o servidor e quando o servidor
-  // publicar a resposta no tópico o modal abre ou uma mensagem de erro 
-  // e lançada muito antes
-  
-  // usar o data para popular o modal de cartas ganhadas antes de abrir
+
   console.log(data)
 
   const cards = JSON.parse(data.data);
 
   console.log(cards, "as cartaaas")
 
+  document.getElementById("package-cards").innerHTML = "";
   cards.forEach(card => {
     document.getElementById("package-cards").innerHTML += cardTemplateOpenPackage(card.name, card.element, card.phase, card.attack, card.life, card.defense, card.rarity);
   });

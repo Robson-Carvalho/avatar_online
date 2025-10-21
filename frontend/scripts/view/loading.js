@@ -7,6 +7,7 @@ function updateViewsBasedOnConnection() {
     document.getElementById("container-signUp").classList.add("hidden");
     document.getElementById("container-dashboard").classList.add("hidden");
   } else {
+      // posso colocar uma verificação aqui, para verificar se o user existe/está auth
     if (localStorage.getItem("user_avatar_online") !== null) {
       document.getElementById("container-signIn").classList.add("hidden");    
       document.getElementById("container-loading").classList.add("hidden");
