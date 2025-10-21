@@ -4,6 +4,7 @@ import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
+import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.repository.CardRepository;
 import com.avatar.avatar_online.repository.DeckRepository;
@@ -79,5 +80,24 @@ public class PersistanceService {
         }
 
         cardRepository.saveAll(cardsToAssign);
+    }
+
+    @Transactional
+    public void applySetDeckCommand(SetDeckCommmand command){
+        Optional<Deck> deckOptional = deckRepository.findByUser(command.getUserId());
+
+        if(deckOptional.isEmpty()){
+            throw new RuntimeException("Deck não encontrado para o usuário: " + command.getUserId());
+        }
+
+        Deck deck = deckOptional.get();
+
+        deck.setCard1(command.getCard1Id());
+        deck.setCard2(command.getCard2Id());
+        deck.setCard3(command.getCard3Id());
+        deck.setCard4(command.getCard4Id());
+        deck.setCard5(command.getCard5Id());
+
+        deckRepository.save(deck);
     }
 }
