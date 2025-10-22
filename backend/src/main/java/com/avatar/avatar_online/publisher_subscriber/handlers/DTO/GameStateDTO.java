@@ -1,6 +1,8 @@
 package com.avatar.avatar_online.publisher_subscriber.handlers.DTO;
 
 import com.avatar.avatar_online.game.GameState;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 import java.util.List;
@@ -15,7 +17,14 @@ public class GameStateDTO implements Serializable {
     // ... adicione outros campos simples que o cliente precisa, como 'message' e 'type'
 
 
-    public GameStateDTO(String id, String turnPlayerId, String playerWin, PlayerDTO playerOne, PlayerDTO playerTwo){
+    @JsonCreator
+    public GameStateDTO(
+            @JsonProperty("id") String id,
+            @JsonProperty("turnPlayerId") String turnPlayerId,
+            @JsonProperty("playerWin") String playerWin,
+            @JsonProperty("playerOne") PlayerDTO playerOne,
+            @JsonProperty("playerTwo") PlayerDTO playerTwo) {
+
         this.id = id;
         this.turnPlayerId = turnPlayerId;
         this.playerWin = playerWin;
@@ -23,11 +32,11 @@ public class GameStateDTO implements Serializable {
         this.playerTwo = playerTwo;
     }
 
+    // Mantenha este construtor de domínio para a SERIALIZAÇÃO
     public GameStateDTO(GameState gameState) {
         this.id = gameState.getId();
         this.turnPlayerId = gameState.getTurnPlayerId();
         this.playerWin = gameState.getPlayerWin();
-        // Converte o Player do dominio para PlayerDTO
         this.playerOne = new PlayerDTO(gameState.getPlayerOne());
         this.playerTwo = new PlayerDTO(gameState.getPlayerTwo());
     }
