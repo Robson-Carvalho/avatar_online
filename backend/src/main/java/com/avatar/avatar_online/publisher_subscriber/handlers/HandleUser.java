@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class HandleUser {
@@ -20,6 +21,23 @@ public class HandleUser {
     @Autowired
     public HandleUser(UserService userService) {
         this.userService = userService;
+    }
+
+    public OperationResponseDTO handleAuthUser(OperationRequestDTO operation){
+        String userID = (String) operation.getPayload().get("userID");
+
+        try {
+            Optional<User> user = userService.findById(UUID.fromString(userID));
+
+            if (user.isPresent()) {
+                return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Usuário autenticado!", true);
+            } else {
+                return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR,"Usuário não autenticado!", false);
+            }
+        } catch (Exception e) {
+            return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR,"Erro inesperado: " + e.getMessage(), null
+            );
+        }
     }
 
     public OperationResponseDTO handleCreateUser(OperationRequestDTO operation) {
