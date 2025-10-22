@@ -17,18 +17,32 @@ function handlerMain(message) {
   } else if (data.operationType === "OPEN_PACKAGE") {
     handleOpenPackageSuccess(data.data);
   } else if (data.operationType === "UPDATE_DECK") {
-    handleUpdateDeckSuccess(data.data);
+    handleUpdateDeckSuccess();
   } else if (data.operationType === "GET_DECK") {
     handleGetDeckSuccess(data.data);
   } else if (data.operationType === "GET_CARDS") {
     handleGetCardsSuccess(data.data);
   } else if (data.operationType === "AUTH_USER") {
-    console.log("Auth", data.data);
-    
-    if (!data.data) {
-      logout();
-    } 
+    handleAuthUser(data.data)
+  }else if (data.operationType === "JOIN_QUEUE") {
+    handleJoinInQueueSuccess(data.data)
+  }else if (data.operationType === "MATCH_FOUND") {
+    handleMatchFoundSuccess(data.data)
+  }else if (data.operationType === "UPDATE_GAME") {
+    handlUpdateGameSuccess(data.data)
   }
+}
+
+function handleJoinInQueueSuccess(data) {
+  console.log(data)
+}
+
+function handleMatchFoundSuccess(data) {
+  console.log(data)
+}
+
+function handlUpdateGameSuccess(data) {
+  console.log(data)
 }
 
 function handleGetDeckSuccess(data) {
@@ -76,7 +90,7 @@ function handleGetDeckSuccess(data) {
   openModal("deck-modal");
 }
 
-function handleUpdateDeckSuccess(data) {
+function handleUpdateDeckSuccess() {
   showSuccess("Deck atualizado com sucesso!");
 }
 
@@ -141,4 +155,13 @@ function handleOpenPackageSuccess(cards) {
   });
 
   openModal("package-modal");
+}
+
+function handleAuthUser(data) {
+  // lembrar depois de ver isso - quando o user cair na tela de dash e não exister user, jogar pra tel de login
+  console.log("Auth", data.data);
+    
+    if (!data.data) {
+      logout();
+    } 
 }

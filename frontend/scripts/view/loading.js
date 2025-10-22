@@ -8,7 +8,6 @@ function updateViewsBasedOnConnection() {
     document.getElementById("container-dashboard").classList.add("hidden");
   } else {
     if (localStorage.getItem("user_avatar_online") !== null) {
-      verifyAuth();
       document.getElementById("container-signIn").classList.add("hidden");
       document.getElementById("container-loading").classList.add("hidden");
       document.getElementById("container-signUp").classList.add("hidden");

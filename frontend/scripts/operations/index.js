@@ -1,3 +1,11 @@
+function handleJoinInQueue() {
+    const user = getUser();
+
+    if (user != null)  {
+        JoinInQueue(user.id);
+    }
+}
+
 function handleLogin(event) {
     event.preventDefault();
     
