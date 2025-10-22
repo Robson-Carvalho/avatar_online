@@ -8,47 +8,56 @@ function handlerMain(message) {
 
   if (data.operationStatus == "ERROR") {
     showError(`${data.message}`);
+  } else if (data.operationType === "LOGIN_USER") {
+    localStorage.setItem("user_avatar_online", JSON.stringify(data.data));
+    handleLoginUserSuccess(data.data);
+  } else if (data.operationType === "CREATE_USER") {
+    localStorage.setItem("user_avatar_online", JSON.stringify(data.data));
+    handleRegisterUserSuccess(data.data);
+  } else if (data.operationType === "OPEN_PACKAGE") {
+    handleOpenPackageSuccess(data.data);
+  } else if (data.operationType === "UPDATE_DECK") {
+    handleUpdateDeckSuccess(data.data);
+  } else if (data.operationType === "GET_DECK") {
+    handleGetDeckSuccess(data.data);
+  } else if (data.operationType === "GET_CARDS") {
+    handleGetCardsSuccess(data.data);
+  } else if (data.operationType === "AUTH_USER") {
+    console.log("Auth", data.data);
+    // impelementar - se for false, chama logout()
   }
-
-  else if (data.operationType === "LOGIN_USER") {
-    localStorage.setItem("user_avatar_online", JSON.stringify(data.data)) 
-    handleLoginUserSuccess(data.data)
-  }
-    
-  else if (data.operationType === "CREATE_USER") {
-    localStorage.setItem("user_avatar_online", JSON.stringify(data.data)) 
-    handleRegisterUserSuccess(data.data)
-  }
-
-  else if (data.operationType === "OPEN_PACKAGE") {
-    handleOpenPackageSuccess(data.data) 
-  }
-
-  else if (data.operationType === "UPDATE_DECK") {
-    handleUpdateDeckSuccess(data.data) 
-  }
-
-  else if(data.operationType === "GET_DECK"){
-    handleGetDeckSuccess(data.data)
-  }
-
-  else if(data.operationType === "GET_CARDS"){
-    handleGetCardsSuccess(data.data)
-  }
-
-  else if (data.operationType === "AUTH_USER") {
-    console.log("Auth", data.data)
-    // se for false, chama logout()
-  }
-
 }
 
 function handleGetDeckSuccess(data) {
-  // limpar e popular o deck antes de abrir
-  
-  const cards = data.cards
+  const deck = data.deck;
+  const cards = data.cards;
 
-  cards.forEach(card => {
+  const deckSlots = [
+    document.querySelector(".deck-card-1"),
+    document.querySelector(".deck-card-2"),
+    document.querySelector(".deck-card-3"),
+    document.querySelector(".deck-card-4"),
+    document.querySelector(".deck-card-5"),
+  ];
+
+  deckSlots.forEach((slot) => (slot.innerHTML = "Arraste aqui"));
+
+  deck.forEach((card, index) => {
+    if (card && deckSlots[index]) {
+      deckSlots[index].innerHTML = cardTemplateDeck(
+        card.id,
+        card.name,
+        card.element,
+        card.phase,
+        card.attack,
+        card.life,
+        card.defense,
+        card.rarity
+      );
+    }
+  });
+
+  cards.forEach((card) => {
     document.getElementById("deck-cards-user").innerHTML += cardTemplateDeck(
       card.id,
       card.name,
@@ -58,35 +67,47 @@ function handleGetDeckSuccess(data) {
       card.life,
       card.defense,
       card.rarity
-     )
-  }) 
+    );
+  });
 
-
-  openModal('deck-modal')
+  openModal("deck-modal");
 }
 
 function handleUpdateDeckSuccess(data) {
   showSuccess("Deck atualizado com sucesso!");
 }
 
-function handleGetCardsSuccess() {
-  // deixar pra depois
-  showSuccess("abriu seu báu");
+function handleGetCardsSuccess(data) {
+  console.log(data);
+
+  data.forEach((card) => {
+    document.getElementById("user-cards").innerHTML += cardTemplateOpenPackage(
+      card.name,
+      card.element,
+      card.phase,
+      card.attack,
+      card.life,
+      card.defense,
+      card.rarity
+    );
+  });
+
+  openModal("cards-modal");
 }
 
 function handleRegisterUserSuccess() {
   showSuccess("Conta criada com sucesso!");
-  showSignIn()
+  showSignIn();
 }
 
 function handleLoginUserSuccess(data) {
-  try {   
+  try {
     updateUserDisplay(data);
   } catch (error) {
-    console.error("error: ", error)
+    console.error("error: ", error);
   }
 
-  updateViewsBasedOnConnection()
+  updateViewsBasedOnConnection();
 }
 
 function handleOpenPackageSuccess(cards) {
@@ -103,17 +124,18 @@ function handleOpenPackageSuccess(cards) {
     }
   }
 
-  cards.forEach(card => {
-    document.getElementById("package-cards").innerHTML += cardTemplateOpenPackage(
-      card.name,
-      card.element,
-      card.phase,
-      card.attack,
-      card.life,
-      card.defense,
-      card.rarity
-    );
+  cards.forEach((card) => {
+    document.getElementById("package-cards").innerHTML +=
+      cardTemplateOpenPackage(
+        card.name,
+        card.element,
+        card.phase,
+        card.attack,
+        card.life,
+        card.defense,
+        card.rarity
+      );
   });
 
-  openModal('package-modal');
+  openModal("package-modal");
 }

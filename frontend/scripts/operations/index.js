@@ -43,11 +43,17 @@ function handleUpdateDeck() {
 
     if (user != null) {
         let cards = getDeckInfo()
-        console.log(cards[1].id)
-        console.log(cards)
         updateDeck(user.id, cards[0].id, cards[1].id, cards[2].id, cards[3].id, cards[4].id)
     }
 }   
+
+function handleGetCards() {
+    const user = getUser()
+
+    if (user != null) {
+        getCards(user.id)
+    }
+}
 
 function handleJoinInGame() {
   

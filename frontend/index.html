@@ -155,8 +155,7 @@
           class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">
           Pacote
         </button>
-        <button onclick="openModal('cards-modal')"
-          class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">
+        <button onclick="handleGetCards()" class="text-slate-700 hover:text-indigo-500 font-medium transition-colors">
           Cartas
         </button>
         <button onclick="logout()" class="text-slate-700 hover:text-rose-500 font-medium transition-colors">
@@ -176,8 +175,6 @@
 
       <div id="battle"></div>
     </div>
-
-
 
     <!-- Overlay -->
     <div id="modal-overlay"
@@ -226,7 +223,7 @@
         </div>
 
 
-
+        
         <div id="deck-cards-user"
           class="mt-6 flex flex-row justify-center gap-4 flex-wrap w-full h-64 p-4 border-2 border-dashed border-gray-400 rounded-lg overflow-y-auto">
           <!-- cartas para puxar e colocar no drag -->
@@ -276,7 +273,7 @@
 
     <!-- Modal Cartas -->
     <div id="cards-modal"
-      class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-4xl bg-white rounded-xl shadow-2xl z-50 transition-all duration-300 scale-95 opacity-0">
+      class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-6xl bg-white rounded-xl shadow-2xl z-50 transition-all duration-300 scale-95 opacity-0">
       <div class="flex items-center justify-between p-6 border-b border-slate-200">
         <h3 class="text-xl font-bold text-slate-800">Minhas Cartas</h3>
         <button onclick="closeModal('cards-modal')" class="text-slate-400 hover:text-slate-600 transition-colors">
@@ -288,9 +285,10 @@
       <div class="p-6 max-h-96 overflow-y-auto">
         <p class="text-slate-600 mb-4">Suas cartas coletadas:</p>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <!-- cartas aqui -->
+        <div id="user-cards" class="flex flex-wrap justify-center items-start gap-4 w-full">
+          <!-- cartas serão inseridas aqui -->
         </div>
+
       </div>
       <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
         <button onclick="closeModal('cards-modal')"
@@ -300,7 +298,6 @@
       </div>
     </div>
   </div>
-
 
 
   <script src="./scripts/data/test.js"></script>
