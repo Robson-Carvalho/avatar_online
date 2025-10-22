@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.raft.service;
 
+import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
 import com.avatar.avatar_online.raft.model.AppendEntriesRequest;
 import com.avatar.avatar_online.raft.model.AppendEntriesResponse;
 import org.springframework.context.annotation.Lazy;
@@ -52,15 +53,16 @@ public class RedirectService {
         }
     }
 
-    public void sendCommandToNode(String targetURL, Object command, HttpMethod method) {
+    public void sendOperationToNode(String serverHostIp, String targetApiFunc,OperationResponseDTO operation, HttpMethod method) {
+        String targetUrl = String.format("http://%s:%d/api/game/notify/%s", serverHostIp, 8080, targetApiFunc);
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<Object> requestEntity = new HttpEntity<>(command, headers);
+            HttpEntity<Object> requestEntity = new HttpEntity<>(operation, headers);
 
-            restTemplate.exchange(targetURL, method, requestEntity, String.class);
+            restTemplate.exchange(targetUrl, method, requestEntity, String.class);
         } catch (Exception e) {
-            System.err.println("❌ Falha ao enviar comando para " + targetURL + ": " + e.getMessage());
+            System.err.println("❌ Falha ao enviar comando para " + serverHostIp + ": " + e.getMessage());
         }
     }
 
