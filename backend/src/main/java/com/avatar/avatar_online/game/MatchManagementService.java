@@ -1,17 +1,18 @@
 package com.avatar.avatar_online.game;
 
+import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.MatchFoundResponseDTO;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
+@Service
 public class MatchManagementService {
-    private final HazelcastInstance hazelcast;
-    private final IMap<String, Match> activeMatchesMap;
+    private final IMap<String, MatchFoundResponseDTO> activeMatchesMap;
 
     private static final String ACTIVE_MATCHES_MAP = "active-matches";
 
     public MatchManagementService(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast) {
-        this.hazelcast = hazelcast;
         this.activeMatchesMap = hazelcast.getMap(ACTIVE_MATCHES_MAP);
     }
 
@@ -21,10 +22,11 @@ public class MatchManagementService {
      *
      * @param match O objeto MatchState contendo todas as informações de roteamento.
      */
-    public void registerMatch(Match match) {
+    public void registerMatch(MatchFoundResponseDTO match) {
         activeMatchesMap.put(match.getMatchId(), match);
+
         System.out.println("Partida registrada no cluster: " + match.getMatchId() +
-                ", MP: " + match.getManagerNodeId());
+                ", MP: ");
     }
 
     /**
@@ -33,7 +35,7 @@ public class MatchManagementService {
      * @param matchId O ID da partida.
      * @return O MatchState, ou null se a partida não for encontrada.
      */
-    public Match getMatchState(String matchId) {
+    public MatchFoundResponseDTO getMatchState(String matchId) {
         return activeMatchesMap.get(matchId);
     }
 
@@ -55,7 +57,7 @@ public class MatchManagementService {
      * @return true se o nó local for o MP, false caso contrário.
      */
     public boolean isMatchManager(String matchId, String currentNodeId) {
-        Match state = getMatchState(matchId);
+        MatchFoundResponseDTO state = getMatchState(matchId);
         if (state == null) {
             return false;
         }

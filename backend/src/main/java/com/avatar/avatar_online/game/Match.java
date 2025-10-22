@@ -1,8 +1,11 @@
 package com.avatar.avatar_online.game;
 
+import com.avatar.avatar_online.publisher_subscriber.handlers.records.PlayerInGame;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 
 public class Match implements Serializable {
     @Serial
@@ -12,24 +15,38 @@ public class Match implements Serializable {
 
     private String managerNodeId;
 
+    private PlayerInGame player1;
+    private PlayerInGame player2;
+
+    private GameState gameState;
+
     private String player1NodeId;
     private String player1SessionId;
 
     private String player2NodeId;
     private String player2SessionId;
 
-    public Match() {}
+    public Match(){ }
 
-    public Match(String matchId, String managerNodeId, String player1NodeId, String player1SessionId, String player2NodeId, String player2SessionId) {
-        this.matchId = matchId;
+    public Match(String managerNodeId, PlayerInGame player1, PlayerInGame player2, GameState gameState) {
+        this.matchId = UUID.randomUUID().toString();
         this.managerNodeId = managerNodeId;
-        this.player1NodeId = player1NodeId;
-        this.player1SessionId = player1SessionId;
-        this.player2NodeId = player2NodeId;
-        this.player2SessionId = player2SessionId;
+        this.player1 = player1;
+        this.player2 = player2;
+        this.gameState = gameState;
     }
 
-    // --- Getters e Setters ---
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    public PlayerInGame getPlayer1() {
+        return player1;
+    }
+
+    public PlayerInGame getPlayer2() {
+        return player2;
+    }
 
     public String getMatchId() {
         return matchId;
@@ -80,6 +97,6 @@ public class Match implements Serializable {
     }
 
     public boolean isLocalMatch() {
-        return Objects.equals(player1NodeId, player2NodeId);
+        return Objects.equals(player1.getHostAddress(), player2.getHostAddress());
     }
 }
