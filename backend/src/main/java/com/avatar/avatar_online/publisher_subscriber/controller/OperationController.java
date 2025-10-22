@@ -1,6 +1,7 @@
 package com.avatar.avatar_online.publisher_subscriber.controller;
 
 import com.avatar.avatar_online.publisher_subscriber.handlers.HandleCard;
+import com.avatar.avatar_online.publisher_subscriber.handlers.HandleDeck;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.handlers.HandleUser;
@@ -19,12 +20,14 @@ import java.security.Principal;
 public class OperationController {
     private final HandleUser handleUser;
     private final HandleCard handleCard;
+    private final HandleDeck handleDeck;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public OperationController(HandleUser handleUser, HandleCard handleCard, SimpMessagingTemplate messagingTemplate) {
+    public OperationController(HandleUser handleUser, HandleCard handleCard, SimpMessagingTemplate messagingTemplate, HandleDeck handleDeck) {
         this.handleUser = handleUser;
         this.handleCard = handleCard;
         this.messagingTemplate = messagingTemplate;
+        this.handleDeck = handleDeck;
     }
 
     @MessageMapping("/operation")
@@ -46,6 +49,9 @@ public class OperationController {
         }
 
         switch (type) {
+            case AUTH_USER:
+                messagingTemplate.convertAndSendToUser(userId, "/queue/response", handleUser.handleAuthUser(operation));
+                break;
             case CREATE_USER:
                 messagingTemplate.convertAndSendToUser(userId, "/queue/response", handleUser.handleCreateUser(operation));
                 break;
@@ -54,6 +60,15 @@ public class OperationController {
                 break;
             case OPEN_PACKAGE:
                 messagingTemplate.convertAndSendToUser(userId, "/queue/response", handleCard.handleOpenPackage(operation));
+                break;
+            case GET_DECK:
+                messagingTemplate.convertAndSendToUser(userId, "/queue/response", handleDeck.handleGetDeck(operation));
+                break;
+            case GET_CARDS:
+                messagingTemplate.convertAndSendToUser(userId, "/queue/response", handleCard.handleGetCards(operation));
+                break;
+            case UPDATE_DECK:
+                messagingTemplate.convertAndSendToUser(userId, "/queue/response", handleDeck.handleUpdateDeck(operation));
                 break;
             default:
                 OperationResponseDTO response = new OperationResponseDTO();
