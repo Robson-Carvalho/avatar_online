@@ -21,6 +21,12 @@ public class HazelcastConfig {
         this.nodeId = nodeIDConfig.getNodeId();
     }
 
+    @Value("${HAZELCAST_PUBLIC_ADDRESS:}")
+    private String publicAddress;
+
+    @Value("${HAZELCAST_MEMBER_LIST:}")
+    private String memberList;
+
     @Bean
     public HazelcastInstance hazelcastInstance() {
         System.out.println("🚀 Iniciando Hazelcast - Nó: " + nodeId + ", Porta: " + clusterPort);
@@ -47,7 +53,24 @@ public class HazelcastConfig {
                 .setPortAutoIncrement(false);
 
 
-        networkConfig.getJoin().getMulticastConfig().setEnabled(true);
+
+        networkConfig.getJoin().getMulticastConfig().setEnabled(false);
+
+        TcpIpConfig tcpIpConfig = networkConfig.getJoin().getTcpIpConfig();
+        tcpIpConfig.setEnabled(true);
+
+        if (memberList != null && !memberList.isEmpty()) {
+            String[] members = memberList.split(",");
+            for (String member : members) {
+                tcpIpConfig.addMember(member.trim());
+            }
+        } else {
+            System.err.println("❌ HAZELCAST_MEMBER_LIST não configurado. O cluster não se formará.");
+        }
+
+        if (publicAddress != null && !publicAddress.isEmpty()) {
+            config.setProperty("hazelcast.local.publicAddress", publicAddress);
+        }
 
         MapConfig leaderMapConfig = new MapConfig();
         leaderMapConfig.setName("leader-registry")
