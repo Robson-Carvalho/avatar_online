@@ -14,6 +14,15 @@ public class GameStateDTO implements Serializable {
 
     // ... adicione outros campos simples que o cliente precisa, como 'message' e 'type'
 
+
+    public GameStateDTO(String id, String turnPlayerId, String playerWin, PlayerDTO playerOne, PlayerDTO playerTwo){
+        this.id = id;
+        this.turnPlayerId = turnPlayerId;
+        this.playerWin = playerWin;
+        this.playerOne = playerOne;
+        this.playerTwo = playerTwo;
+    }
+
     public GameStateDTO(GameState gameState) {
         this.id = gameState.getId();
         this.turnPlayerId = gameState.getTurnPlayerId();

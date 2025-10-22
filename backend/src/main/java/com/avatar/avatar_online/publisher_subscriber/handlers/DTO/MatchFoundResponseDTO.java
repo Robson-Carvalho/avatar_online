@@ -13,6 +13,8 @@ public class MatchFoundResponseDTO implements Serializable {
     private PlayerInGame player1;
     private PlayerInGame player2;
 
+    public MatchFoundResponseDTO() {}
+
     // Construtor que recebe as informações do domínio
     public MatchFoundResponseDTO(String matchId, String managerNodeId, GameStateDTO gameState,
                                  PlayerInGame player1, PlayerInGame player2) {
