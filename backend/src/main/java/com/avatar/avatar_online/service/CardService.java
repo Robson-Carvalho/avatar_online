@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.service;
 
+import com.avatar.avatar_online.DTOs.CardDTO;
 import com.avatar.avatar_online.DTOs.PackDTO;
 import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
@@ -30,6 +31,14 @@ public class CardService {
         this.redirectService = redirectService;
         this.cPCommitService = cPCommitService;
     }
+
+    public List<CardDTO> findByUserId(UUID userId) {
+        return cardRepository.findAllByUserId(userId)
+                .stream()
+                .map(CardDTO::new)
+                .toList();
+    }
+
 
     public List<Card> findAll() {
         return cardRepository.findAll();
