@@ -1,5 +1,8 @@
 package com.avatar.avatar_online.publisher_subscriber.handlers.records;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -10,7 +13,12 @@ public class PlayerInGame implements Serializable {
     private String userSession;
     private String hostAddress; //
 
-    public PlayerInGame(String userId,  String userSession, String hostAddress) {
+    @JsonCreator // Anote o construtor completo
+    public PlayerInGame(
+            @JsonProperty("userId") String userId,
+            @JsonProperty("userSession") String userSession,
+            @JsonProperty("hostAddress") String hostAddress) {
+
         this.userId = userId;
         this.userSession = userSession;
         this.hostAddress = hostAddress;

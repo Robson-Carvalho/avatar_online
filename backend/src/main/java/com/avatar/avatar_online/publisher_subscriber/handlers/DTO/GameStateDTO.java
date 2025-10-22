@@ -17,7 +17,7 @@ public class GameStateDTO implements Serializable {
     // ... adicione outros campos simples que o cliente precisa, como 'message' e 'type'
 
 
-    @JsonCreator
+    @ JsonCreator
     public GameStateDTO(
             @JsonProperty("id") String id,
             @JsonProperty("turnPlayerId") String turnPlayerId,
