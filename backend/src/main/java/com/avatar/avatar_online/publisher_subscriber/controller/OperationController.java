@@ -2,6 +2,7 @@ package com.avatar.avatar_online.publisher_subscriber.controller;
 
 import com.avatar.avatar_online.publisher_subscriber.handlers.HandleCard;
 import com.avatar.avatar_online.publisher_subscriber.handlers.HandleDeck;
+import com.avatar.avatar_online.publisher_subscriber.handlers.HandleGame;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.handlers.HandleUser;
@@ -21,13 +22,15 @@ public class OperationController {
     private final HandleUser handleUser;
     private final HandleCard handleCard;
     private final HandleDeck handleDeck;
+    private final HandleGame handleGame;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public OperationController(HandleUser handleUser, HandleCard handleCard, SimpMessagingTemplate messagingTemplate, HandleDeck handleDeck) {
+    public OperationController(HandleUser handleUser, HandleCard handleCard, SimpMessagingTemplate messagingTemplate, HandleDeck handleDeck, HandleGame handleGame) {
         this.handleUser = handleUser;
         this.handleCard = handleCard;
         this.messagingTemplate = messagingTemplate;
         this.handleDeck = handleDeck;
+        this.handleGame = handleGame;
     }
 
     @MessageMapping("/operation")
@@ -70,6 +73,8 @@ public class OperationController {
             case UPDATE_DECK:
                 messagingTemplate.convertAndSendToUser(userId, "/queue/response", handleDeck.handleUpdateDeck(operation));
                 break;
+            case JOIN_GAME:
+                messagingTemplate.convertAndSendToUser(userId, "/queue/response", handleGame.handleJoinInQueue(operation));
             default:
                 OperationResponseDTO response = new OperationResponseDTO();
                 response.setOperationStatus(OperationStatus.ERROR);

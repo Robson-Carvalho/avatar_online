@@ -11,6 +11,7 @@ public enum OperationType {
     NEXT_TURN_IN_GAME,
     PLAY_CARD,
     JOIN_GAME,
+    MATCH_FOUND,
     LEAVE_GAME,
     GET_PLAYERS,
     GET_PLAYER_ID,
