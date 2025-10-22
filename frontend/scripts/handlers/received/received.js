@@ -24,7 +24,10 @@ function handlerMain(message) {
     handleGetCardsSuccess(data.data);
   } else if (data.operationType === "AUTH_USER") {
     console.log("Auth", data.data);
-    // impelementar - se for false, chama logout()
+    
+    if (!data.data) {
+      logout();
+    } 
   }
 }
 
@@ -78,7 +81,7 @@ function handleUpdateDeckSuccess(data) {
 }
 
 function handleGetCardsSuccess(data) {
-  console.log(data);
+  document.getElementById("user-cards").innerHTML = "";
 
   data.forEach((card) => {
     document.getElementById("user-cards").innerHTML += cardTemplateOpenPackage(
