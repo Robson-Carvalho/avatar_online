@@ -2,6 +2,9 @@ package com.avatar.avatar_online.publisher_subscriber.handlers.DTO;
 
 import com.avatar.avatar_online.DTOs.CardDTO;
 import com.avatar.avatar_online.game.Player;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,6 +15,21 @@ public class PlayerDTO implements Serializable {
     private final String activationCardId; // Apenas o ID
     private final Boolean playedCard;
     private final List<CardDTO> cards; // Lista de CardDTOs
+
+    @JsonCreator
+    public PlayerDTO(
+            @JsonProperty("id") String id,
+            @JsonProperty("points") int points,
+            @JsonProperty("activationCardId") String activationCardId,
+            @JsonProperty("playedCard") Boolean playedCard,
+            @JsonProperty("cards") List<CardDTO> cards) {
+
+        this.id = id;
+        this.points = points;
+        this.activationCardId = activationCardId;
+        this.playedCard = playedCard;
+        this.cards = cards;
+    }
 
     public PlayerDTO(Player player) {
         this.id = player.getId();
