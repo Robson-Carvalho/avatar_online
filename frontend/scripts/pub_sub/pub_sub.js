@@ -24,10 +24,7 @@ function connect(host = "127.0.0.1") {
 
         log("🎛️ Conectando ao servidor...");
         socket.onopen = function () {
-            
             attempts = 0;
-            // Opcional - adicionar uma chamada ao servidor para verificar se o usuário de fato existe
-
             log("🔗 Socket aberto com sucesso");
             updateViewsBasedOnConnection();
         };

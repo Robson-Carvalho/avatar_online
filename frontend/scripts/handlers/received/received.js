@@ -32,10 +32,46 @@ function handlerMain(message) {
     handleGetDeckSuccess(data.data)
   }
 
+  else if(data.operationType === "GET_CARDS"){
+    handleGetCardsSuccess(data.data)
+  }
+
+  else if (data.operationType === "AUTH_USER") {
+    console.log("Auth", data.data)
+    // se for false, chama logout()
+  }
+
 }
 
-function handleGetDeckSuccess(data){
+function handleGetDeckSuccess(data) {
+  // limpar e popular o deck antes de abrir
+  
+  const cards = data.cards
+
+  cards.forEach(card => {
+    document.getElementById("deck-cards-user").innerHTML += cardTemplateDeck(
+      card.id,
+      card.name,
+      card.element,
+      card.phase,
+      card.attack,
+      card.life,
+      card.defense,
+      card.rarity
+     )
+  }) 
+
+
   openModal('deck-modal')
+}
+
+function handleUpdateDeckSuccess(data) {
+  showSuccess("Deck atualizado com sucesso!");
+}
+
+function handleGetCardsSuccess() {
+  // deixar pra depois
+  showSuccess("abriu seu báu");
 }
 
 function handleRegisterUserSuccess() {
@@ -80,9 +116,4 @@ function handleOpenPackageSuccess(cards) {
   });
 
   openModal('package-modal');
-}
-
-
-function handleUpdateDeckSuccess(data) {
-  showSuccess("Deck atualizado com sucesso!");
 }

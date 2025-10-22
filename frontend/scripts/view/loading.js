@@ -46,17 +46,12 @@ function showDashboard() {
     }
 }
 
-function logout() {
-    localStorage.removeItem('user_avatar_online');
-    updateViewsBasedOnConnection();
-}
-
 
 // MÉTODOS LÓGICOS DENTRO DO CONTAINER DASHBOARD
 
 
 // lembrar de tirar para teste
-//openModal("package-modal")
+//openModal("deck-modal")
 
 function openModal(modalId) {
     const overlay = document.getElementById('modal-overlay');
@@ -91,6 +86,8 @@ function closeModal(modalId) {
         modal.classList.add('hidden');
         overlay.classList.add('hidden');
     }, 300);
+
+    clearDeckSlots()
 }
 
 // Fechar modal clicando no overlay
@@ -113,4 +110,5 @@ function closeAllModals() {
             closeModal(modalId);
         }
     });
+    clearDeckSlots()
 }

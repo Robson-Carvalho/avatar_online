@@ -33,15 +33,20 @@ function handleOpenPackage() {
 function handleGetDeck(){
     const user = getUser()
 
-    // pegar as cartas
-
     if (user != null) {
         getDeck(user.id)
     }
 }
 
 function handleUpdateDeck() {
-    
+    const user = getUser()
+
+    if (user != null) {
+        let cards = getDeckInfo()
+        console.log(cards[1].id)
+        console.log(cards)
+        updateDeck(user.id, cards[0].id, cards[1].id, cards[2].id, cards[3].id, cards[4].id)
+    }
 }   
 
 function handleJoinInGame() {
@@ -50,4 +55,9 @@ function handleJoinInGame() {
 
 function handleLeaveGame() {
   
+}
+
+function logout() {
+    localStorage.removeItem('user_avatar_online');
+    updateViewsBasedOnConnection();
 }
