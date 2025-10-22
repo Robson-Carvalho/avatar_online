@@ -13,6 +13,7 @@ import com.avatar.avatar_online.publisher_subscriber.model.OperationStatus;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationType;
 import com.avatar.avatar_online.publisher_subscriber.service.Communication;
 import com.avatar.avatar_online.raft.service.RedirectService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.collection.IQueue;
@@ -32,14 +33,17 @@ public class HandleGame {
 
     private final IQueue<PlayerInGame> waitingQueue;
 
+    private final ObjectMapper objectMapper;
+
     @Autowired
     public HandleGame(MatchManagementService matchManagementService, Communication communication,
-                      @Qualifier("hazelcastInstance") HazelcastInstance hazelcast, RedirectService redirectService) {
+                      @Qualifier("hazelcastInstance") HazelcastInstance hazelcast, RedirectService redirectService, ObjectMapper objectMapper) {
         this.matchManagementService = matchManagementService;
         this.hazelcast = hazelcast;
         this.communication = communication;
         this.waitingQueue = hazelcast.getQueue("matchmaking-queue");
         this.redirectService = redirectService;
+        this.objectMapper = objectMapper;
     }
 
     public void handleJoinInQueue(OperationRequestDTO operation, String userSession) {
@@ -95,7 +99,11 @@ public class HandleGame {
     }
 
     public void handleNotifyGameFound(OperationResponseDTO operation) {
-        MatchFoundResponseDTO matchDTO = (MatchFoundResponseDTO) operation.getData();
+
+        MatchFoundResponseDTO matchDTO = this.objectMapper.convertValue(
+                operation.getData(),
+                MatchFoundResponseDTO.class
+        );
         String sessionId = matchDTO.getPlayer2().getUserSession();
 
         communication.sendToUser(sessionId, operation);
