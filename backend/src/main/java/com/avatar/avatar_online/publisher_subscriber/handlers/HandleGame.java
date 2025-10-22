@@ -46,7 +46,7 @@ public class HandleGame {
         String userID = (String) operation.getPayload().get("userID");
 
         try {
-            String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().toString();
+            String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
             PlayerInGame player = new PlayerInGame(userID, userSession, currentNodeId);
 
             PlayerInGame opponent = waitingQueue.poll();
