@@ -12,4 +12,7 @@ import java.util.UUID;
 public interface CardRepository extends JpaRepository<Card, UUID> {
 
     List<Card> findAllByUserIsNull();
+
+    List<Card> findAllByUserId(UUID userId);
+
 }
