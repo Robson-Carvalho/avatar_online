@@ -3,9 +3,7 @@ package com.avatar.avatar_online.DTOs;
 import java.util.UUID;
 
 public class DeckDTO {
-
     private UUID userId;
-
     private UUID card1Id;
     private UUID card2Id;
     private UUID card3Id;
