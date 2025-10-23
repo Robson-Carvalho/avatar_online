@@ -151,6 +151,9 @@ public class HandleGame {
 
     public void ProcessPlayCardFromOtherNode(OperationRequestDTO operation, String userSession) {
         System.out.println("Carta jogada por: " + userSession);
+        // --- Ideia do método ---
+        // Se o nó for seguidor, apenas manda a atualização para o usuário
+        // Se o nó for Líder, processa a ação enviada pelo outro jogador
     }
 
     public void handleActionActivateCard(OperationRequestDTO operation, String userSession) {
