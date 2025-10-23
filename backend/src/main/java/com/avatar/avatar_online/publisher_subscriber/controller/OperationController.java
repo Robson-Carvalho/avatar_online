@@ -76,6 +76,12 @@ public class OperationController {
             case JOIN_QUEUE:
                 handleGame.handleJoinInQueue(operation, userSession);
                 break;
+            case PLAY_CARD:
+                handleGame.handleActionPlayCard(operation, userSession);
+                break;
+            case ACTIVATE_CARD:
+                handleGame.handleActionActivateCard(operation, userSession);
+                break;
             default:
                 OperationResponseDTO response = new OperationResponseDTO();
                 response.setOperationStatus(OperationStatus.ERROR);
