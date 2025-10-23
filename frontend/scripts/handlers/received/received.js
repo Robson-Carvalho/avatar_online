@@ -8,7 +8,7 @@ function handlerMain(message) {
 
   if (data.operationStatus == "ERROR") {
     showError(`${data.message}`);
-  } else if (data.operationStatus == "WARTING") {
+  } else if (data.operationStatus == "WATING") {
     showWarning(`${data.message}`)
   }
   else if (data.operationType === "LOGIN_USER") {
