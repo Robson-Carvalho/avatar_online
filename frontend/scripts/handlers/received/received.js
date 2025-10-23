@@ -8,7 +8,7 @@ function handlerMain(message) {
 
   if (data.operationStatus == "ERROR") {
     showError(`${data.message}`);
-  } else if (data.operationStatus == "WATING") {
+  } else if (data.operationStatus == "WAITING") {
     showWarning(`${data.message}`)
   }
   else if (data.operationType === "LOGIN_USER") {
@@ -41,7 +41,14 @@ function handleJoinInQueueSuccess(data) {
 }
 
 function handleMatchFoundSuccess(data) {
+  if(data.matchId != null){
+    global_matchID = data.matchId
+  }
+
   console.log(data)
+  global_matchID
+
+  handlePlayCard(global_matchID)
 }
 
 function handlUpdateGameSuccess(data) {

@@ -1,3 +1,8 @@
+function handlePlayCard(){
+    console.log("apertei o botão!");
+    playCard(global_userID, global_matchID);
+}
+
 function handleJoinInQueue() {
     const user = getUser();
 

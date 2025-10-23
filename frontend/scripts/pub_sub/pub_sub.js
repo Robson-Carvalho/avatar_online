@@ -15,7 +15,7 @@ function connect(host = "127.0.0.1") {
     
 
     try {
-        const socket = new SockJS(`http://${host}:8081/ws`, null, {
+        const socket = new SockJS(`http://${host}:8080/ws`, null, {
             timeout: 200
         });
 
