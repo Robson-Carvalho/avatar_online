@@ -125,7 +125,7 @@ public class HandleGame {
                     newPayload
             );
 
-            if (!match.getManagerNodeId().equals(currentNodeId)) {
+            if (!match.getManagerNodeId().equals(currentNodeId) || match.getPlayer1().getHostAddress().equals(currentNodeId)) {
                 System.out.println("Jogo Distribuído, estou no servidor não gerenciador da partida" + userSession + "apertou play e chegou aqui");
                 redirectService.sendOperationRequestToNode(
                         match.getManagerNodeId(),
