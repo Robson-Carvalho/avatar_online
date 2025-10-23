@@ -6,6 +6,12 @@ Este projeto implementa um sistema distribuído com suporte a múltiplos nós em
 
 ## 🚀 Como testar o cluster completo
 
+Configurar variável de ambiente. Lembre-se de trocar o IP pelo da máquina que está executando.
+
+```bash
+ export HOST_IP_NA_REDE_LOCAL=172.16.201.8
+```
+
 Para iniciar **todas as instâncias** do cluster (múltiplos nós e bancos de dados), execute:
 
 ```bash
