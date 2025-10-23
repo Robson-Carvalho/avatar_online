@@ -15,7 +15,6 @@ import com.avatar.avatar_online.publisher_subscriber.service.Communication;
 import com.avatar.avatar_online.raft.service.RedirectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.map.IMap;
 import com.hazelcast.collection.IQueue;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,12 +46,18 @@ public class HandleGame {
     }
 
     public void handleJoinInQueue(OperationRequestDTO operation, String userSession) {
+        String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
         String userID = (String) operation.getPayload().get("userID");
 
-        try {
-            String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
-            PlayerInGame player = new PlayerInGame(userID, userSession, currentNodeId);
+        PlayerInGame player = new PlayerInGame(userID, userSession, currentNodeId);
 
+        if(waitingQueue.contains(player)){
+            OperationResponseDTO response = new OperationResponseDTO(operation.getOperationType(),OperationStatus.ERROR, "Você já está na fila", null);
+            communication.sendToUser(userSession, response);
+            return;
+        }
+
+        try {
             PlayerInGame opponent = waitingQueue.poll();
 
             if (opponent != null) {
@@ -79,10 +84,9 @@ public class HandleGame {
                     communication.sendToUser(match.getPlayer2().getUserSession(), response);
                     return;
                 }
+
                 communication.sendToUser(match.getPlayer1().getUserSession(), response);
-
                 redirectService.sendOperationToNode(opponent.getHostAddress(), "GameFound", response, HttpMethod.POST);
-
             } else {
                 System.out.println("Jogador " + player.getUserId() + " entrou na fila.");
                 waitingQueue.add(player);
@@ -92,10 +96,41 @@ public class HandleGame {
                 communication.sendToUser(userSession, response);
             }
         } catch (Exception e) {
-            System.out.println(e.getStackTrace());
             OperationResponseDTO response = new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "Erro inesperado: " + e.getMessage(), null);
             communication.sendToUser(userSession, response);
         }
+    }
+
+    public void handleActionPlayCard(OperationRequestDTO operation, String userSession) {
+        MatchFoundResponseDTO match = this.getMatch(operation);
+
+        if(match == null){
+            this.sendMessageNotFoundMath(userSession, operation);
+            return;
+        }
+
+        // aplicar lógica no jogo e atualizar ambos.
+    }
+
+    public void handleActionActivateCard(OperationRequestDTO operation, String userSession) {
+        MatchFoundResponseDTO match = this.getMatch(operation);
+
+        if(match == null){
+           this.sendMessageNotFoundMath(userSession, operation);
+            return;
+        }
+
+        // aplicar lógica no jogo e atualizar ambos.
+    }
+
+    private MatchFoundResponseDTO getMatch(OperationRequestDTO operation){
+        String matchID = (String) operation.getPayload().get("matchID");
+        return matchManagementService.getMatchState(matchID);
+    }
+
+    private void sendMessageNotFoundMath(String userSession, OperationRequestDTO operation){
+        OperationResponseDTO response = new OperationResponseDTO(operation.getOperationType(),OperationStatus.ERROR, "Partida não encontrada!", null);
+        communication.sendToUser(userSession, response);
     }
 
     public void handleNotifyGameFound(OperationResponseDTO operation) {
@@ -107,16 +142,5 @@ public class HandleGame {
         String sessionId = matchDTO.getPlayer2().getUserSession();
 
         communication.sendToUser(sessionId, operation);
-    }
-
-    public OperationResponseDTO handlePlayCard(OperationRequestDTO operation) {
-
-        return new OperationResponseDTO();
-
-    }
-
-    public OperationResponseDTO handleActivateCard(OperationRequestDTO operation) {
-        // Similar ao handlePlayCard
-        return new OperationResponseDTO();
     }
 }
