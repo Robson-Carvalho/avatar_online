@@ -12,6 +12,7 @@ public enum OperationType {
     PLAY_CARD,
     JOIN_GAME,
     JOIN_QUEUE,
+    ACTIVATE_CARD,
     MATCH_FOUND,
     LEAVE_GAME,
     GET_PLAYERS,
