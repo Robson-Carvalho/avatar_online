@@ -102,12 +102,17 @@ public class HandleGame {
     }
 
     public void handleActionPlayCard(OperationRequestDTO operation, String userSession) {
+        System.out.println("Play chegou aqui");
         MatchFoundResponseDTO match = this.getMatch(operation);
 
         if(match == null){
             this.sendMessageNotFoundMath(userSession, operation);
             return;
         }
+
+
+        
+
 
         // aplicar lógica no jogo e atualizar ambos.
     }
