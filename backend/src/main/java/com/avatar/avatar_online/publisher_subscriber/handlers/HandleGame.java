@@ -22,6 +22,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 public class HandleGame {
     private final Communication communication;
@@ -102,7 +105,8 @@ public class HandleGame {
     }
 
     public void handleActionPlayCard(OperationRequestDTO operation, String userSession) {
-        System.out.println("Play chegou aqui");
+        String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
+        System.out.println(userSession + "apertou play e chegou aqui");
         MatchFoundResponseDTO match = this.getMatch(operation);
 
         if(match == null){
@@ -110,9 +114,23 @@ public class HandleGame {
             return;
         }
 
+        Map<String, Object> newPayload = new HashMap<>(operation.getPayload());
 
-        
+        newPayload.put("userSession", userSession);
 
+        OperationRequestDTO newOperation = new OperationRequestDTO(
+                operation.getOperationType(),
+                newPayload
+        );
+
+        if (!match.getManagerNodeId().equals(currentNodeId)) {
+            redirectService.sendOperationRequestToNode(
+                    match.getManagerNodeId(),
+                    "UpdateGame",
+                    newOperation,
+                    HttpMethod.POST
+            );
+        }
 
         // aplicar lógica no jogo e atualizar ambos.
     }

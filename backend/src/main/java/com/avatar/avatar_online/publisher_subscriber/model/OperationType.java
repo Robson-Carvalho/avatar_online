@@ -18,5 +18,6 @@ public enum OperationType {
     GET_PLAYERS,
     GET_PLAYER_ID,
     GET_CARDS_BY_PLAYER_ID,
-    EXCHANGE_LETTER
+    EXCHANGE_LETTER,
+    UPDATE_GAME
 }
