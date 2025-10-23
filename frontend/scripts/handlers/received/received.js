@@ -8,7 +8,10 @@ function handlerMain(message) {
 
   if (data.operationStatus == "ERROR") {
     showError(`${data.message}`);
-  } else if (data.operationType === "LOGIN_USER") {
+  } else if (data.operationStatus == "WARTING") {
+    showWarning(`${data.message}`)
+  }
+  else if (data.operationType === "LOGIN_USER") {
     localStorage.setItem("user_avatar_online", JSON.stringify(data.data));
     handleLoginUserSuccess(data.data);
   } else if (data.operationType === "CREATE_USER") {
