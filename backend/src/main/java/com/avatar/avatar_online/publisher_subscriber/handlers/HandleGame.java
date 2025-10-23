@@ -70,7 +70,7 @@ public class HandleGame {
 
                 GameStateDTO gameStateDTO = new GameStateDTO(newGame);
 
-                MatchFoundResponseDTO matchDTO = new MatchFoundResponseDTO(match.getMatchId(), currentNodeId, gameStateDTO, player, opponent);
+                MatchFoundResponseDTO matchDTO = new MatchFoundResponseDTO(match.getMatchId(), currentNodeId, gameStateDTO, player, opponent, match.isLocalMatch());
 
                 OperationResponseDTO response = new OperationResponseDTO(
                         OperationType.MATCH_FOUND.toString(),
@@ -106,7 +106,6 @@ public class HandleGame {
 
     public void handleActionPlayCard(OperationRequestDTO operation, String userSession) {
         String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
-        System.out.println(userSession + "apertou play e chegou aqui");
         MatchFoundResponseDTO match = this.getMatch(operation);
 
         if(match == null){
@@ -114,24 +113,30 @@ public class HandleGame {
             return;
         }
 
-        Map<String, Object> newPayload = new HashMap<>(operation.getPayload());
+        if(match.getIslocalmatch()) {
+            System.out.println("Jogo local" + userSession + "apertou play e chegou aqui");
+        } else {
+            Map<String, Object> newPayload = new HashMap<>(operation.getPayload());
 
-        newPayload.put("userSession", userSession);
+            newPayload.put("userSession", userSession);
 
-        OperationRequestDTO newOperation = new OperationRequestDTO(
-                operation.getOperationType(),
-                newPayload
-        );
-
-        if (!match.getManagerNodeId().equals(currentNodeId)) {
-            redirectService.sendOperationRequestToNode(
-                    match.getManagerNodeId(),
-                    "UpdateGame",
-                    newOperation,
-                    HttpMethod.POST
+            OperationRequestDTO newOperation = new OperationRequestDTO(
+                    operation.getOperationType(),
+                    newPayload
             );
-        }
 
+            if (!match.getManagerNodeId().equals(currentNodeId)) {
+                System.out.println("Jogo Distribuído, estou no servidor não gerenciador da partida" + userSession + "apertou play e chegou aqui");
+                redirectService.sendOperationRequestToNode(
+                        match.getManagerNodeId(),
+                        "UpdateGame",
+                        newOperation,
+                        HttpMethod.POST
+                );
+            } else {
+                System.out.println("Jogo Distribuído, estou no servidor gerenciador da partida" + userSession + "apertou play e chegou aqui");
+            }
+        }
         // aplicar lógica no jogo e atualizar ambos.
     }
 

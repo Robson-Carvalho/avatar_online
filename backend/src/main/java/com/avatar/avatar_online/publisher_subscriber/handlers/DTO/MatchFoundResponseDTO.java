@@ -12,17 +12,19 @@ public class MatchFoundResponseDTO implements Serializable {
     private GameStateDTO gameState; // Usará um DTO para o GameState também!
     private PlayerInGame player1;
     private PlayerInGame player2;
+    private boolean islocalmatch;
 
     public MatchFoundResponseDTO() {}
 
     // Construtor que recebe as informações do domínio
     public MatchFoundResponseDTO(String matchId, String managerNodeId, GameStateDTO gameState,
-                                 PlayerInGame player1, PlayerInGame player2) {
+                                 PlayerInGame player1, PlayerInGame player2, boolean islocalmatch) {
         this.matchId = matchId;
         this.managerNodeId = managerNodeId;
         this.gameState = gameState;
         this.player1 = player1;
         this.player2 = player2;
+        this.islocalmatch = islocalmatch;
     }
 
     // Getters e Setters (Obrigatorios para a serialização)
@@ -64,5 +66,13 @@ public class MatchFoundResponseDTO implements Serializable {
 
     public void setPlayer2(PlayerInGame player2) {
         this.player2 = player2;
+    }
+
+    public boolean getIslocalmatch() {
+        return islocalmatch;
+    }
+
+    public void setIslocalmatch(boolean localmatch) {
+        islocalmatch = localmatch;
     }
 }
