@@ -47,7 +47,7 @@ public class GameController {
 
             orD.setPayload(cleanedPayload);
 
-            handleGame.handleActionPlayCard(orD, userSession);
+            handleGame.ProcessPlayCardFromOtherNode(orD, userSession);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError()

@@ -114,8 +114,11 @@ public class HandleGame {
         }
 
         if(match.getIslocalmatch()) {
-            System.out.println("Jogo local" + userSession + "apertou play e chegou aqui");
+            System.out.println("Jogo local " + userSession + " apertou play e chegou aqui");
+            // processa e envia
         } else {
+            // PS dica doq acho que tem que ser feito; Processa aqui a ação e dps envia ao outro nó com o código abaixo
+
             Map<String, Object> newPayload = new HashMap<>(operation.getPayload());
 
             newPayload.put("userSession", userSession);
@@ -125,8 +128,8 @@ public class HandleGame {
                     newPayload
             );
 
-            if (!match.getManagerNodeId().equals(currentNodeId) || match.getPlayer1().getHostAddress().equals(currentNodeId)) {
-                System.out.println("Jogo Distribuído, estou no servidor não gerenciador da partida" + userSession + "apertou play e chegou aqui");
+            if (!match.getManagerNodeId().equals(currentNodeId) ) {
+                System.out.println("Jogo Distribuído, estou no servidor não gerenciador da partida " + userSession + " apertou play e chegou aqui");
                 redirectService.sendOperationRequestToNode(
                         match.getManagerNodeId(),
                         "UpdateGame",
@@ -134,10 +137,20 @@ public class HandleGame {
                         HttpMethod.POST
                 );
             } else {
-                System.out.println("Jogo Distribuído, estou no servidor gerenciador da partida" + userSession + "apertou play e chegou aqui");
+                System.out.println("Jogo Distribuído, estou no servidor gerenciador da partida " + userSession + " apertou play e chegou aqui");
+                redirectService.sendOperationRequestToNode(
+                        match.getPlayer2().getHostAddress(),
+                        "UpdateGame",
+                        newOperation,
+                        HttpMethod.POST
+                );
             }
         }
         // aplicar lógica no jogo e atualizar ambos.
+    }
+
+    public void ProcessPlayCardFromOtherNode(OperationRequestDTO operation, String userSession) {
+        System.out.println("Carta jogada por: " + userSession);
     }
 
     public void handleActionActivateCard(OperationRequestDTO operation, String userSession) {
