@@ -106,13 +106,13 @@ public class CPCommitService {
             return false;
         }
 
+        synchronized (this) {
         if (userRepository.existsByEmail(newCommand.getEmail())) {
             return false;
         }
         if (newCommand.getNickname() != null && userRepository.existsByNickname(newCommand.getNickname())) {
             return false;
         }
-        synchronized (this) {
             try {
                 long newIndex = logStore.getLastIndex() + 1;
                 long currentTerm = leaderRegistryService.getCurrentTerm();

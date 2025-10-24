@@ -8,7 +8,7 @@ import os
 
 # --- CONFIGURAÇÕES DO TESTE ---
 LEADER_IP = "localhost"
-URL = f"http://{LEADER_IP}:8081/api/users"
+URL = f"http://{LEADER_IP}:8080/api/users"
 NUM_USERS = 300
 REQUESTS_PER_USER = 1
 TOTAL_REQUESTS = NUM_USERS * REQUESTS_PER_USER

@@ -21,7 +21,7 @@ from collections import Counter
 
 # Configurações de rede
 LEADER_IP = "localhost"
-PORT = 8081
+PORT = 8080
 URL = f"http://{LEADER_IP}:{PORT}/api/cards/trade"
 
 # Configurações do teste

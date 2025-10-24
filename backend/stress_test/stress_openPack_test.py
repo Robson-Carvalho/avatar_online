@@ -15,7 +15,7 @@ import random
 from collections import Counter, defaultdict
 
 LEADER_IP = "localhost"
-PORT = 8081
+PORT = 8080
 URL = f"http://{LEADER_IP}:{PORT}/api/cards/pack"
 
 NUM_THREADS = 200
