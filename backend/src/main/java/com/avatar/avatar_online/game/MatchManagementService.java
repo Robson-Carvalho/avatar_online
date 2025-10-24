@@ -16,6 +16,19 @@ public class MatchManagementService {
         this.activeMatchesMap = hazelcast.getMap(ACTIVE_MATCHES_MAP);
     }
 
+    public String getOpponentIfPlayerInMatch(String sessionId) {
+        for (MatchFoundResponseDTO match : activeMatchesMap.values()) {
+
+            if (sessionId.equals(match.getPlayer1().getUserSession())) {
+                return match.getPlayer2().getUserSession();
+            }else if(sessionId.equals(match.getPlayer2().getUserSession())){
+                return match.getPlayer1().getUserSession();
+            }
+        }
+
+        return "";
+    }
+
     /**
      * Registra uma nova partida no cluster, definindo o Gerente da Partida (MP) e as conexões dos jogadores.
      * Deve ser chamado tipicamente pelo nó Líder após um Matchmaking bem-sucedido.
