@@ -32,7 +32,7 @@ public class HandleUser {
             if (user.isPresent()) {
                 return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Usuário autenticado!", true);
             } else {
-                return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR,"Usuário não autenticado!", false);
+                return new OperationResponseDTO(operation.getOperationType(), OperationStatus.WARNING,"Usuário não autenticado!", false);
             }
         } catch (Exception e) {
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR,"Erro inesperado: " + e.getMessage(), null
