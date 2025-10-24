@@ -4,11 +4,11 @@
   "failure": 0,
   "duplicate_trades": 0,
   "error_rate_percent": 0.0,
-  "time_seconds": 6.1186842918396,
-  "throughput_req_s": 32.68676572620965,
-  "avg_latency_ms": 116.40111446380615,
-  "p90_latency_ms": 426.21374130249023,
-  "p95_latency_ms": 668.0951118469238,
+  "time_seconds": 6.110080242156982,
+  "throughput_req_s": 32.73279434533186,
+  "avg_latency_ms": 15.161314010620117,
+  "p90_latency_ms": 16.7849063873291,
+  "p95_latency_ms": 17.299890518188477,
   "status_counts": {
     "http_200": 200
   }

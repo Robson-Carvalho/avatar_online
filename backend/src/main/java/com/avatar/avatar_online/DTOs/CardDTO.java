@@ -18,6 +18,9 @@ public class CardDTO {
     private RarityCard rarity;
     private String description;
 
+    public CardDTO() {}
+
+
     public CardDTO(Card card){
         this.id = card.getId();
         this.name = card.getName();

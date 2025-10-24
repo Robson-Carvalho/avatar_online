@@ -3,11 +3,11 @@
   "success": 100,
   "failure": 0,
   "duplicate_deck_count": 0,
-  "time_seconds": 5.088086366653442,
-  "throughput_req_s": 19.65375443612456,
-  "avg_latency_ms": 13.111474514007568,
-  "p90_latency_ms": 15.592813491821289,
-  "p95_latency_ms": 16.078710556030273,
+  "time_seconds": 5.07669472694397,
+  "throughput_req_s": 19.69785566763776,
+  "avg_latency_ms": 13.804881572723389,
+  "p90_latency_ms": 16.54839515686035,
+  "p95_latency_ms": 17.55380630493164,
   "status_counts": {
     "http_200": 100
   }
