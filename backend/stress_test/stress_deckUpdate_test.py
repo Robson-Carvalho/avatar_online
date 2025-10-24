@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Teste de carga de abertura de pacotes usando PlayerIds reais.
-- Endpoint: POST /api/cards/pack
-- Payload: {"PlayerId": "<id>"}
-- Lista de PlayerIds: arquivo JSON ou lista em memória
+Teste de carga de escolha de deck usando PlayerIds reais.
+- Endpoint: POST /api/deck
+- Payload: {"userId": "<id>", "card1Id": "...", "card2Id": "...", ...}
+- Lista de PlayerIds e suas cartas: arquivo JSON ou lista em memória
 """
 
 import requests
@@ -12,39 +12,60 @@ import threading
 import time
 import json
 import random
-from collections import Counter, defaultdict
+from collections import Counter
 
 LEADER_IP = "localhost"
 PORT = 8081
-URL = f"http://{LEADER_IP}:{PORT}/api/cards/pack"
+URL = f"http://{LEADER_IP}:{PORT}/api/deck"
 
-NUM_THREADS = 200
-REQUESTS_PER_THREAD = 5
+NUM_THREADS = 100
+REQUESTS_PER_THREAD = 1
 TIMEOUT = 20
 SLEEP_BETWEEN_THREAD_STARTS = 0.05
 
-PLAYER_IDS_FILE = "all_player_ids.json"  # arquivo JSON com lista de PlayerIds
+USERS_FILE = "users_with_cards.json"  # {"user_id1": ["card1","card2",...], ...}
 lock = threading.Lock()
 all_results = []
-all_card_ids = []
 status_counter = Counter()
-player_ids = []
-users_cards_map = defaultdict(list)  # usuário -> lista de cartas
+duplicate_deck_count = 0
+users_data = {}
 
-# Carrega os PlayerIds de arquivo JSON
-def load_player_ids():
-    global player_ids
+def load_users_data():
+    global users_data
     try:
-        with open(PLAYER_IDS_FILE, "r") as f:
-            player_ids = json.load(f)
-        print(f"Carregado {len(player_ids)} PlayerIds.")
+        with open(USERS_FILE, "r") as f:
+            users_list = json.load(f)
+            users_data = {u["userId"]: u["cards"] for u in users_list}
+        print(f"Carregado {len(users_data)} usuários com suas cartas.")
     except Exception as e:
-        print(f"Erro ao carregar {PLAYER_IDS_FILE}: {e}")
+        print(f"Erro ao carregar {USERS_FILE}: {e}")
         exit(1)
 
 def generate_payload():
-    player_id = random.choice(player_ids)
-    return {"PlayerId": player_id}
+    user_id = random.choice(list(users_data.keys()))
+    cards = users_data[user_id]
+
+    # Seleciona 5 cartas aleatórias sem repetição
+    if len(cards) < 5:
+        raise RuntimeError(f"Usuário {user_id} tem menos de 5 cartas!")
+
+    selected_cards = random.sample(cards, 5)
+    payload = {
+        "userId": user_id,
+        "card1Id": selected_cards[0],
+        "card2Id": selected_cards[1],
+        "card3Id": selected_cards[2],
+        "card4Id": selected_cards[3],
+        "card5Id": selected_cards[4]
+    }
+
+    # Verifica duplicação por precaução
+    if len(set(selected_cards)) < 5:
+        global duplicate_deck_count
+        with lock:
+            duplicate_deck_count += 1
+
+    return payload
 
 def send_request(session, payload):
     start = time.time()
@@ -61,11 +82,13 @@ def validate_response(resp):
         return False, "no_response"
     if resp.status_code != 200:
         return False, f"http_{resp.status_code}"
+    if resp.text.strip() == "":
+        return True, None
     try:
         data = resp.json()
-        card_ids = [str(card.get("id")) for card in data]
-        return True, card_ids
+        return True, data
     except Exception:
+        print(f"Resposta inválida do servidor: {resp.text}")
         return False, "json_parse_error"
 
 def worker(thread_id):
@@ -73,10 +96,17 @@ def worker(thread_id):
     successes = 0
     failures = 0
     latencies = []
-    local_card_ids = []
 
     for _ in range(REQUESTS_PER_THREAD):
-        payload = generate_payload()
+        try:
+            payload = generate_payload()
+        except Exception as e:
+            print(f"[Thread {thread_id}] Erro ao gerar payload: {e}")
+            with lock:
+                status_counter["payload_error"] += 1
+            failures += 1
+            continue
+
         resp, latency, err = send_request(session, payload)
         latencies.append(latency)
 
@@ -90,10 +120,8 @@ def worker(thread_id):
         ok, result = validate_response(resp)
         if ok:
             successes += 1
-            local_card_ids.extend(result)
             with lock:
                 status_counter["http_200"] += 1
-                users_cards_map[payload["PlayerId"]].extend(result)
         else:
             failures += 1
             with lock:
@@ -101,7 +129,6 @@ def worker(thread_id):
             print(f"[Thread {thread_id}] Falha validação: {result}")
 
     with lock:
-        all_card_ids.extend(local_card_ids)
         all_results.append({
             "thread": thread_id,
             "success": successes,
@@ -110,9 +137,9 @@ def worker(thread_id):
         })
 
 def run_load_test():
-    load_player_ids()
+    load_users_data()
     total_requests = NUM_THREADS * REQUESTS_PER_THREAD
-    print(f"Iniciando teste de abertura de pacotes: {NUM_THREADS} threads x {REQUESTS_PER_THREAD} req = {total_requests}")
+    print(f"Iniciando teste de escolha de deck: {NUM_THREADS} threads x {REQUESTS_PER_THREAD} req = {total_requests}")
 
     threads = []
     start_global = time.time()
@@ -137,54 +164,32 @@ def run_load_test():
     p90 = latencies[int(len(latencies)*0.90)-1] if latencies else 0
     p95 = latencies[int(len(latencies)*0.95)-1] if latencies else 0
 
-    card_counts = Counter(all_card_ids)
-    duplicates = {card_id: count for card_id, count in card_counts.items() if count > 1}
-
-    users_with_cards = []
-    for user_id, cards in users_cards_map.items():
-        unique_cards = list(set(cards))
-        users_with_cards.append({
-            "userId": user_id,
-            "cards": unique_cards
-        })
-
     print("\n--- RESULTADOS ---")
     print(f"Total requisições: {total_requests}")
     print(f"Sucessos: {total_success}")
     print(f"Falhas: {total_failure}")
     print(f"Taxa de erro: {total_failure/total_requests*100:.2f}%")
+    print(f"Cartões duplicados detectados: {duplicate_deck_count}")
     print(f"Tempo total: {total_time:.2f}s | Throughput: {throughput:.2f} req/s")
     print(f"Lat média: {avg_latency:.2f} ms | P90: {p90:.2f} ms | P95: {p95:.2f} ms")
     print("Status counts:", dict(status_counter))
-    print(f"Total cartas recebidas: {len(all_card_ids)} | Exemplo primeiros IDs: {all_card_ids[:20]}")
-    if duplicates:
-        print("IDs duplicados e quantidades:")
-        for card_id, count in list(duplicates.items())[:20]:
-            print(f"{card_id} => {count} vezes")
-    else:
-        print("Nenhuma carta duplicada encontrada!")
 
+    # salvar resultados
     out = {
         "total_requested": total_requests,
         "success": total_success,
         "failure": total_failure,
+        "duplicate_deck_count": duplicate_deck_count,
         "time_seconds": total_time,
         "throughput_req_s": throughput,
         "avg_latency_ms": avg_latency,
         "p90_latency_ms": p90,
         "p95_latency_ms": p95,
-        "status_counts": dict(status_counter),
-        "sample_card_ids": all_card_ids[:200],
-        "duplicates": duplicates
+        "status_counts": dict(status_counter)
     }
-
-    with open("results_open_packages_real_players.json", "w") as f:
+    with open("results_set_deck.json", "w") as f:
         json.dump(out, f, indent=2, ensure_ascii=False)
-    print("Resultados salvos em results_open_packages_real_players.json")
-
-    with open("users_with_cards.json", "w") as f:
-        json.dump(users_with_cards, f, indent=2, ensure_ascii=False)
-    print("JSON de usuários com cartas salvo em users_with_cards.json")
+    print("Resultados salvos em results_set_deck.json")
 
 if __name__ == "__main__":
     run_load_test()
