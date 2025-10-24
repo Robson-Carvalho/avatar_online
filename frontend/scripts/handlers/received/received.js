@@ -33,6 +33,8 @@ function handlerMain(message) {
     handleMatchFoundSuccess(data.data)
   }else if (data.operationType === "UPDATE_GAME") {
     handlUpdateGameSuccess(data.data)
+  } else if (data.operationType === "LOGOUT_USER") {
+    logout();
   }
 }
 

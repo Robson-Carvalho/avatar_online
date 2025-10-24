@@ -11,6 +11,14 @@ function handleJoinInQueue() {
     }
 }
 
+function handleLogout() {
+    const user = getUser();
+
+    if (user != null)  {
+        logoutUser(user.id)
+    }
+}
+
 function handleLogin(event) {
     event.preventDefault();
     

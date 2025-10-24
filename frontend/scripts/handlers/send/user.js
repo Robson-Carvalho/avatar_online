@@ -1,3 +1,20 @@
+function logoutUser(userID) {
+    if (!stompClient || !stompClient.connected) {
+        alert("⚠️ Não conectado ao servidor!");
+        return;
+    }
+    
+    const data = {
+      operationType: "LOGOUT_USER", 
+      payload: {
+       userID: userID
+      }
+    }
+
+    stompClient.send("/app/operation", {}, JSON.stringify(data));
+    log(`📤 Enviado: ${data.operationType}`);
+}
+
 function createUser(name, nickname, email, password) {
     if (!stompClient || !stompClient.connected) {
         alert("⚠️ Não conectado ao servidor!");
