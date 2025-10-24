@@ -10,16 +10,17 @@ import java.util.UUID;
 
 public class SessionPrincipalHandshakeHandler extends DefaultHandshakeHandler {
     @Override
-    protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes) {
-        // Verifica se o Spring já gerou um ID de sessão WebSocket (SockJS armazena em atributos)
+    protected Principal determineUser(ServerHttpRequest request,
+                                      WebSocketHandler wsHandler,
+                                      Map<String, Object> attributes) {
+
         Object sessionIdAttr = attributes.get("sessionId");
+        String sessionId = sessionIdAttr != null
+                ? sessionIdAttr.toString()
+                : UUID.randomUUID().toString();
 
-        // Usa o sessionId real, se existir. Caso contrário, gera um fallback UUID.
-        String sessionId = sessionIdAttr != null ? sessionIdAttr.toString() : UUID.randomUUID().toString();
+        System.out.println("🔗 Nova conexão (Principal): " + sessionId);
 
-        System.out.println("🔗 Nova conexão: " + sessionId);
-
-        // Retorna um Principal cujo nome é o sessionId real — o que será usado por convertAndSendToUser()
         return () -> sessionId;
     }
 }
