@@ -23,6 +23,10 @@ public class Player {
         this.cards = new ArrayList<>();
     }
 
+    public void setCards(List<Card> cards) {
+        this.cards = cards;
+    }
+
     public Player(String id, List<Card> cards)  {
         this.id = id;
         this.points = 0;

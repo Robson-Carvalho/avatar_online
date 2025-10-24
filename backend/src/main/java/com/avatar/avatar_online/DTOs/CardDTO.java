@@ -40,4 +40,14 @@ public class CardDTO {
     public int getDefense() { return defense; }
     public RarityCard getRarity() { return rarity; }
     public String getDescription() { return description; }
+
+    public void setId(UUID id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setElement(ElementCard element) { this.element = element; }
+    public void setPhase(PhaseCard phase) { this.phase = phase; }
+    public void setAttack(int attack){ this.attack = attack;}
+    public void setLife(int life) { this.life = life; }
+    public void setDefense(int defense) { this.defense = defense; }
+    public void setRarity(RarityCard rarity) { this.rarity = rarity; }
+    public void setDescription(String description) { this.description = description; }
 }

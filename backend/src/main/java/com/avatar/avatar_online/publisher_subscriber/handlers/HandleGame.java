@@ -1,8 +1,11 @@
 package com.avatar.avatar_online.publisher_subscriber.handlers;
 
+import com.avatar.avatar_online.DTOs.CardDTO;
 import com.avatar.avatar_online.game.Match;
 import com.avatar.avatar_online.game.GameState;
 import com.avatar.avatar_online.game.MatchManagementService;
+import com.avatar.avatar_online.models.Card;
+import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.GameStateDTO;
 import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.MatchFoundResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.handlers.records.PlayerInGame;
@@ -13,6 +16,8 @@ import com.avatar.avatar_online.publisher_subscriber.model.OperationStatus;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationType;
 import com.avatar.avatar_online.publisher_subscriber.service.Communication;
 import com.avatar.avatar_online.raft.service.RedirectService;
+import com.avatar.avatar_online.service.CardService;
+import com.avatar.avatar_online.service.DeckService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.collection.IQueue;
@@ -22,8 +27,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 
 @Component
 public class HandleGame {
@@ -37,25 +45,37 @@ public class HandleGame {
 
     private final ObjectMapper objectMapper;
 
+    private final CardService cardService;
+
     @Autowired
     public HandleGame(MatchManagementService matchManagementService, Communication communication,
-                      @Qualifier("hazelcastInstance") HazelcastInstance hazelcast, RedirectService redirectService, ObjectMapper objectMapper) {
+                      @Qualifier("hazelcastInstance") HazelcastInstance hazelcast, RedirectService redirectService, ObjectMapper objectMapper, DeckService deckService, CardService cardService) {
         this.matchManagementService = matchManagementService;
         this.hazelcast = hazelcast;
         this.communication = communication;
         this.waitingQueue = hazelcast.getQueue("matchmaking-queue");
         this.redirectService = redirectService;
         this.objectMapper = objectMapper;
+
+        this.cardService = cardService;
     }
 
     public void handleJoinInQueue(OperationRequestDTO operation, String userSession) {
         String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
         String userID = (String) operation.getPayload().get("userID");
 
+        List<Card> cards = cardService.getCardsInDeck(userID);
+
+        if(cards.size() < 5){
+            OperationResponseDTO response = new OperationResponseDTO(operation.getOperationType(), OperationStatus.WARNING, "Deck incompleto!", null);
+            communication.sendToUser(userSession, response);
+            return;
+        }
+
         PlayerInGame player = new PlayerInGame(userID, userSession, currentNodeId);
 
         if(waitingQueue.contains(player)){
-            OperationResponseDTO response = new OperationResponseDTO(operation.getOperationType(),OperationStatus.WARNING, "Você já está na fila", null);
+            OperationResponseDTO response = new OperationResponseDTO(operation.getOperationType(),OperationStatus.WARNING, "Você já está na fila!", null);
             communication.sendToUser(userSession, response);
             return;
         }
@@ -64,7 +84,12 @@ public class HandleGame {
             PlayerInGame opponent = waitingQueue.poll();
 
             if (opponent != null) {
+                List<Card> cardsOpponent = cardService.getCardsInDeck(opponent.getUserId());
                 GameState newGame = new GameState(player.getUserId(), opponent.getUserId());
+
+                // problema de serialize - resolver
+//                newGame.getPlayerOne().setCards(cards);
+//                newGame.getPlayerTwo().setCards(cardsOpponent);
 
                 Match match = new Match(currentNodeId, player, opponent, newGame);
 
