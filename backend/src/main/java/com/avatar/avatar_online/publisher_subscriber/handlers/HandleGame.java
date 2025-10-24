@@ -256,6 +256,7 @@ public class HandleGame {
 
         if(!opponentSession.isEmpty()) {
             System.out.println("Enviar STATUS para o oponente que partida acabou com vitória!");
+            matchManagementService.unRegisterMatchBySessionId(sessionId);
             return;
         }
 

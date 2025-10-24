@@ -66,6 +66,18 @@ public class MatchManagementService {
         System.out.println("Partida desregistrada do cluster: " + matchId);
     }
 
+    public boolean unRegisterMatchBySessionId(String sessionId) {
+        for (Match match : activeMatchesMap.values()) {
+            if (sessionId.equals(match.getPlayer1().getUserSession()) || sessionId.equals(match.getPlayer2().getUserSession())) {
+                activeMatchesMap.remove(match.getMatchId());
+                System.out.println("Partida removida do cluster: " + match.getMatchId());
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Verifica se o nó local é o Gerente da Partida (MP) para o MatchId fornecido.
      *
