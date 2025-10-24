@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MatchManagementService {
-    private final IMap<String, MatchFoundResponseDTO> activeMatchesMap;
+    private final IMap<String, Match> activeMatchesMap;
 
     private static final String ACTIVE_MATCHES_MAP = "active-matches";
 
@@ -16,8 +16,12 @@ public class MatchManagementService {
         this.activeMatchesMap = hazelcast.getMap(ACTIVE_MATCHES_MAP);
     }
 
+    public int gamesRunning(){
+        return activeMatchesMap.size();
+    }
+
     public String getOpponentIfPlayerInMatch(String sessionId, String userID) {
-        for (MatchFoundResponseDTO match : activeMatchesMap.values()) {
+        for (Match match : activeMatchesMap.values()) {
 
             if (sessionId.equals(match.getPlayer1().getUserSession()) || userID.equals(match.getPlayer1().getUserId())) {
                 return match.getPlayer2().getUserSession();
@@ -35,7 +39,7 @@ public class MatchManagementService {
      *
      * @param match O objeto MatchState contendo todas as informações de roteamento.
      */
-    public void registerMatch(MatchFoundResponseDTO match) {
+    public void registerMatch(Match match) {
         activeMatchesMap.put(match.getMatchId(), match);
 
         System.out.println("Partida registrada no cluster: " + match.getMatchId() +
@@ -48,7 +52,7 @@ public class MatchManagementService {
      * @param matchId O ID da partida.
      * @return O MatchState, ou null se a partida não for encontrada.
      */
-    public MatchFoundResponseDTO getMatchState(String matchId) {
+    public Match getMatchState(String matchId) {
         return activeMatchesMap.get(matchId);
     }
 
@@ -70,7 +74,7 @@ public class MatchManagementService {
      * @return true se o nó local for o MP, false caso contrário.
      */
     public boolean isMatchManager(String matchId, String currentNodeId) {
-        MatchFoundResponseDTO state = getMatchState(matchId);
+        Match state = getMatchState(matchId);
         if (state == null) {
             return false;
         }

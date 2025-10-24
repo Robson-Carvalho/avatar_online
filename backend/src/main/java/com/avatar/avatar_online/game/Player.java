@@ -3,10 +3,13 @@ package com.avatar.avatar_online.game;
 import com.avatar.avatar_online.enums.ElementCard;
 import com.avatar.avatar_online.models.Card;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player {
+public class Player implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String id;
     private int points;
     private String activationCard;
@@ -37,10 +40,15 @@ public class Player {
     }
 
     public String getId() { return id; }
+    public int getPoint(){return points;}
+    public String getActivationCard() {return activationCard; }
+    public List<String> getCemetery(){return this.cemetery;}
+    public List<Card> getCards(){return this.cards;}
+    public int getPoints() { return points; }
+    public Boolean getPlayedCard() { return playedCard; }
 
     public void setId(String id) { this.id = id; }
 
-    public Boolean getPlayedCard() { return playedCard; }
 
     public void setPlayedCard(Boolean playedCard) {
         this.playedCard = playedCard;
@@ -55,11 +63,9 @@ public class Player {
         }
     }
 
-    public int getPoints() { return points; }
-
     public void addPoint() { this.points++; }
 
-    public Card getActivationCard() {
+    public Card getActivationCardToBattle() {
         for (Card card : this.cards) {
             if(card.getId().equals(this.activationCard))
                 return card;
@@ -80,10 +86,8 @@ public class Player {
         }
     }
 
-    public List<Card> getCards() { return cards; }
-
     public Boolean reduceLifeCard(int attack, String attackElementStr) {
-        Card card = this.getActivationCard();
+        Card card = this.getActivationCardToBattle();
 
         ElementCard attackElement = ElementCard.valueOf(attackElementStr.toUpperCase());
         ElementCard defenseElement = card.getElement();

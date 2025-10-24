@@ -5,11 +5,15 @@ import com.avatar.avatar_online.enums.PhaseCard;
 import com.avatar.avatar_online.enums.RarityCard;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+
+import java.io.Serializable;
 import java.util.UUID;
 
 @Entity
 @Table(name = "cards")
-public class Card {
+public class Card implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     @Column(updatable = false, nullable = false)
     private UUID id;
@@ -62,6 +66,9 @@ public class Card {
         this.defense = defense;
         this.rarity = rarity;
         this.description = description;
+    }
+
+    public Card(Card card) {
     }
 
     // ===== Getters e Setters =====

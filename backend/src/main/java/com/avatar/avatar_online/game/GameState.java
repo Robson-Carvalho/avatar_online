@@ -2,10 +2,13 @@ package com.avatar.avatar_online.game;
 
 import com.avatar.avatar_online.models.Card;
 
+import java.io.Serializable;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.UUID;
 
-public class GameState {
+public class GameState implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final String id;
     private String type;
     private String message;
@@ -24,8 +27,8 @@ public class GameState {
     }
 
     public void battle() {
-        Card cardPlayerOne = this.playerOne.getActivationCard();
-        Card cardPlayerTwo = this.playerTwo.getActivationCard();
+        Card cardPlayerOne = this.playerOne.getActivationCardToBattle();
+        Card cardPlayerTwo = this.playerTwo.getActivationCardToBattle();
 
         boolean destroyedByP2 = this.playerOne.reduceLifeCard(cardPlayerTwo.getAttack(), cardPlayerTwo.getElement().toString());
         boolean destroyedByP1 = this.playerTwo.reduceLifeCard(cardPlayerOne.getAttack(), cardPlayerOne.getElement().toString());

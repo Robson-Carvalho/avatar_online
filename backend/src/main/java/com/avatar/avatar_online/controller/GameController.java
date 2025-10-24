@@ -1,15 +1,14 @@
 package com.avatar.avatar_online.controller;
 
+import com.avatar.avatar_online.game.GameState;
+import com.avatar.avatar_online.game.MatchManagementService;
 import com.avatar.avatar_online.publisher_subscriber.handlers.HandleGame;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,12 +16,22 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/game")
 public class GameController {
-
+    private final MatchManagementService matchManagementService;
     private final HandleGame handleGame;
 
     @Autowired
-    public GameController(HandleGame handleGame) {
+    public GameController(MatchManagementService matchManagementService, HandleGame handleGame) {
+        this.matchManagementService = matchManagementService;
         this.handleGame = handleGame;
+    }
+
+    @GetMapping("/matchs")
+    public  Map<String, Object> matchs(){
+        Map<String, Object> response = new HashMap<>();
+        int matchsCurrent = matchManagementService.gamesRunning();
+        response.put("games_running", matchsCurrent);
+
+        return response;
     }
 
     @PostMapping("/notify/GameFound")

@@ -5,7 +5,6 @@ import com.avatar.avatar_online.game.Match;
 import com.avatar.avatar_online.game.GameState;
 import com.avatar.avatar_online.game.MatchManagementService;
 import com.avatar.avatar_online.models.Card;
-import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.GameStateDTO;
 import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.MatchFoundResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.handlers.records.PlayerInGame;
@@ -85,16 +84,24 @@ public class HandleGame {
 
             if (opponent != null) {
                 List<Card> cardsOpponent = cardService.getCardsInDeck(opponent.getUserId());
-                GameState newGame = new GameState(player.getUserId(), opponent.getUserId());
 
-                // problema de serialize - resolver
-//                newGame.getPlayerOne().setCards(cards);
-//                newGame.getPlayerTwo().setCards(cardsOpponent);
+                GameState newGame = new GameState(player.getUserId(), opponent.getUserId());
+                newGame.getPlayerOne().setCards(cards);
+                newGame.getPlayerTwo().setCards(cardsOpponent);
 
                 Match match = new Match(currentNodeId, player, opponent, newGame);
 
-                GameStateDTO gameStateDTO = new GameStateDTO(newGame);
+                List<CardDTO> cardsDTO = new ArrayList<>();
+                for (Card card : cards) {
+                    cardsDTO.add(new CardDTO(card));
+                }
 
+                List<CardDTO> cardsOpponentDTO = new ArrayList<>();
+                for (Card card : cardsOpponent) {
+                    cardsOpponentDTO.add(new CardDTO(card));
+                }
+
+                GameStateDTO gameStateDTO = new GameStateDTO(newGame, cardsDTO, cardsOpponentDTO);
                 MatchFoundResponseDTO matchDTO = new MatchFoundResponseDTO(match.getMatchId(), currentNodeId, gameStateDTO, player, opponent, match.isLocalMatch());
 
                 OperationResponseDTO response = new OperationResponseDTO(
@@ -104,7 +111,7 @@ public class HandleGame {
                         matchDTO
                 );
 
-                matchManagementService.registerMatch(matchDTO);
+                matchManagementService.registerMatch(match);
 
                 System.out.println("Partida formada: " + player.getUserId() + " vs " + opponent.getUserId());
                 if(match.isLocalMatch()){
@@ -131,14 +138,14 @@ public class HandleGame {
 
     public void handleActionPlayCard(OperationRequestDTO operation, String userSession) {
         String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
-        MatchFoundResponseDTO match = this.getMatch(operation);
+        Match match = this.getMatch(operation);
 
         if(match == null){
             this.sendMessageNotFoundMath(userSession, operation);
             return;
         }
 
-        if(match.getIslocalmatch()) {
+        if(match.getIslocalMatch()) {
             System.out.println("Jogo local " + userSession + " apertou play e chegou aqui");
             // processa e envia
         } else {
@@ -182,7 +189,7 @@ public class HandleGame {
     }
 
     public void handleActionActivateCard(OperationRequestDTO operation, String userSession) {
-        MatchFoundResponseDTO match = this.getMatch(operation);
+        Match match = this.getMatch(operation);
 
         if(match == null){
            this.sendMessageNotFoundMath(userSession, operation);
@@ -192,7 +199,7 @@ public class HandleGame {
         // aplicar lógica no jogo e atualizar ambos.
     }
 
-    private MatchFoundResponseDTO getMatch(OperationRequestDTO operation){
+    private Match getMatch(OperationRequestDTO operation){
         String matchID = (String) operation.getPayload().get("matchID");
         return matchManagementService.getMatchState(matchID);
     }

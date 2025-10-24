@@ -1,6 +1,7 @@
 package com.avatar.avatar_online.publisher_subscriber.handlers.DTO;
 
 import com.avatar.avatar_online.game.GameState;
+import com.avatar.avatar_online.DTOs.CardDTO;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -32,14 +33,16 @@ public class GameStateDTO implements Serializable {
         this.playerTwo = playerTwo;
     }
 
-    // Mantenha este construtor de domínio para a SERIALIZAÇÃO
-    public GameStateDTO(GameState gameState) {
+    public GameStateDTO(GameState gameState, List<CardDTO> playerCards, List<CardDTO> opponentCards) {
         this.id = gameState.getId();
         this.turnPlayerId = gameState.getTurnPlayerId();
         this.playerWin = gameState.getPlayerWin();
-        this.playerOne = new PlayerDTO(gameState.getPlayerOne());
-        this.playerTwo = new PlayerDTO(gameState.getPlayerTwo());
+        this.playerOne = new PlayerDTO(gameState.getPlayerOne(), playerCards);
+        this.playerTwo = new PlayerDTO(gameState.getPlayerTwo(), opponentCards);
+        this.playerOne.setCards(playerCards);
+        this.playerOne.setCards(playerCards);
     }
+
 
     // Getters para serialização
     public String getId() { return id; }
