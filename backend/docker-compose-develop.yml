@@ -1,0 +1,77 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:17
+    container_name: postgres-node
+    environment:
+      POSTGRES_DB: avatar_db
+      POSTGRES_USER: avatar_user
+      POSTGRES_PASSWORD: senha123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_node:/var/lib/postgresql/data
+    networks:
+      - avatar-network
+
+  app-node1:
+    build: .
+    container_name: avatar-node1
+    depends_on:
+      - db
+    environment:
+      - APP_SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/avatar_db
+      - SPRING_DATASOURCE_USERNAME=avatar_user
+      - SPRING_DATASOURCE_PASSWORD=senha123
+      - HAZELCAST_PUBLIC_ADDRESS=avatar-node1:5701
+      - HAZELCAST_MEMBER_LIST=avatar-node1,avatar-node2,avatar-node3
+    ports:
+      - "8081:8080"
+      - "5701:5701"
+    networks:
+      - avatar-network
+
+  app-node2:
+    build: .
+    container_name: avatar-node2
+    depends_on:
+      - db
+    environment:
+      - APP_SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/avatar_db
+      - SPRING_DATASOURCE_USERNAME=avatar_user
+      - SPRING_DATASOURCE_PASSWORD=senha123
+      - HAZELCAST_PUBLIC_ADDRESS=avatar-node2:5701
+      - HAZELCAST_MEMBER_LIST=avatar-node1,avatar-node2,avatar-node3
+    ports:
+      - "8082:8080"
+      - "5702:5701"
+    networks:
+      - avatar-network
+
+  app-node3:
+    build: .
+    container_name: avatar-node3
+    depends_on:
+      - db
+    environment:
+      - APP_SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/avatar_db
+      - SPRING_DATASOURCE_USERNAME=avatar_user
+      - SPRING_DATASOURCE_PASSWORD=senha123
+      - HAZELCAST_PUBLIC_ADDRESS=avatar-node3:5701
+      - HAZELCAST_MEMBER_LIST=avatar-node1,avatar-node2,avatar-node3
+    ports:
+      - "8083:8080"
+      - "5703:5701"
+    networks:
+      - avatar-network
+
+networks:
+  avatar-network:
+    driver: bridge
+
+volumes:
+  postgres_data_node:
