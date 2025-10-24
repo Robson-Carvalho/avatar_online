@@ -6,7 +6,10 @@ function handlerMain(message) {
   log(`📩 Resposta: status: ${data.operationStatus}`);
   log(`📩 Resposta: data: ${JSON.stringify(data.data)}`);
 
-  if (data.operationStatus == "ERROR") {
+  if (data.operationType === "AUTH_USER") {
+    handleAuthUser(data.data)
+  }
+  else if (data.operationStatus == "ERROR") {
     showError(`${data.message}`);
   } else if (data.operationStatus == "WARNING") {
     showWarning(`${data.message}`)
@@ -25,9 +28,7 @@ function handlerMain(message) {
     handleGetDeckSuccess(data.data);
   } else if (data.operationType === "GET_CARDS") {
     handleGetCardsSuccess(data.data);
-  } else if (data.operationType === "AUTH_USER") {
-    handleAuthUser(data.data)
-  }else if (data.operationType === "JOIN_QUEUE") {
+  } else if (data.operationType === "JOIN_QUEUE") {
     handleJoinInQueueSuccess(data.data)
   }else if (data.operationType === "MATCH_FOUND") {
     handleMatchFoundSuccess(data.data)
@@ -168,10 +169,10 @@ function handleOpenPackageSuccess(cards) {
 }
 
 function handleAuthUser(data) {
-  // lembrar depois de ver isso - quando o user cair na tela de dash e não exister user, jogar pra tel de login
-  console.log("Auth", data.data);
-    
-    if (!data.data) {
-      logout();
-    } 
+  console.log("Auth", data);
+
+  if (!data) {
+    showWarning("Usuário não autenticado!");
+    logout();
+  }
 }

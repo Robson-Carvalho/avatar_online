@@ -43,6 +43,12 @@ function connect(host = "127.0.0.1") {
             function (frame) {
                 log("✅ STOMP Conectado: " + frame);
 
+                const user = getUser()
+
+                if (user) {
+                    verifyAuth(user.id)
+                }
+
                 stompClient.subscribe("/user/queue/response", function (message) {
                     handlerMain(message)
                 });

@@ -35,18 +35,15 @@ function createUser(name, nickname, email, password) {
     log(`📤 Enviado: ${data.operationType}`);
 }
 
-function verifyAuth() {
+function verifyAuth(userID) {
     if (!stompClient || !stompClient.connected) {
-        alert("⚠️ Não conectado ao servidor!");
         return;
     }
-  
-    const user = getUser()
     
     const data = {
       operationType: "AUTH_USER", 
       payload: {
-       userID: user.id
+       userID: userID
       }
     }
 
