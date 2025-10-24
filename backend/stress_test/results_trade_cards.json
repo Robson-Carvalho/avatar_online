@@ -1,0 +1,15 @@
+{
+  "total_requests": 200,
+  "success": 200,
+  "failure": 0,
+  "duplicate_trades": 0,
+  "error_rate_percent": 0.0,
+  "time_seconds": 6.12394642829895,
+  "throughput_req_s": 32.658678899572614,
+  "avg_latency_ms": 8.756765127182007,
+  "p90_latency_ms": 9.884834289550781,
+  "p95_latency_ms": 10.023117065429688,
+  "status_counts": {
+    "http_200": 200
+  }
+}
