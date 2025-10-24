@@ -187,4 +187,28 @@ public class HandleGame {
 
         communication.sendToUser(sessionId, operation);
     }
+
+    public void handleSessionDisconnect(String sessionId) {
+        for (PlayerInGame player : waitingQueue) {
+            if (player.getUserSession().equals(sessionId)) {
+                System.out.println("🎯 Removendo player com sessionId: " + sessionId + " da fila");
+                waitingQueue.remove(player);
+                return;
+            }
+        }
+
+        System.out.println("Nenhuma jogador na fila com sessão ID: " + sessionId);
+        this.checkDisconnectedPlayerState(sessionId);
+    }
+
+    private void checkDisconnectedPlayerState(String sessionId) {
+        String opponentSession = matchManagementService.getOpponentIfPlayerInMatch(sessionId);
+
+        if(!opponentSession.isEmpty()) {
+            System.out.println("Enviar para userSession: " + opponentSession +" que ele ganhou");
+            return;
+        }
+
+        System.out.println("Nenhuma jogador em partida com sessão ID: " + sessionId);
+    }
 }
