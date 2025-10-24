@@ -1,3 +1,8 @@
+function handleActiveCard(){
+    console.log("Ativei carta!");
+    activateCard(global_userID, global_matchID);
+}
+
 function handlePlayCard(){
     console.log("apertei o botão!");
     playCard(global_userID, global_matchID);

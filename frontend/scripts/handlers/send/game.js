@@ -44,7 +44,7 @@ function activateCard(userID, matchID, cardID) {
       payload: {
         userID: userID,
         matchID: matchID,
-        cardID: cardID
+        //cardID: cardID | Comentei só pq a gente n ta enviando ID de carta ainda
       }
     }
 
