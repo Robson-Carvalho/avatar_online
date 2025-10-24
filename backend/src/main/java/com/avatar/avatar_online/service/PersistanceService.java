@@ -5,6 +5,7 @@ import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
+import com.avatar.avatar_online.raft.logs.TradeCardsCommand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.repository.CardRepository;
 import com.avatar.avatar_online.repository.DeckRepository;
@@ -99,5 +100,41 @@ public class PersistanceService {
         deck.setCard5(command.getCard5Id());
 
         deckRepository.save(deck);
+    }
+
+    @Transactional
+    public void applyTradeCardCommand(TradeCardsCommand command){
+        Optional<Card> card1 = cardRepository.findById(command.getCard1Id());
+        Optional<Card> card2 = cardRepository.findById(command.getCard2Id());
+        Optional<User> user1 = userRepository.findById(command.getPlayer1Id());
+        Optional<User> user2 = userRepository.findById(command.getPlayer2Id());
+
+
+        if(card1.isEmpty()){
+            throw new RuntimeException("Carta 1 não encontrada: " + command.getCard1Id());
+        }
+
+        if(card2.isEmpty()){
+            throw new RuntimeException("Carta 2 não encontrada: " + command.getCard2Id());
+        }
+
+        if(user1.isEmpty()){
+            throw new RuntimeException("usuário 1 não encontrado: " + command.getPlayer1Id());
+        }
+
+        if(user2.isEmpty()){
+            throw new RuntimeException("usuário 2 não encontrado: " + command.getPlayer2Id());
+        }
+
+        Card card1True = card1.get();
+        Card card2True = card2.get();
+        User user = user1.get();
+        User uuser = user2.get();
+
+        card1True.setUser(uuser);
+        card2True.setUser(user);
+
+        cardRepository.save(card1True);
+        cardRepository.save(card2True);
     }
 }

@@ -5,6 +5,7 @@ import com.avatar.avatar_online.models.Deck;
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
+import com.avatar.avatar_online.raft.logs.TradeCardsCommand;
 import com.avatar.avatar_online.raft.model.LogEntry;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.repository.CardRepository;
@@ -34,12 +35,14 @@ public class CommandExecutorService {
             persistanceService.applyUserSignUpCommand((UserSignUpCommand) command);
         } else if (command instanceof OpenPackCommand) {
             persistanceService.applyOpenPackCommand((OpenPackCommand) command);
-        } else if (command instanceof SetDeckCommmand){
+        } else if (command instanceof SetDeckCommmand) {
             persistanceService.applySetDeckCommand((SetDeckCommmand) command);
+        } else if (command instanceof TradeCardsCommand) {
+            persistanceService.applyTradeCardCommand((TradeCardsCommand) command);
         }
     }
 
-    private void applyCard(){
+    private void applyCard() {
 
     }
 
