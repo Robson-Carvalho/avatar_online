@@ -189,14 +189,55 @@ public class HandleGame {
     }
 
     public void handleActionActivateCard(OperationRequestDTO operation, String userSession) {
+        String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
         Match match = this.getMatch(operation);
 
         if(match == null){
-           this.sendMessageNotFoundMath(userSession, operation);
+            this.sendMessageNotFoundMath(userSession, operation);
             return;
         }
 
+        if(match.getIslocalMatch()) {
+            System.out.println("Jogo local " + userSession + " ativou carta e chegou aqui");
+            // processa e envia
+        } else {
+            // PS dica doq acho que tem que ser feito; Processa aqui a ação e dps envia ao outro nó com o código abaixo
+
+            Map<String, Object> newPayload = new HashMap<>(operation.getPayload());
+
+            newPayload.put("userSession", userSession);
+
+            OperationRequestDTO newOperation = new OperationRequestDTO(
+                    operation.getOperationType(),
+                    newPayload
+            );
+
+            if (!match.getManagerNodeId().equals(currentNodeId) ) {
+                System.out.println("Jogo Distribuído, estou no servidor não gerenciador da partida " + userSession + " ativei carta e chegou aqui");
+                redirectService.sendOperationRequestToNode(
+                        match.getManagerNodeId(),
+                        "UpdateGameActiveCard",
+                        newOperation,
+                        HttpMethod.POST
+                );
+            } else {
+                System.out.println("Jogo Distribuído, estou no servidor gerenciador da partida " + userSession + " ativei carta e chegou aqui");
+                redirectService.sendOperationRequestToNode(
+                        match.getPlayer2().getHostAddress(),
+                        "UpdateGameActiveCard",
+                        newOperation,
+                        HttpMethod.POST
+                );
+            }
+        }
         // aplicar lógica no jogo e atualizar ambos.
+    }
+
+    public void ProcessActiveCardFromOtherNode(OperationRequestDTO operation, String userSession) {
+        System.out.println("Carta ativada por: " + userSession);
+        // --- Ideia do método ---
+        // Se o nó for seguidor, apenas manda a atualização para o usuário
+        // Se o nó for Líder, processa a ação enviada pelo outro jogador
     }
 
     private Match getMatch(OperationRequestDTO operation){

@@ -63,4 +63,23 @@ public class GameController {
                     .body("{\"error\": \"Erro ao enviar notificação de PlayCard: " + e.getMessage() + "\"}");
         }
     }
+
+    @PostMapping("/notify/UpdateGameActiveCard")
+    public ResponseEntity<?> notifyUpdateGameActiveCard(@RequestBody OperationRequestDTO orD){
+        try{
+            Map<String, Object> payload = orD.getPayload();
+            String userSession = (String) payload.get("userSession");
+
+            Map<String, Object> cleanedPayload = new HashMap<>(payload);
+            cleanedPayload.remove("userSession");
+
+            orD.setPayload(cleanedPayload);
+
+            handleGame.ProcessActiveCardFromOtherNode(orD, userSession);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("{\"error\": \"Erro ao enviar notificação de PlayCard: " + e.getMessage() + "\"}");
+        }
+    }
 }
