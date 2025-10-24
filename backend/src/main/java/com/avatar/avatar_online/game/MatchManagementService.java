@@ -16,12 +16,12 @@ public class MatchManagementService {
         this.activeMatchesMap = hazelcast.getMap(ACTIVE_MATCHES_MAP);
     }
 
-    public String getOpponentIfPlayerInMatch(String sessionId) {
+    public String getOpponentIfPlayerInMatch(String sessionId, String userID) {
         for (MatchFoundResponseDTO match : activeMatchesMap.values()) {
 
-            if (sessionId.equals(match.getPlayer1().getUserSession())) {
+            if (sessionId.equals(match.getPlayer1().getUserSession()) || userID.equals(match.getPlayer1().getUserId())) {
                 return match.getPlayer2().getUserSession();
-            }else if(sessionId.equals(match.getPlayer2().getUserSession())){
+            }else if(sessionId.equals(match.getPlayer2().getUserSession()) || userID.equals(match.getPlayer2().getUserId())){
                 return match.getPlayer1().getUserSession();
             }
         }

@@ -52,6 +52,9 @@ public class OperationController {
         }
 
         switch (type) {
+            case LOGOUT_USER:
+                messagingTemplate.convertAndSendToUser(userSession, "/queue/response",handleGame.logout(operation, userSession));
+                break;
             case AUTH_USER:
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleUser.handleAuthUser(operation));
                 break;

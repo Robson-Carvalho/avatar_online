@@ -23,6 +23,6 @@ public class WebSocketEventListener {
         String sessionId = headerAccessor.getSessionId();
 
         System.out.println("❌ Cliente desconectado: " + sessionId);
-        handleGame.handleSessionDisconnect(sessionId);
+        handleGame.handleSessionDisconnect(sessionId, "");
     }
 }

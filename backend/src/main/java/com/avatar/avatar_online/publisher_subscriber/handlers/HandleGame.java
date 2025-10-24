@@ -188,27 +188,45 @@ public class HandleGame {
         communication.sendToUser(sessionId, operation);
     }
 
-    public void handleSessionDisconnect(String sessionId) {
+    public OperationResponseDTO logout(OperationRequestDTO operation, String userSession) {
+        String userID = (String) operation.getPayload().get("userID");
+
+        try{
+            this.handleSessionDisconnect(userSession, userID);
+            return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK,"Usuário desconectado com sucesso!",null);
+        }catch(Exception e){
+            return new OperationResponseDTO(operation.getOperationType(),OperationStatus.ERROR, "Erro inesperado: " + e.getMessage(), null);
+        }
+    }
+
+    public void handleSessionDisconnect(String sessionId, String userID) {
         for (PlayerInGame player : waitingQueue) {
-            if (player.getUserSession().equals(sessionId)) {
-                System.out.println("🎯 Removendo player com sessionId: " + sessionId + " da fila");
-                waitingQueue.remove(player);
+            if (player.getUserSession().equals(sessionId) || player.getUserId().equals(userID)) {
+                System.out.println("🎯 Removendo player com sessionId: " + sessionId + " ou userID: "+ userID+" da fila");
+
+                boolean remove = waitingQueue.remove(player);
+                if (!remove){
+                    System.out.println("Erro ao remover da fila");
+                    return;
+                }
+
+                System.out.println("Payer removido da fila com sucesso!");
                 return;
             }
         }
 
         System.out.println("Nenhuma jogador na fila com sessão ID: " + sessionId);
-        this.checkDisconnectedPlayerState(sessionId);
+        this.checkDisconnectedPlayerState(sessionId, userID);
     }
 
-    private void checkDisconnectedPlayerState(String sessionId) {
-        String opponentSession = matchManagementService.getOpponentIfPlayerInMatch(sessionId);
+    private void checkDisconnectedPlayerState(String sessionId, String userID) {
+        String opponentSession = matchManagementService.getOpponentIfPlayerInMatch(sessionId, userID);
 
         if(!opponentSession.isEmpty()) {
-            System.out.println("Enviar para userSession: " + opponentSession +" que ele ganhou");
+            System.out.println("Enviar STATUS para o oponente que partida acabou com vitória!");
             return;
         }
 
-        System.out.println("Nenhuma jogador em partida com sessão ID: " + sessionId);
+        System.out.println("Nenhuma jogador em partida com sessão ID: " + sessionId + " ou com userID: " + userID);
     }
 }

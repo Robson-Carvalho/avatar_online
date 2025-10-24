@@ -1,7 +1,7 @@
 package com.avatar.avatar_online.publisher_subscriber.model;
 
 public enum OperationType {
-    LOGOUT,
+    LOGOUT_USER,
     AUTH_USER,
     CREATE_USER,
     LOGIN_USER,
