@@ -45,7 +45,6 @@ def generate_payload():
     user_id = random.choice(list(users_data.keys()))
     cards = users_data[user_id]
 
-    # Seleciona 5 cartas aleatórias sem repetição
     if len(cards) < 5:
         raise RuntimeError(f"Usuário {user_id} tem menos de 5 cartas!")
 
@@ -59,7 +58,6 @@ def generate_payload():
         "card5Id": selected_cards[4]
     }
 
-    # Verifica duplicação por precaução
     if len(set(selected_cards)) < 5:
         global duplicate_deck_count
         with lock:
@@ -174,7 +172,6 @@ def run_load_test():
     print(f"Lat média: {avg_latency:.2f} ms | P90: {p90:.2f} ms | P95: {p95:.2f} ms")
     print("Status counts:", dict(status_counter))
 
-    # salvar resultados
     out = {
         "total_requested": total_requests,
         "success": total_success,

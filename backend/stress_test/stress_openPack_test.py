@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Teste de carga de abertura de pacotes usando PlayerIds reais.
+Teste de carga de abertura de pacotes garantindo 25 cartas por usuário.
 - Endpoint: POST /api/cards/pack
 - Payload: {"PlayerId": "<id>"}
-- Lista de PlayerIds: arquivo JSON ou lista em memória
+- Cada thread representa um usuário fixo
 """
 
 import requests
@@ -19,7 +19,7 @@ PORT = 8081
 URL = f"http://{LEADER_IP}:{PORT}/api/cards/pack"
 
 NUM_THREADS = 200
-REQUESTS_PER_THREAD = 5
+REQUESTS_PER_THREAD = 5  # cada requisição traz 5 cartas
 TIMEOUT = 20
 SLEEP_BETWEEN_THREAD_STARTS = 0.05
 
@@ -37,13 +37,19 @@ def load_player_ids():
     try:
         with open(PLAYER_IDS_FILE, "r") as f:
             player_ids = json.load(f)
+        if len(player_ids) < NUM_THREADS:
+            raise RuntimeError(f"É necessário pelo menos {NUM_THREADS} PlayerIds únicos.")
         print(f"Carregado {len(player_ids)} PlayerIds.")
     except Exception as e:
         print(f"Erro ao carregar {PLAYER_IDS_FILE}: {e}")
         exit(1)
 
-def generate_payload():
-    player_id = random.choice(player_ids)
+# Cria um mapeamento fixo thread -> player
+def assign_players_to_threads():
+    return random.sample(player_ids, NUM_THREADS)
+
+def generate_payload(thread_id, thread_player_ids):
+    player_id = thread_player_ids[thread_id]
     return {"PlayerId": player_id}
 
 def send_request(session, payload):
@@ -68,7 +74,7 @@ def validate_response(resp):
     except Exception:
         return False, "json_parse_error"
 
-def worker(thread_id):
+def worker(thread_id, thread_player_ids):
     session = requests.Session()
     successes = 0
     failures = 0
@@ -76,7 +82,7 @@ def worker(thread_id):
     local_card_ids = []
 
     for _ in range(REQUESTS_PER_THREAD):
-        payload = generate_payload()
+        payload = generate_payload(thread_id, thread_player_ids)
         resp, latency, err = send_request(session, payload)
         latencies.append(latency)
 
@@ -111,13 +117,14 @@ def worker(thread_id):
 
 def run_load_test():
     load_player_ids()
+    thread_player_ids = assign_players_to_threads()
     total_requests = NUM_THREADS * REQUESTS_PER_THREAD
     print(f"Iniciando teste de abertura de pacotes: {NUM_THREADS} threads x {REQUESTS_PER_THREAD} req = {total_requests}")
 
     threads = []
     start_global = time.time()
     for i in range(NUM_THREADS):
-        t = threading.Thread(target=worker, args=(i+1,))
+        t = threading.Thread(target=worker, args=(i, thread_player_ids))
         threads.append(t)
         t.start()
         time.sleep(SLEEP_BETWEEN_THREAD_STARTS)
@@ -137,12 +144,10 @@ def run_load_test():
     p90 = latencies[int(len(latencies)*0.90)-1] if latencies else 0
     p95 = latencies[int(len(latencies)*0.95)-1] if latencies else 0
 
-    card_counts = Counter(all_card_ids)
-    duplicates = {card_id: count for card_id, count in card_counts.items() if count > 1}
-
+    # Garante que cada usuário tenha apenas cartas únicas
     users_with_cards = []
     for user_id, cards in users_cards_map.items():
-        unique_cards = list(set(cards))
+        unique_cards = list(cards)
         users_with_cards.append({
             "userId": user_id,
             "cards": unique_cards
@@ -157,12 +162,6 @@ def run_load_test():
     print(f"Lat média: {avg_latency:.2f} ms | P90: {p90:.2f} ms | P95: {p95:.2f} ms")
     print("Status counts:", dict(status_counter))
     print(f"Total cartas recebidas: {len(all_card_ids)} | Exemplo primeiros IDs: {all_card_ids[:20]}")
-    if duplicates:
-        print("IDs duplicados e quantidades:")
-        for card_id, count in list(duplicates.items())[:20]:
-            print(f"{card_id} => {count} vezes")
-    else:
-        print("Nenhuma carta duplicada encontrada!")
 
     out = {
         "total_requested": total_requests,
@@ -175,7 +174,6 @@ def run_load_test():
         "p95_latency_ms": p95,
         "status_counts": dict(status_counter),
         "sample_card_ids": all_card_ids[:200],
-        "duplicates": duplicates
     }
 
     with open("results_open_packages_real_players.json", "w") as f:
