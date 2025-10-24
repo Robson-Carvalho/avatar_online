@@ -83,38 +83,42 @@ public class CardService {
     }
 
     public ResponseEntity<?> generatePack(PackDTO packDTO){
-        try {
-            if (!leadershipService.isLeader()) {
-                System.out.println("🚫 Este nó não é o líder. Redirecionando para o líder...");
-                return redirectService.redirectToLeader("/api/cards/pack", packDTO, HttpMethod.POST);
+        synchronized(this) {
+            try {
+                if (!leadershipService.isLeader()) {
+                    System.out.println("🚫 Este nó não é o líder. Redirecionando para o líder...");
+                    return redirectService.redirectToLeader("/api/cards/pack", packDTO, HttpMethod.POST);
+                }
+
+                List<Card> availableCards = cardRepository.findAllByUserIsNull();
+
+                if (availableCards.size() < 5) {
+                    throw new RuntimeException("LOGS: Pool de cartas insuficiente para abrir pacote.");
+                }
+
+                List<Card> selectedCards = selectRandomCards(availableCards);
+
+                List<UUID> selectedCardIds = selectedCards.stream()
+                        .map(Card::getId)
+                        .toList();
+
+                System.out.println("Cartas selecionadas para pacote: " + selectedCardIds);
+
+                OpenPackCommand command = new OpenPackCommand(UUID.randomUUID(), "OPEN_PACK",
+                        UUID.fromString(packDTO.getPlayerId()), selectedCardIds);
+
+                boolean response = cPCommitService.tryCommitPackOpening(command);
+
+                if (!response) {
+                    return ResponseEntity.badRequest().body("Erro: Não foi possível processar a solicitação de " +
+                            "abertura de pacote");
+                }
+
+                return ResponseEntity.ok().body(selectedCards);
+            } catch (Exception e) {
+                return ResponseEntity.internalServerError()
+                        .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");
             }
-
-            List<Card> availableCards = cardRepository.findAllByUserIsNull();
-
-            if (availableCards.size() < 5) {
-                throw new RuntimeException("LOGS: Pool de cartas insuficiente para abrir pacote.");
-            }
-
-            List<Card> selectedCards = selectRandomCards(availableCards);
-
-            List<UUID> selectedCardIds = selectedCards.stream()
-                    .map(Card::getId)
-                    .toList();
-
-            OpenPackCommand command = new OpenPackCommand(UUID.randomUUID(), "OPEN_PACK",
-                    UUID.fromString(packDTO.getPlayerId()), selectedCardIds);
-
-            boolean response = cPCommitService.tryCommitPackOpening(command);
-
-            if(!response){
-                return ResponseEntity.badRequest().body("Erro: Não foi possível processar a solicitação de " +
-                        "abertura de pacote");
-            }
-
-            return ResponseEntity.ok().body(selectedCards);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");
         }
     }
 
