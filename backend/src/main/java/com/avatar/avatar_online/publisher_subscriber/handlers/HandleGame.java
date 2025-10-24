@@ -55,7 +55,7 @@ public class HandleGame {
         PlayerInGame player = new PlayerInGame(userID, userSession, currentNodeId);
 
         if(waitingQueue.contains(player)){
-            OperationResponseDTO response = new OperationResponseDTO(operation.getOperationType(),OperationStatus.WAITING, "Você já está na fila", null);
+            OperationResponseDTO response = new OperationResponseDTO(operation.getOperationType(),OperationStatus.WARNING, "Você já está na fila", null);
             communication.sendToUser(userSession, response);
             return;
         }
