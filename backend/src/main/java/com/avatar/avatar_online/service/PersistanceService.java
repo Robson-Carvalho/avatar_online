@@ -35,6 +35,11 @@ public class PersistanceService {
 
     @Transactional
     public void applyUserSignUpCommand(UserSignUpCommand command){
+
+        if (userRepository.existsById(command.getPlayerId())){
+            return;
+        }
+
         User newUser = new User(
                 command.getPlayerId(),
                 command.getName(),
@@ -51,7 +56,9 @@ public class PersistanceService {
 
         try {
             userRepository.save(newUser);
+            userRepository.flush();
             deckRepository.save(newDeck);
+            deckRepository.flush();
         } catch (DataIntegrityViolationException e){
             if (e.getMessage().contains("users_pkey")) {
                 System.out.println("Idempotência tratada: Comando já aplicado.");

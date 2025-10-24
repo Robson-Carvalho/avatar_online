@@ -20,6 +20,7 @@ public class LogStore {
 
     private final AtomicLong lastLogIndex = new AtomicLong(0);
     private final AtomicLong lastCommittedIndex = new AtomicLong(0);
+    private final AtomicLong lastAppliedIndex = new AtomicLong(0);
 
     private final AtomicLong lastLogTerm = new AtomicLong(0);
 
@@ -66,19 +67,18 @@ public class LogStore {
 
     public void markCommitted(long newCommitIndex) {
         long oldCommitIndex = lastCommittedIndex.get();
+        long oldAppliedIndex = lastAppliedIndex.get();
 
         if (newCommitIndex > oldCommitIndex && newCommitIndex <= lastLogIndex.get()) {
-
-
-            for (long i = oldCommitIndex + 1; i <= newCommitIndex; i++) {
+            for (long i = oldAppliedIndex + 1; i <= newCommitIndex; i++) {
                 LogEntry entry = logEntries.get(i);
                 if (entry != null) {
                     commandExecutorService.executeCommand(entry);
+                    lastAppliedIndex.set(i); // ✅ marca que foi aplicado
                 }
             }
 
             lastCommittedIndex.set(newCommitIndex);
-
             logConsensusService.updateLastCommittedIndex(newCommitIndex);
 
             System.out.println("✅ Log commitado e aplicado até o índice: " + newCommitIndex);
