@@ -3,6 +3,7 @@ package com.avatar.avatar_online.raft.service;
 import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.logs.SetDeckCommmand;
+import com.avatar.avatar_online.raft.logs.TradeCardsCommand;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.model.LogEntry;
 import com.avatar.avatar_online.repository.UserRepository;
@@ -128,5 +129,35 @@ public class CPCommitService {
             System.err.println("❌ Erro ao comitar comando CP: " + e.getMessage());
             return false;
         }
+    }
+
+    public boolean tryCommitTradeCard(TradeCardsCommand newCommand){
+        if(hazelcast.getCluster().getMembers().size() < 2) {
+            System.out.println("LOGS: TAMANHO DE CLUSTER INSUFICIENTE PARA REALIZAR OPERAÇÕES CRÍTICAS.");
+            return false;
+        }
+
+        try{
+            long newIndex = logStore.getLastIndex() + 1;
+            long currentTerm = leaderRegistryService.getCurrentTerm();
+            LogEntry newLogEntry = new LogEntry(currentTerm, newIndex, newCommand, false);
+
+            logStore.append(newLogEntry);
+
+            boolean majorityReplied = syncService.propagateLogEntry();
+
+            if(!majorityReplied){
+                System.out.println("Falha na replicação para a maioria. Comando não commmitado.");
+                return false;
+            }
+
+            logStore.tryAdvanceCommitIndex(currentTerm,  logStore.getLastIndex());
+
+            return true;
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao comitar comando CP: " + e.getMessage());
+            return false;
+        }
+
     }
 }

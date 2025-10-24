@@ -2,8 +2,10 @@ package com.avatar.avatar_online.service;
 
 import com.avatar.avatar_online.DTOs.CardDTO;
 import com.avatar.avatar_online.DTOs.PackDTO;
+import com.avatar.avatar_online.DTOs.TradeCardDTO;
 import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
+import com.avatar.avatar_online.raft.logs.TradeCardsCommand;
 import com.avatar.avatar_online.raft.service.CPCommitService;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
 import com.avatar.avatar_online.raft.service.RedirectService;
@@ -74,6 +76,37 @@ public class CardService {
             }
 
             return ResponseEntity.ok().body(selectedCards);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");
+        }
+    }
+
+    public ResponseEntity<?> tradeCard(TradeCardDTO tradeCardDTO){
+        try {
+            if (!leadershipService.isLeader()) {
+                System.out.println("🚫 Este nó não é o líder. Redirecionando para o líder...");
+                return redirectService.redirectToLeader("/api/cards/trade", tradeCardDTO, HttpMethod.POST);
+            }
+
+            System.out.println(tradeCardDTO.getCardId1());
+            System.out.println(tradeCardDTO.getCardId2());
+            System.out.println(tradeCardDTO.getPLayerId1());
+            System.out.println(tradeCardDTO.getPLayerId2());
+
+            TradeCardsCommand command = new TradeCardsCommand(UUID.randomUUID(), "TRADE_CARD",
+                    UUID.fromString(tradeCardDTO.getPLayerId1()), UUID.fromString(tradeCardDTO.getPLayerId2()),
+                    UUID.fromString(tradeCardDTO.getCardId1()), UUID.fromString(tradeCardDTO.getCardId2())
+            );
+
+            boolean response = cPCommitService.tryCommitTradeCard(command);
+
+            if(!response){
+                return ResponseEntity.badRequest().body("Erro: Não foi possível processar a solicitação de " +
+                        "Troca de cartas");
+            }
+
+            return ResponseEntity.ok().body(tradeCardDTO);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body("{\"error\": \"Erro interno: " + e.getMessage() + "\"}");
