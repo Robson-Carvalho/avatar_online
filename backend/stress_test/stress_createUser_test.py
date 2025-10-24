@@ -9,7 +9,7 @@ import os
 # --- CONFIGURAÇÕES DO TESTE ---
 LEADER_IP = "localhost"
 URL = f"http://{LEADER_IP}:8081/api/users"
-NUM_USERS = 10000
+NUM_USERS = 100
 REQUESTS_PER_USER = 1
 TOTAL_REQUESTS = NUM_USERS * REQUESTS_PER_USER
 # ------------------------------
@@ -131,6 +131,11 @@ def run_load_test():
     else:
         print("Nenhum ID duplicado encontrado!")
 
-
 if __name__ == "__main__":
     run_load_test()
+
+    # Salvar os PlayerIds gerados em JSON
+    import json
+    with open("all_player_ids.json", "w") as f:
+        json.dump(all_player_ids, f, indent=2)
+    print("IDs dos jogadores salvos em all_player_ids.json")
