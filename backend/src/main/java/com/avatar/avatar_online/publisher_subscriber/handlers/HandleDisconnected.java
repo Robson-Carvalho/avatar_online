@@ -15,7 +15,11 @@ import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class HandleDisconnected {
@@ -74,7 +78,7 @@ public class HandleDisconnected {
 
             System.out.println("Enviar STATUS para o oponente ["+opponentSession+"] que partida acabou com vitória!");
             matchManagementService.unregisterMatch(match.getMatchId());
-            this.sendToOpponentStatusWin(opponentSession);
+            this.sendToOpponentStatusWin(opponentSession, match);
         }
     }
 
@@ -103,7 +107,7 @@ public class HandleDisconnected {
 
         if(!opponentSession.isEmpty()) {
             System.out.println("Enviar STATUS para o oponente ["+opponentSession+"] que partida acabou com vitória!");
-            this.sendToOpponentStatusWin(opponentSession);
+            this.sendToOpponentStatusWin(opponentSession, null);
             matchManagementService.unRegisterMatchBySessionId(sessionId);
             return;
         }
@@ -111,9 +115,60 @@ public class HandleDisconnected {
         System.out.println("Nenhuma jogador em partida com sessão ID: " + sessionId + " ou com userID: " + userID);
     }
 
-    private void sendToOpponentStatusWin(String userSession){
-        OperationResponseDTO response = new OperationResponseDTO(OperationType.FINISHED_SURRENDER.toString(), OperationStatus.OK, "Você ganhou!", null);
-        communication.sendToUser(userSession, response);
+    private void sendToOpponentStatusWin(String userSession, Match match){
+        if (match == null) {
+            OperationResponseDTO response = new OperationResponseDTO(OperationType.FINISHED_SURRENDER.toString(), OperationStatus.OK, "Você ganhou!", null);
+
+            communication.sendToUser(userSession, response);
+            return;
+        }
+
+        if (match.getIslocalMatch()){
+            // Aqui tem que verificar ainda, fiquei sem tempo
+            OperationResponseDTO response = new OperationResponseDTO(OperationType.FINISHED_SURRENDER.toString(), OperationStatus.OK, "Você ganhou!", null);
+
+            communication.sendToUser(userSession, response);
+        } else {
+            if (match.getPlayer1().getUserSession().equals(userSession)){
+                OperationResponseDTO response = new OperationResponseDTO(OperationType.FINISHED_SURRENDER.toString(), OperationStatus.OK, "Você ganhou!", null);
+
+                Map<String, Object> newPayload = new HashMap<>();
+
+                newPayload.put("response", response);
+
+                OperationRequestDTO newOperation = new OperationRequestDTO(
+                        OperationType.FINISHED_SURRENDER.toString(),
+                        newPayload
+                );
+
+                redirectService.sendOperationRequestToNode(
+                        match.getManagerNodeId(),
+                        "UpdateGame",
+                        newOperation,
+                        HttpMethod.POST
+                );
+            } else if (match.getPlayer2().getUserSession().equals(userSession)) {
+                OperationResponseDTO response = new OperationResponseDTO(OperationType.FINISHED_SURRENDER.toString(), OperationStatus.OK, "Você ganhou!", null);
+
+                Map<String, Object> newPayload = new HashMap<>();
+
+                newPayload.put("response", response);
+
+                OperationRequestDTO newOperation = new OperationRequestDTO(
+                        OperationType.FINISHED_SURRENDER.toString(),
+                        newPayload
+                );
+
+                redirectService.sendOperationRequestToNode(
+                        match.getPlayer2().getHostAddress(),
+                        "UpdateGame",
+                        newOperation,
+                        HttpMethod.POST
+                );
+            }
+
+            return;
+        }
     }
 
 }
