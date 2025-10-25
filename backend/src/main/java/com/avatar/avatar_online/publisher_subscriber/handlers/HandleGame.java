@@ -324,7 +324,7 @@ public class HandleGame {
     }
 
     private void sendToOpponentStatusWin(String userSession){
-        OperationResponseDTO response = new OperationResponseDTO(OperationType.FINISHED_GAME.toString(), OperationStatus.OK, "Você ganhou!", null);
+        OperationResponseDTO response = new OperationResponseDTO(OperationType.FINISHED_SURRENDER.toString(), OperationStatus.OK, "Você ganhou!", null);
         communication.sendToUser(userSession, response);
     }
 }

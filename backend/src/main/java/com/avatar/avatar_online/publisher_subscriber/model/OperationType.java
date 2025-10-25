@@ -2,6 +2,7 @@ package com.avatar.avatar_online.publisher_subscriber.model;
 
 public enum OperationType {
     FINISHED_GAME,
+    FINISHED_SURRENDER,
     SURRENDER,
     LOGOUT_USER,
     AUTH_USER,
