@@ -2,7 +2,7 @@ function surrender() {
   const match = getMatch();
   const user = getUser();
 
-  showWarning("Você se rendeu!");
+  showInfo("Você se rendeu!🏳️");
   surrenderGame(user.id, match.matchId);
   cleanGame();
 }
@@ -24,9 +24,21 @@ function updateGame(data) {
   } else if (data.operationType == "UPDATE_GAME") {
     fillGame(match);
     enableDragAndDrop(document.getElementById("deck-player"));
-  } else if (data.operationType == "FINISHED_GAME") {
+  } else if (data.operationType == "FINISHED_SURRENDER") {
     showSuccess(data.message);
     cleanGame();
+  }
+  else if (data.operationType == "FINISHED_GAME") {
+    const match = getMatch();
+    const user = getUser();
+
+    if (user.id == match.gameState.playerWin) {
+      showSuccess("Você ganhou!🥳");
+      cleanGame();
+    } else {
+      showInfo("Você perdeu!😓");
+      cleanGame();
+    }
   }
 }
 
