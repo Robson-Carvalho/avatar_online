@@ -191,8 +191,32 @@ public class HandleGame {
                         "Partida finalizada",
                         matchDTO);
 
-                communication.sendToUser(match.getPlayer1().getUserSession(), response);
-                communication.sendToUser(match.getPlayer2().getUserSession(), response);
+                Map<String, Object> newPayload = new HashMap<>(operation.getPayload());
+
+                newPayload.put("response", response);
+
+                OperationRequestDTO newOperation = new OperationRequestDTO(
+                        operation.getOperationType(),
+                        newPayload
+                );
+
+                if (!match.getManagerNodeId().equals(currentNodeId) ) {
+                    communication.sendToUser(match.getPlayer2().getUserSession(), response);
+                    redirectService.sendOperationRequestToNode(
+                            match.getPlayer2().getHostAddress(),
+                            "UpdateGame",
+                            newOperation,
+                            HttpMethod.POST
+                    );
+                } else {
+                    communication.sendToUser(match.getPlayer1().getUserSession(), response);
+                    redirectService.sendOperationRequestToNode(
+                            match.getPlayer2().getHostAddress(),
+                            "UpdateGame",
+                            newOperation,
+                            HttpMethod.POST
+                    );
+                }
                 matchManagementService.unregisterMatch(match.getMatchId());
                 return;
             }else if(match.getGameState().getPlayerWin().equals(match.getGameState().getPlayerTwo().getId())){
@@ -202,8 +226,32 @@ public class HandleGame {
                         "Partida finalizada",
                         matchDTO);
 
-                communication.sendToUser(match.getPlayer1().getUserSession(), response);
-                communication.sendToUser(match.getPlayer2().getUserSession(), response);
+                Map<String, Object> newPayload = new HashMap<>(operation.getPayload());
+
+                newPayload.put("response", response);
+
+                OperationRequestDTO newOperation = new OperationRequestDTO(
+                        operation.getOperationType(),
+                        newPayload
+                );
+
+                if (!match.getManagerNodeId().equals(currentNodeId) ) {
+                    communication.sendToUser(match.getPlayer2().getUserSession(), response);
+                    redirectService.sendOperationRequestToNode(
+                            match.getPlayer2().getHostAddress(),
+                            "UpdateGame",
+                            newOperation,
+                            HttpMethod.POST
+                    );
+                } else {
+                    communication.sendToUser(match.getPlayer1().getUserSession(), response);
+                    redirectService.sendOperationRequestToNode(
+                            match.getPlayer2().getHostAddress(),
+                            "UpdateGame",
+                            newOperation,
+                            HttpMethod.POST
+                    );
+                }
                 matchManagementService.unregisterMatch(match.getMatchId());
                 return;
             }
