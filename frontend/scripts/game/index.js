@@ -93,6 +93,9 @@ function isYourTurn() {
 function cleanGame() {
   document.getElementById("loading-join-game").classList.add("hidden");
   document.getElementById("battle").classList.add("hidden");
+  document.getElementById("activate-player-card").innerHTML = "";
+  document.getElementById("opponent-card").innerHTML = "";
+  document.getElementById("deck-player").innerHTML = "";
 }
 
 function enableDragAndDrop(cardsContainer) {
