@@ -181,9 +181,43 @@ public class HandleGame {
             communication.sendToUser(match.getPlayer1().getUserSession(), response);
             communication.sendToUser(match.getPlayer2().getUserSession(), response);
         } else {
+            match.playCard(userID);
+            MatchFoundResponseDTO matchDTO = this.updateMatch(match);
+
+            if(match.getGameState().getPlayerWin().equals(match.getGameState().getPlayerOne().getId())){
+                OperationResponseDTO response = new OperationResponseDTO(
+                        OperationType.FINISHED_GAME.toString(),
+                        OperationStatus.OK,
+                        "Partida finalizada",
+                        matchDTO);
+
+                communication.sendToUser(match.getPlayer1().getUserSession(), response);
+                communication.sendToUser(match.getPlayer2().getUserSession(), response);
+                matchManagementService.unregisterMatch(match.getMatchId());
+                return;
+            }else if(match.getGameState().getPlayerWin().equals(match.getGameState().getPlayerTwo().getId())){
+                OperationResponseDTO response = new OperationResponseDTO(
+                        OperationType.FINISHED_GAME.toString(),
+                        OperationStatus.OK,
+                        "Partida finalizada",
+                        matchDTO);
+
+                communication.sendToUser(match.getPlayer1().getUserSession(), response);
+                communication.sendToUser(match.getPlayer2().getUserSession(), response);
+                matchManagementService.unregisterMatch(match.getMatchId());
+                return;
+            }
+
+            OperationResponseDTO response = new OperationResponseDTO(
+                    OperationType.UPDATE_GAME.toString(),
+                    OperationStatus.OK,
+                    "Partida atualizada",
+                    matchDTO);
+
+            // ------------Envia response para o outro nó--------------
             Map<String, Object> newPayload = new HashMap<>(operation.getPayload());
 
-            newPayload.put("userSession", userSession);
+            newPayload.put("response", response);
 
             OperationRequestDTO newOperation = new OperationRequestDTO(
                     operation.getOperationType(),
@@ -192,6 +226,7 @@ public class HandleGame {
 
             if (!match.getManagerNodeId().equals(currentNodeId) ) {
                 System.out.println("Jogo Distribuído, estou no servidor não gerenciador da partida " + userSession + " apertou play e chegou aqui");
+                communication.sendToUser(match.getPlayer2().getUserSession(), response);
                 redirectService.sendOperationRequestToNode(
                         match.getManagerNodeId(),
                         "UpdateGame",
@@ -200,6 +235,7 @@ public class HandleGame {
                 );
             } else {
                 System.out.println("Jogo Distribuído, estou no servidor gerenciador da partida " + userSession + " apertou play e chegou aqui");
+                communication.sendToUser(match.getPlayer1().getUserSession(), response);
                 redirectService.sendOperationRequestToNode(
                         match.getPlayer2().getHostAddress(),
                         "UpdateGame",
@@ -208,7 +244,6 @@ public class HandleGame {
                 );
             }
         }
-        // aplicar lógica no jogo e atualizar ambos.
     }
 
     private MatchFoundResponseDTO updateMatch(Match match) {

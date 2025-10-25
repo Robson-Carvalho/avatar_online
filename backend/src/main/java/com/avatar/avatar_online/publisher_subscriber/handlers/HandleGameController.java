@@ -77,34 +77,17 @@ public class HandleGameController {
 
     }
 
-    public void ProcessPlayCardFromOtherNode(OperationRequestDTO operation, String userSession) {
-        System.out.println("Carta jogada por: " + userSession);
-        // --- Ideia do método ---
-        // Se o nó for seguidor, apenas manda a atualização para o usuário
-        // Se o nó for Líder, processa a ação enviada pelo outro jogador
-    }
+    public void ProcessPlayCardFromOtherNode(OperationRequestDTO operation, OperationResponseDTO opResponseDTO) {
+        String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
 
-    private MatchFoundResponseDTO updateMatch(Match match) {
-        List<CardDTO> player1 = new ArrayList<>();
-        for (Card card : match.getGameState().getPlayerOne().getCards()) {
-            player1.add(new CardDTO(card));
+        Match match = this.getMatch(operation);
+
+        if (match.getManagerNodeId().equals(currentNodeId)){
+            communication.sendToUser(match.getPlayer1().getUserSession(), opResponseDTO);
+        } else {
+
+            communication.sendToUser(match.getPlayer2().getUserSession(), opResponseDTO);
         }
-
-        List<CardDTO> player2 = new ArrayList<>();
-        for (Card card : match.getGameState().getPlayerTwo().getCards()) {
-            player2.add(new CardDTO(card));
-        }
-
-        GameStateDTO gameStateDTO = new GameStateDTO(match.getGameState(), player1, player2);
-        matchManagementService.updateMatch(match);
-        return new MatchFoundResponseDTO(
-                match.getMatchId(),
-                match.getManagerNodeId(),
-                gameStateDTO,
-                match.getPlayer1(),
-                match.getPlayer2(),
-                match.isLocalMatch()
-        );
     }
 
     private Match getMatch(OperationRequestDTO operation){

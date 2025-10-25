@@ -54,14 +54,17 @@ public class GameController {
     public ResponseEntity<?> notifyUpdateGame(@RequestBody OperationRequestDTO orD){
         try{
             Map<String, Object> payload = orD.getPayload();
-            String userSession = (String) payload.get("userSession");
+            OperationResponseDTO opresponseDTO = objectMapper.convertValue(
+                    payload.get("response"), OperationResponseDTO.class
+            );
+
 
             Map<String, Object> cleanedPayload = new HashMap<>(payload);
             cleanedPayload.remove("userSession");
 
             orD.setPayload(cleanedPayload);
 
-            handleGameController.ProcessPlayCardFromOtherNode(orD, userSession);
+            handleGameController.ProcessPlayCardFromOtherNode(orD, opresponseDTO);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
