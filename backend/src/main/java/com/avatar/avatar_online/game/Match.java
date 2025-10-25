@@ -27,6 +27,20 @@ public class Match implements Serializable {
         this.gameState = gameState;
     }
 
+    public void playCard(String userID){
+        if(gameState.getPlayerOne().getId().equals(userID)){
+            gameState.getPlayerOne().setPlayedCard(true);
+            gameState.setTurnPlayerId(gameState.getPlayerTwo().getId());
+        }else{
+            gameState.getPlayerTwo().setPlayedCard(true);
+            gameState.setTurnPlayerId(gameState.getPlayerOne().getId());
+        }
+
+        if(gameState.getPlayerOne().getPlayedCard() && gameState.getPlayerTwo().getPlayedCard()){
+            gameState.battle();
+        }
+    }
+
     public GameState getGameState() {
         return gameState;
     }

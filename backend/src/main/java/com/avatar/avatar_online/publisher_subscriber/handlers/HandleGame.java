@@ -26,10 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Component
@@ -48,7 +45,7 @@ public class HandleGame {
 
     @Autowired
     public HandleGame(MatchManagementService matchManagementService, Communication communication,
-                      @Qualifier("hazelcastInstance") HazelcastInstance hazelcast, RedirectService redirectService, ObjectMapper objectMapper, DeckService deckService, CardService cardService) {
+                      @Qualifier("hazelcastInstance") HazelcastInstance hazelcast, RedirectService redirectService, ObjectMapper objectMapper, CardService cardService) {
         this.matchManagementService = matchManagementService;
         this.hazelcast = hazelcast;
         this.communication = communication;
@@ -137,6 +134,8 @@ public class HandleGame {
     }
 
     public void handleActionPlayCard(OperationRequestDTO operation, String userSession) {
+        String userID = (String) operation.getPayload().get("userID");
+
         String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
         Match match = this.getMatch(operation);
 
@@ -181,14 +180,36 @@ public class HandleGame {
         // aplicar lógica no jogo e atualizar ambos.
     }
 
-    public void ProcessPlayCardFromOtherNode(OperationRequestDTO operation, String userSession) {
-        System.out.println("Carta jogada por: " + userSession);
-        // --- Ideia do método ---
-        // Se o nó for seguidor, apenas manda a atualização para o usuário
-        // Se o nó for Líder, processa a ação enviada pelo outro jogador
+
+    private MatchFoundResponseDTO updateMatch(Match match) {
+
+
+        List<CardDTO> player1 = new ArrayList<>();
+        for (Card card : match.getGameState().getPlayerOne().getCards()) {
+            player1.add(new CardDTO(card));
+        }
+
+        List<CardDTO> player2 = new ArrayList<>();
+        for (Card card : match.getGameState().getPlayerTwo().getCards()) {
+            player2.add(new CardDTO(card));
+        }
+
+        GameStateDTO gameStateDTO = new GameStateDTO(match.getGameState(), player1, player2);
+
+        return new MatchFoundResponseDTO(
+                match.getMatchId(),
+                match.getManagerNodeId(),
+                gameStateDTO,
+                match.getPlayer1(),
+                match.getPlayer2(),
+                match.isLocalMatch()
+        );
     }
 
     public void handleActionActivateCard(OperationRequestDTO operation, String userSession) {
+        String userID = (String) operation.getPayload().get("userID");
+        String cardID = (String) operation.getPayload().get("cardID");
+
         String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
         Match match = this.getMatch(operation);
 
@@ -198,8 +219,31 @@ public class HandleGame {
         }
 
         if(match.getIslocalMatch()) {
-            System.out.println("Jogo local " + userSession + " ativou carta e chegou aqui");
-            // processa e envia
+            System.out.println("Jogo local " + userID + " ativou carta "+cardID+"e chegou aqui");
+
+            if(match.getGameState().getPlayerOne().getId().equals(userID)){
+                System.out.println("oi1");
+                match.getGameState().getPlayerOne().setActivationCard(cardID);
+            }else{
+                System.out.println("oi2");
+                match.getGameState().getPlayerTwo().setActivationCard(cardID);
+            }
+
+            matchManagementService.registerMatch(match);
+
+            System.out.println("player 1: "+ match.getGameState().getPlayerOne().getActivationCard());
+            System.out.println("player 2: "+ match.getGameState().getPlayerOne().getActivationCard());
+
+            MatchFoundResponseDTO matchDTO = this.updateMatch(match);
+
+            OperationResponseDTO response = new OperationResponseDTO(
+                OperationType.UPDATE_GAME.toString(),
+                OperationStatus.OK,
+            "Partida encontrada",
+                matchDTO);
+
+            communication.sendToUser(match.getPlayer1().getUserSession(), response);
+            communication.sendToUser(match.getPlayer2().getUserSession(), response);
         } else {
             // PS dica doq acho que tem que ser feito; Processa aqui a ação e dps envia ao outro nó com o código abaixo
 
@@ -233,13 +277,6 @@ public class HandleGame {
         // aplicar lógica no jogo e atualizar ambos.
     }
 
-    public void ProcessActiveCardFromOtherNode(OperationRequestDTO operation, String userSession) {
-        System.out.println("Carta ativada por: " + userSession);
-        // --- Ideia do método ---
-        // Se o nó for seguidor, apenas manda a atualização para o usuário
-        // Se o nó for Líder, processa a ação enviada pelo outro jogador
-    }
-
     private Match getMatch(OperationRequestDTO operation){
         String matchID = (String) operation.getPayload().get("matchID");
         return matchManagementService.getMatchState(matchID);
@@ -247,84 +284,6 @@ public class HandleGame {
 
     private void sendMessageNotFoundMath(String userSession, OperationRequestDTO operation){
         OperationResponseDTO response = new OperationResponseDTO(operation.getOperationType(),OperationStatus.ERROR, "Partida não encontrada!", null);
-        communication.sendToUser(userSession, response);
-    }
-
-    public void handleNotifyGameFound(OperationResponseDTO operation) {
-
-        MatchFoundResponseDTO matchDTO = this.objectMapper.convertValue(
-                operation.getData(),
-                MatchFoundResponseDTO.class
-        );
-        String sessionId = matchDTO.getPlayer2().getUserSession();
-
-        communication.sendToUser(sessionId, operation);
-    }
-
-    public OperationResponseDTO logout(OperationRequestDTO operation, String userSession) {
-        String userID = (String) operation.getPayload().get("userID");
-
-        try{
-            this.handleSessionDisconnect(userSession, userID);
-            return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK,"Usuário desconectado com sucesso!",null);
-        }catch(Exception e){
-            return new OperationResponseDTO(operation.getOperationType(),OperationStatus.ERROR, "Erro inesperado: " + e.getMessage(), null);
-        }
-    }
-
-    public void surrender(OperationRequestDTO operation, String userSession) {
-        Match match = this.getMatch(operation);
-
-        if(match != null){
-            String opponentSession = "";
-
-            if(match.getPlayer1().getUserSession().equals(userSession)){
-                opponentSession = match.getPlayer2().getUserSession();
-            }else{
-                opponentSession = match.getPlayer1().getUserSession();
-            }
-
-            System.out.println("Enviar STATUS para o oponente ["+opponentSession+"] que partida acabou com vitória!");
-            matchManagementService.unregisterMatch(match.getMatchId());
-            this.sendToOpponentStatusWin(opponentSession);
-        }
-    }
-
-    public void handleSessionDisconnect(String sessionId, String userID) {
-        for (PlayerInGame player : waitingQueue) {
-            if (player.getUserSession().equals(sessionId) || player.getUserId().equals(userID)) {
-                System.out.println("🎯 Removendo player com sessionId: " + sessionId + " ou userID: "+ userID+" da fila");
-
-                boolean remove = waitingQueue.remove(player);
-                if (!remove){
-                    System.out.println("Erro ao remover da fila");
-                    return;
-                }
-
-                System.out.println("Payer removido da fila com sucesso!");
-                return;
-            }
-        }
-
-        System.out.println("Nenhuma jogador na fila com sessão ID: " + sessionId);
-        this.checkDisconnectedPlayerState(sessionId, userID);
-    }
-
-    private void checkDisconnectedPlayerState(String sessionId, String userID) {
-        String opponentSession = matchManagementService.getOpponentIfPlayerInMatch(sessionId, userID);
-
-        if(!opponentSession.isEmpty()) {
-            System.out.println("Enviar STATUS para o oponente ["+opponentSession+"] que partida acabou com vitória!");
-            this.sendToOpponentStatusWin(opponentSession);
-            matchManagementService.unRegisterMatchBySessionId(sessionId);
-            return;
-        }
-
-        System.out.println("Nenhuma jogador em partida com sessão ID: " + sessionId + " ou com userID: " + userID);
-    }
-
-    private void sendToOpponentStatusWin(String userSession){
-        OperationResponseDTO response = new OperationResponseDTO(OperationType.FINISHED_SURRENDER.toString(), OperationStatus.OK, "Você ganhou!", null);
         communication.sendToUser(userSession, response);
     }
 }

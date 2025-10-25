@@ -46,15 +46,11 @@ public class GameState implements Serializable {
         int pointsP1 = playerOne.getPoints();
         int pointsP2 = playerTwo.getPoints();
 
-        String state;
         if (pointsP1 >= 3 && pointsP2 >= 3) {
-            state = "FINISHED";
             this.playerWin = "DRAW";
         } else if (pointsP1 >= 3) {
-            state = "FINISHED";
             this.playerWin = playerOne.getId();
         } else if (pointsP2 >= 3) {
-            state = "FINISHED";
             this.playerWin = playerTwo.getId();
         }
     }

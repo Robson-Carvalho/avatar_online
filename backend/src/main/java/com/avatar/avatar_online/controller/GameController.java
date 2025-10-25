@@ -3,6 +3,7 @@ package com.avatar.avatar_online.controller;
 import com.avatar.avatar_online.game.GameState;
 import com.avatar.avatar_online.game.MatchManagementService;
 import com.avatar.avatar_online.publisher_subscriber.handlers.HandleGame;
+import com.avatar.avatar_online.publisher_subscriber.handlers.HandleGameController;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationType;
@@ -17,12 +18,12 @@ import java.util.Map;
 @RequestMapping("/api/game")
 public class GameController {
     private final MatchManagementService matchManagementService;
-    private final HandleGame handleGame;
+    private final HandleGameController handleGameController;
 
     @Autowired
-    public GameController(MatchManagementService matchManagementService, HandleGame handleGame) {
+    public GameController(MatchManagementService matchManagementService, HandleGameController handleGameController) {
         this.matchManagementService = matchManagementService;
-        this.handleGame = handleGame;
+        this.handleGameController = handleGameController;
     }
 
     @GetMapping("/matchs")
@@ -37,7 +38,7 @@ public class GameController {
     @PostMapping("/notify/GameFound")
     public ResponseEntity<?> notifyGameFound(@RequestBody OperationResponseDTO orD){
         try{
-            handleGame.handleNotifyGameFound(orD);
+            handleGameController.handleNotifyGameFound(orD);
             return ResponseEntity.ok().build();
         } catch(Exception e){
             return ResponseEntity.internalServerError()
@@ -56,7 +57,7 @@ public class GameController {
 
             orD.setPayload(cleanedPayload);
 
-            handleGame.ProcessPlayCardFromOtherNode(orD, userSession);
+            handleGameController.ProcessPlayCardFromOtherNode(orD, userSession);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
@@ -75,7 +76,7 @@ public class GameController {
 
             orD.setPayload(cleanedPayload);
 
-            handleGame.ProcessActiveCardFromOtherNode(orD, userSession);
+            handleGameController.ProcessActiveCardFromOtherNode(orD, userSession);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError()

@@ -1,11 +1,8 @@
 package com.avatar.avatar_online.publisher_subscriber.controller;
 
-import com.avatar.avatar_online.publisher_subscriber.handlers.HandleCard;
-import com.avatar.avatar_online.publisher_subscriber.handlers.HandleDeck;
-import com.avatar.avatar_online.publisher_subscriber.handlers.HandleGame;
+import com.avatar.avatar_online.publisher_subscriber.handlers.*;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
-import com.avatar.avatar_online.publisher_subscriber.handlers.HandleUser;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationStatus;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationType;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -23,14 +20,17 @@ public class OperationController {
     private final HandleCard handleCard;
     private final HandleDeck handleDeck;
     private final HandleGame handleGame;
+    private final HandleDisconnected handleDisconnected;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public OperationController(HandleUser handleUser, HandleCard handleCard, SimpMessagingTemplate messagingTemplate, HandleDeck handleDeck, HandleGame handleGame) {
+    public OperationController(HandleUser handleUser, HandleCard handleCard, SimpMessagingTemplate messagingTemplate, HandleDeck handleDeck, HandleGame handleGame, HandleDisconnected handleDisconnected, HandleDisconnected handleDisconnected1) {
         this.handleUser = handleUser;
         this.handleCard = handleCard;
         this.messagingTemplate = messagingTemplate;
         this.handleDeck = handleDeck;
         this.handleGame = handleGame;
+
+        this.handleDisconnected = handleDisconnected1;
     }
 
     @MessageMapping("/operation")
@@ -53,10 +53,10 @@ public class OperationController {
 
         switch (type) {
             case SURRENDER:
-                handleGame.surrender(operation, userSession);
+                handleDisconnected.surrender(operation, userSession);
                 break;
             case LOGOUT_USER:
-                messagingTemplate.convertAndSendToUser(userSession, "/queue/response",handleGame.logout(operation, userSession));
+                messagingTemplate.convertAndSendToUser(userSession, "/queue/response",handleDisconnected.logout(operation, userSession));
                 break;
             case AUTH_USER:
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleUser.handleAuthUser(operation));

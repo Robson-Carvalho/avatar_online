@@ -33,7 +33,7 @@ public class PlayerDTO implements Serializable {
     public PlayerDTO(Player player, List<CardDTO> cards) {
         this.id = player.getId();
         this.points = player.getPoints();
-        this.activationCardId = player.getActivationCardToBattle() != null ? player.getActivationCardToBattle().getId().toString() : "";
+        this.activationCardId = player.getActivationCard() != null ? player.getActivationCard() : "";
         this.playedCard = player.getPlayedCard();
         this.cards = cards;
     }

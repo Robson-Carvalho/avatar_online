@@ -13,7 +13,6 @@ public class Player implements Serializable {
     private String id;
     private int points;
     private String activationCard;
-    private final List<String> cemetery;
     private List<Card> cards;
     private Boolean playedCard;
 
@@ -21,7 +20,6 @@ public class Player implements Serializable {
         this.id = id;
         this.points = 0;
         this.activationCard = "";
-        this.cemetery = new ArrayList<>();
         this.playedCard = false;
         this.cards = new ArrayList<>();
     }
@@ -34,7 +32,6 @@ public class Player implements Serializable {
         this.id = id;
         this.points = 0;
         this.activationCard = "";
-        this.cemetery = new ArrayList<>();
         this.playedCard = false;
         this.cards = cards;
     }
@@ -42,7 +39,6 @@ public class Player implements Serializable {
     public String getId() { return id; }
     public int getPoint(){return points;}
     public String getActivationCard() {return activationCard; }
-    public List<String> getCemetery(){return this.cemetery;}
     public List<Card> getCards(){return this.cards;}
     public int getPoints() { return points; }
     public Boolean getPlayedCard() { return playedCard; }
@@ -75,13 +71,11 @@ public class Player implements Serializable {
     }
 
     public void setActivationCard(String cardID) {
-        if(cemetery.contains(cardID)){
-            return;
-        }
-
-        for(Card c : cards){
-            if(c.getId().equals(cardID)){
-                this.activationCard = String.valueOf(c.getId());
+        System.out.println("Entou aqui 1"+ cardID);
+        for(Card c : this.cards){
+            System.out.println("Entou aqui 2"+ cardID +"|"+c.getId().toString());
+            if(c.getId().toString().equals(cardID) && c.getLife() > 0) {
+                this.activationCard = c.getId().toString();
             }
         }
     }
@@ -109,7 +103,6 @@ public class Player implements Serializable {
 
         if (newLife <= 0) {
             card.setLife(0);
-            this.cemetery.add(card.getId().toString());
             this.activationCard = "";
         } else {
             card.setLife(newLife);

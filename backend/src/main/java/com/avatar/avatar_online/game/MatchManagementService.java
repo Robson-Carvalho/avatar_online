@@ -1,6 +1,5 @@
 package com.avatar.avatar_online.game;
 
-import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.MatchFoundResponseDTO;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,6 +45,12 @@ public class MatchManagementService {
                 ", MP: ");
     }
 
+    public void updateMatch(Match match) {
+        activeMatchesMap.put(match.getMatchId(), match); // sobrescreve com o estado atualizado
+        System.out.println("Partida atualizada no cluster: " + match.getMatchId());
+    }
+
+
     /**
      * Obtém o estado de roteamento de uma partida.
      *
@@ -66,16 +71,15 @@ public class MatchManagementService {
         System.out.println("Partida desregistrada do cluster: " + matchId);
     }
 
-    public boolean unRegisterMatchBySessionId(String sessionId) {
+    public void unRegisterMatchBySessionId(String sessionId) {
         for (Match match : activeMatchesMap.values()) {
             if (sessionId.equals(match.getPlayer1().getUserSession()) || sessionId.equals(match.getPlayer2().getUserSession())) {
                 activeMatchesMap.remove(match.getMatchId());
                 System.out.println("Partida removida do cluster: " + match.getMatchId());
-                return true;
+                return;
             }
         }
 
-        return false;
     }
 
     /**

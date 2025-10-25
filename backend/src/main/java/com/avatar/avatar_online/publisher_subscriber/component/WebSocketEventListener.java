@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.publisher_subscriber.component;
 
+import com.avatar.avatar_online.publisher_subscriber.handlers.HandleDisconnected;
 import com.avatar.avatar_online.publisher_subscriber.handlers.HandleGame;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -10,11 +11,12 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 @Component
 public class WebSocketEventListener {
 
-    private final HandleGame handleGame;
+    private final HandleDisconnected handleDisconnected;
+
 
     @Autowired
-    public WebSocketEventListener(HandleGame handleGame, HandleGame handleGame1) {
-        this.handleGame = handleGame1;
+    public WebSocketEventListener(HandleDisconnected handleDisconnected) {
+        this.handleDisconnected = handleDisconnected;
     }
 
     @EventListener
@@ -23,6 +25,6 @@ public class WebSocketEventListener {
         String sessionId = headerAccessor.getSessionId();
 
         System.out.println("❌ Cliente desconectado: " + sessionId);
-        handleGame.handleSessionDisconnect(sessionId, "");
+        handleDisconnected.handleSessionDisconnect(sessionId, "");
     }
 }
