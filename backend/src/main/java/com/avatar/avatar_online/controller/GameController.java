@@ -7,6 +7,7 @@ import com.avatar.avatar_online.publisher_subscriber.handlers.HandleGameControll
 import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,9 @@ import java.util.Map;
 public class GameController {
     private final MatchManagementService matchManagementService;
     private final HandleGameController handleGameController;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     public GameController(MatchManagementService matchManagementService, HandleGameController handleGameController) {
@@ -69,14 +73,16 @@ public class GameController {
     public ResponseEntity<?> notifyUpdateGameActiveCard(@RequestBody OperationRequestDTO orD){
         try{
             Map<String, Object> payload = orD.getPayload();
-            String userSession = (String) payload.get("userSession");
+            OperationResponseDTO opresponseDTO = objectMapper.convertValue(
+                    payload.get("response"), OperationResponseDTO.class
+            );
 
             Map<String, Object> cleanedPayload = new HashMap<>(payload);
-            cleanedPayload.remove("userSession");
+            cleanedPayload.remove("response");
 
             orD.setPayload(cleanedPayload);
 
-            handleGameController.ProcessActiveCardFromOtherNode(orD, userSession);
+            handleGameController.ProcessActiveCardFromOtherNode(orD, opresponseDTO);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError()

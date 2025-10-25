@@ -265,10 +265,24 @@ public class HandleGame {
             communication.sendToUser(match.getPlayer2().getUserSession(), response);
         } else {
             // PS dica doq acho que tem que ser feito; Processa aqui a ação e dps envia ao outro nó com o código abaixo
+            if(match.getGameState().getPlayerOne().getId().equals(userID)){
+                match.getGameState().getPlayerOne().setActivationCard(cardID);
+            }else{
+                match.getGameState().getPlayerTwo().setActivationCard(cardID);
+            }
 
+            MatchFoundResponseDTO matchDTO = this.updateMatch(match);
+
+            OperationResponseDTO response = new OperationResponseDTO(
+                    OperationType.UPDATE_GAME.toString(),
+                    OperationStatus.OK,
+                    "Partida atualizada",
+                    matchDTO);
+
+            // ---------------------Envio para o outro nó----------------------------
             Map<String, Object> newPayload = new HashMap<>(operation.getPayload());
 
-            newPayload.put("userSession", userSession);
+            newPayload.put("response", response);
 
             OperationRequestDTO newOperation = new OperationRequestDTO(
                     operation.getOperationType(),
@@ -277,6 +291,7 @@ public class HandleGame {
 
             if (!match.getManagerNodeId().equals(currentNodeId) ) {
                 System.out.println("Jogo Distribuído, estou no servidor não gerenciador da partida " + userSession + " ativei carta e chegou aqui");
+                communication.sendToUser(match.getPlayer2().getUserSession(), response);
                 redirectService.sendOperationRequestToNode(
                         match.getManagerNodeId(),
                         "UpdateGameActiveCard",
@@ -285,6 +300,7 @@ public class HandleGame {
                 );
             } else {
                 System.out.println("Jogo Distribuído, estou no servidor gerenciador da partida " + userSession + " ativei carta e chegou aqui");
+                communication.sendToUser(match.getPlayer1().getUserSession(), response);
                 redirectService.sendOperationRequestToNode(
                         match.getPlayer2().getHostAddress(),
                         "UpdateGameActiveCard",

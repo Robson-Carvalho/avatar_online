@@ -1,10 +1,16 @@
 package com.avatar.avatar_online.publisher_subscriber.handlers;
 
+import com.avatar.avatar_online.DTOs.CardDTO;
+import com.avatar.avatar_online.game.Match;
 import com.avatar.avatar_online.game.MatchManagementService;
+import com.avatar.avatar_online.models.Card;
+import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.GameStateDTO;
 import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.MatchFoundResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.handlers.records.PlayerInGame;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
+import com.avatar.avatar_online.publisher_subscriber.model.OperationStatus;
+import com.avatar.avatar_online.publisher_subscriber.model.OperationType;
 import com.avatar.avatar_online.publisher_subscriber.service.Communication;
 import com.avatar.avatar_online.raft.service.RedirectService;
 import com.avatar.avatar_online.service.CardService;
@@ -14,6 +20,11 @@ import com.hazelcast.core.HazelcastInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class HandleGameController {
@@ -52,11 +63,18 @@ public class HandleGameController {
         communication.sendToUser(sessionId, operation);
     }
 
-    public void ProcessActiveCardFromOtherNode(OperationRequestDTO operation, String userSession) {
-        System.out.println("Carta ativada por: " + userSession);
-        // --- Ideia do método ---
-        // Se o nó for seguidor, apenas manda a atualização para o usuário
-        // Se o nó for Líder, processa a ação enviada pelo outro jogador
+    public void ProcessActiveCardFromOtherNode(OperationRequestDTO operation, OperationResponseDTO opResponseDTO) {
+        String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
+
+        Match match = this.getMatch(operation);
+
+        if (match.getManagerNodeId().equals(currentNodeId)){
+            communication.sendToUser(match.getPlayer1().getUserSession(), opResponseDTO);
+        } else {
+
+            communication.sendToUser(match.getPlayer2().getUserSession(), opResponseDTO);
+        }
+
     }
 
     public void ProcessPlayCardFromOtherNode(OperationRequestDTO operation, String userSession) {
@@ -66,4 +84,31 @@ public class HandleGameController {
         // Se o nó for Líder, processa a ação enviada pelo outro jogador
     }
 
+    private MatchFoundResponseDTO updateMatch(Match match) {
+        List<CardDTO> player1 = new ArrayList<>();
+        for (Card card : match.getGameState().getPlayerOne().getCards()) {
+            player1.add(new CardDTO(card));
+        }
+
+        List<CardDTO> player2 = new ArrayList<>();
+        for (Card card : match.getGameState().getPlayerTwo().getCards()) {
+            player2.add(new CardDTO(card));
+        }
+
+        GameStateDTO gameStateDTO = new GameStateDTO(match.getGameState(), player1, player2);
+        matchManagementService.updateMatch(match);
+        return new MatchFoundResponseDTO(
+                match.getMatchId(),
+                match.getManagerNodeId(),
+                gameStateDTO,
+                match.getPlayer1(),
+                match.getPlayer2(),
+                match.isLocalMatch()
+        );
+    }
+
+    private Match getMatch(OperationRequestDTO operation){
+        String matchID = (String) operation.getPayload().get("matchID");
+        return matchManagementService.getMatchState(matchID);
+    }
 }
