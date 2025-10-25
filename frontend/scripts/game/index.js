@@ -125,47 +125,7 @@ function enableDragAndDrop(cardsContainer) {
     activateZone.classList.remove("border-green-500", "bg-green-50");
   });
 
-  // activateZone.addEventListener("drop", (e) => {
-  //   e.preventDefault();
-  //   activateZone.classList.remove("border-green-500", "bg-green-50");
-
-  //   if (!isYourTurn()) {
-  //     showWarning("Não é seu turno!");
-  //     return;
-  //   }
-
-  //   if (!draggedCardGame) return;
-
-  //   const id = draggedCardGame.getAttribute("data-id");
-  //   const name = draggedCardGame.getAttribute("data-name") || "";
-  //   const element = draggedCardGame.getAttribute("data-element") || "";
-  //   const phase = draggedCardGame.getAttribute("data-phase") || "";
-  //   const attack = draggedCardGame.getAttribute("data-attack") || "";
-  //   const life = draggedCardGame.getAttribute("data-life") || "";
-  //   const defense = draggedCardGame.getAttribute("data-defense") || "";
-  //   const rarity = draggedCardGame.getAttribute("data-rarity") || "";
-
-  //   if (life <= 0) {
-  //     showWarning("A carta está morta!");
-  //     return;
-  //   }
-
-  //   // Cria nova carta no campo de ativação
-  //   const newCardHTML = cardTemplateGame(id, name, element, phase, attack, life, defense, rarity);
-  //   const temp = document.createElement("div");
-  //   temp.innerHTML = newCardHTML.trim();
-  //   const newCard = temp.firstChild;
-
-  //   activateZone.innerHTML = "";
-  //   activateZone.appendChild(newCard);
-
-  //   // Remove a original do deck
-  //   draggedCardGame.remove();
-
-  //   // Reaplica o drag na nova carta se quiser mover novamente
-  //   enableDragAndDrop(activateZone);
-  // });
-
+ 
   activateZone.addEventListener("drop", (e) => {
     e.preventDefault();
     activateZone.classList.remove("border-green-500", "bg-green-50");
