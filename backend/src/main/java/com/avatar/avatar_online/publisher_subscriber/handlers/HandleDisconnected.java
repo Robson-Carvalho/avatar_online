@@ -77,8 +77,8 @@ public class HandleDisconnected {
             }
 
             System.out.println("Enviar STATUS para o oponente ["+opponentSession+"] que partida acabou com vitória!");
-            matchManagementService.unregisterMatch(match.getMatchId());
             this.sendToOpponentStatusWin(opponentSession, match);
+            matchManagementService.unregisterMatch(match.getMatchId());
         }
     }
 
