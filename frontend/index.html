@@ -215,13 +215,15 @@
           class="flex-1 flex flex-col justify-center items-center p-6 bg-white/60 backdrop-blur-sm rounded-xl mt-4 mb-4 border border-gray-200 shadow-inner">
 
 
-          <div class="flex flex-row justify-between mb-8">
-            <div id="activate-player-card" class="px-6 py-4 border-2 border-dashed border-gray-400 rounded-lg">
-              <!-- arratasr a carta para cá com drop and drag -->
+          <div class="flex flex-row justify-between items-center mb-8">
+            <div id="activate-player-card" class="px-6 py-6 border-2 border-dashed border-gray-400 rounded-2xl bg-white/40 backdrop-blur-sm 
+                   flex justify-center items-center transition-all duration-300 ease-in-out hover:border-green-500 hover:bg-green-50 
+                     min-h-[260px] min-w-[240px] shadow-inner">
+              <p class="text-gray-500 text-sm">Arraste sua carta para cá</p>
             </div>
 
             <div class="mx-8">
-              <button id="button-player-card"
+              <button id="button-player-card" onclick="handlePlayCard()"
                 class="px-6 py-2 rounded-xl bg-green-500 text-white font-semibold shadow-md hover:bg-green-600 active:scale-95 transition disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none">
                 Jogar
               </button>
@@ -229,8 +231,10 @@
 
             </div>
 
-            <div id="opponent-card" class="px-6 py-4 gap-4 border-2 border-dashed border-gray-400 rounded-lg">
-              <!-- mostrar a carta do oponente -->
+            <div id="opponent-card" class="px-6 py-6 gap-4 border-2 border-dashed border-gray-400 rounded-2xl bg-gray-100/60 backdrop-blur-sm
+                     flex justify-center items-center transition-all duration-300 ease-in-out hover:border-red-500 hover:bg-red-50 
+                     min-h-[260px] min-w-[240px] shadow-inner">
+              <p class="text-gray-500 text-sm">Carta do oponente</p>
             </div>
           </div>
 
