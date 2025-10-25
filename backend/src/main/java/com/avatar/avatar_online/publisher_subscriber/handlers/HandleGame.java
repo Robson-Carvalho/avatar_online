@@ -272,6 +272,24 @@ public class HandleGame {
         }
     }
 
+    public void surrender(OperationRequestDTO operation, String userSession) {
+        Match match = this.getMatch(operation);
+
+        if(match != null){
+            String opponentSession = "";
+
+            if(match.getPlayer1().getUserSession().equals(userSession)){
+                opponentSession = match.getPlayer2().getUserSession();
+            }else{
+                opponentSession = match.getPlayer1().getUserSession();
+            }
+
+            System.out.println("Enviar STATUS para o oponente ["+opponentSession+"] que partida acabou com vitória!");
+            matchManagementService.unregisterMatch(match.getMatchId());
+            this.sendToOpponentStatusWin(opponentSession);
+        }
+    }
+
     public void handleSessionDisconnect(String sessionId, String userID) {
         for (PlayerInGame player : waitingQueue) {
             if (player.getUserSession().equals(sessionId) || player.getUserId().equals(userID)) {
@@ -296,11 +314,17 @@ public class HandleGame {
         String opponentSession = matchManagementService.getOpponentIfPlayerInMatch(sessionId, userID);
 
         if(!opponentSession.isEmpty()) {
-            System.out.println("Enviar STATUS para o oponente que partida acabou com vitória!");
+            System.out.println("Enviar STATUS para o oponente ["+opponentSession+"] que partida acabou com vitória!");
+            this.sendToOpponentStatusWin(opponentSession);
             matchManagementService.unRegisterMatchBySessionId(sessionId);
             return;
         }
 
         System.out.println("Nenhuma jogador em partida com sessão ID: " + sessionId + " ou com userID: " + userID);
+    }
+
+    private void sendToOpponentStatusWin(String userSession){
+        OperationResponseDTO response = new OperationResponseDTO(OperationType.FINISHED_GAME.toString(), OperationStatus.OK, "Você ganhou!", null);
+        communication.sendToUser(userSession, response);
     }
 }

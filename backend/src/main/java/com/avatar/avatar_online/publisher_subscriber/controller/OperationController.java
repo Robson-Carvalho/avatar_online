@@ -52,6 +52,9 @@ public class OperationController {
         }
 
         switch (type) {
+            case SURRENDER:
+                handleGame.surrender(operation, userSession);
+                break;
             case LOGOUT_USER:
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response",handleGame.logout(operation, userSession));
                 break;
