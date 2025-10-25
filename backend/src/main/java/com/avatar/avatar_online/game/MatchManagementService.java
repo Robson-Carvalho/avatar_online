@@ -46,7 +46,7 @@ public class MatchManagementService {
     }
 
     public void updateMatch(Match match) {
-        activeMatchesMap.put(match.getMatchId(), match); // sobrescreve com o estado atualizado
+        activeMatchesMap.put(match.getMatchId(), match);
         System.out.println("Partida atualizada no cluster: " + match.getMatchId());
     }
 

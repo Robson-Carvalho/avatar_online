@@ -145,11 +145,42 @@ public class HandleGame {
         }
 
         if(match.getIslocalMatch()) {
-            System.out.println("Jogo local " + userSession + " apertou play e chegou aqui");
-            // processa e envia
-        } else {
-            // PS dica doq acho que tem que ser feito; Processa aqui a ação e dps envia ao outro nó com o código abaixo
+            match.playCard(userID);
+            MatchFoundResponseDTO matchDTO = this.updateMatch(match);
 
+            if(match.getGameState().getPlayerWin().equals(match.getGameState().getPlayerOne().getId())){
+                OperationResponseDTO response = new OperationResponseDTO(
+                        OperationType.FINISHED_GAME.toString(),
+                        OperationStatus.OK,
+                        "Partida finalizada",
+                        matchDTO);
+
+                communication.sendToUser(match.getPlayer1().getUserSession(), response);
+                communication.sendToUser(match.getPlayer2().getUserSession(), response);
+                matchManagementService.unregisterMatch(match.getMatchId());
+                return;
+            }else if(match.getGameState().getPlayerWin().equals(match.getGameState().getPlayerTwo().getId())){
+                OperationResponseDTO response = new OperationResponseDTO(
+                        OperationType.FINISHED_GAME.toString(),
+                        OperationStatus.OK,
+                        "Partida finalizada",
+                        matchDTO);
+
+                communication.sendToUser(match.getPlayer1().getUserSession(), response);
+                communication.sendToUser(match.getPlayer2().getUserSession(), response);
+                matchManagementService.unregisterMatch(match.getMatchId());
+                return;
+            }
+
+            OperationResponseDTO response = new OperationResponseDTO(
+                    OperationType.UPDATE_GAME.toString(),
+                    OperationStatus.OK,
+                    "Partida atualizada",
+                    matchDTO);
+
+            communication.sendToUser(match.getPlayer1().getUserSession(), response);
+            communication.sendToUser(match.getPlayer2().getUserSession(), response);
+        } else {
             Map<String, Object> newPayload = new HashMap<>(operation.getPayload());
 
             newPayload.put("userSession", userSession);
@@ -180,10 +211,7 @@ public class HandleGame {
         // aplicar lógica no jogo e atualizar ambos.
     }
 
-
     private MatchFoundResponseDTO updateMatch(Match match) {
-
-
         List<CardDTO> player1 = new ArrayList<>();
         for (Card card : match.getGameState().getPlayerOne().getCards()) {
             player1.add(new CardDTO(card));
@@ -195,7 +223,7 @@ public class HandleGame {
         }
 
         GameStateDTO gameStateDTO = new GameStateDTO(match.getGameState(), player1, player2);
-
+        matchManagementService.updateMatch(match);
         return new MatchFoundResponseDTO(
                 match.getMatchId(),
                 match.getManagerNodeId(),
@@ -219,27 +247,18 @@ public class HandleGame {
         }
 
         if(match.getIslocalMatch()) {
-            System.out.println("Jogo local " + userID + " ativou carta "+cardID+"e chegou aqui");
-
             if(match.getGameState().getPlayerOne().getId().equals(userID)){
-                System.out.println("oi1");
                 match.getGameState().getPlayerOne().setActivationCard(cardID);
             }else{
-                System.out.println("oi2");
                 match.getGameState().getPlayerTwo().setActivationCard(cardID);
             }
-
-            matchManagementService.registerMatch(match);
-
-            System.out.println("player 1: "+ match.getGameState().getPlayerOne().getActivationCard());
-            System.out.println("player 2: "+ match.getGameState().getPlayerOne().getActivationCard());
 
             MatchFoundResponseDTO matchDTO = this.updateMatch(match);
 
             OperationResponseDTO response = new OperationResponseDTO(
                 OperationType.UPDATE_GAME.toString(),
                 OperationStatus.OK,
-            "Partida encontrada",
+            "Partida atualizada",
                 matchDTO);
 
             communication.sendToUser(match.getPlayer1().getUserSession(), response);

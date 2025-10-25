@@ -63,17 +63,14 @@ public class Player implements Serializable {
 
     public Card getActivationCardToBattle() {
         for (Card card : this.cards) {
-            if(card.getId().equals(this.activationCard))
+            if(card.getId().toString().equals(this.activationCard))
                 return card;
         }
-
         return null;
     }
 
     public void setActivationCard(String cardID) {
-        System.out.println("Entou aqui 1"+ cardID);
         for(Card c : this.cards){
-            System.out.println("Entou aqui 2"+ cardID +"|"+c.getId().toString());
             if(c.getId().toString().equals(cardID) && c.getLife() > 0) {
                 this.activationCard = c.getId().toString();
             }
