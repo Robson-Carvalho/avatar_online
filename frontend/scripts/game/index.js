@@ -27,8 +27,7 @@ function updateGame(data) {
   } else if (data.operationType == "FINISHED_SURRENDER") {
     showSuccess(data.message);
     cleanGame();
-  }
-  else if (data.operationType == "FINISHED_GAME") {
+  } else if (data.operationType == "FINISHED_GAME") {
     const match = getMatch();
     const user = getUser();
 
@@ -44,12 +43,57 @@ function updateGame(data) {
 
 function fillGame(data) {
   const user = getUser();
+  const activateZone = document.getElementById("activate-player-card");
   const deck = document.getElementById("deck-player");
   const button_player = document.getElementById("button-player-card");
+  const player_points = document.getElementById("player-points");
+  const opponent_points = document.getElementById("opponent-points");
 
   deck.innerHTML = "";
+  activateZone.innerHTML = "Arraste sua carta para cá";
 
   if (user.id == data.gameState.playerOne.id) {
+    if (data.gameState.playerOne.activationCardId != "") {
+      data.gameState.playerOne.cards.forEach((card) => {
+        if (card.id == data.gameState.playerOne.activationCardId) {
+          activateZone.innerHTML = cardTemplateGame(
+            card.id,
+            card.name,
+            card.element,
+            card.phase,
+            card.attack,
+            card.life,
+            card.defense,
+            card.rarity
+          );
+        }
+      });
+    }
+  } else {
+    if (data.gameState.playerTwo.activationCardId != "") {
+      data.gameState.playerTwo.cards.forEach((card) => {
+        if (card.id == data.gameState.playerTwo.activationCardId) {
+          activateZone.innerHTML = cardTemplateGame(
+            card.id,
+            card.name,
+            card.element,
+            card.phase,
+            card.attack,
+            card.life,
+            card.defense,
+            card.rarity
+          );
+        }
+      });
+    }
+  }
+
+  player_points.innerText = data.gameState.playerOne.points;
+
+  if (user.id == data.gameState.playerOne.id) {
+    player_points.innerText = data.gameState.playerOne.points;
+    opponent_points.innerText = data.gameState.playerTwo.points;
+
     data.gameState.playerOne.cards.forEach((card) => {
       deck.innerHTML += cardTemplateGame(
         card.id,
@@ -62,7 +106,32 @@ function fillGame(data) {
         card.rarity
       );
     });
+
+    if (data.gameState.playerTwo.activationCardId != "") {
+      data.gameState.playerTwo.cards.forEach((card) => {
+        if (card.id == data.gameState.playerTwo.activationCardId) {
+          const card_opponent = document.getElementById("opponent-card");
+          card_opponent.innerHTML = "";
+          card_opponent.innerHTML = cardTemplateGame(
+            card.id,
+            card.name,
+            card.element,
+            card.phase,
+            card.attack,
+            card.life,
+            card.defense,
+            card.rarity
+          );
+        }
+      });
+    } else {
+      const card_opponent = document.getElementById("opponent-card");
+      card_opponent.innerHTML = "Carta do oponente";
+    }
   } else {
+    player_points.innerText = data.gameState.playerTwo.points;
+    opponent_points.innerText = data.gameState.playerOne.points;
+
     data.gameState.playerTwo.cards.forEach((card) => {
       deck.innerHTML += cardTemplateGame(
         card.id,
@@ -75,6 +144,28 @@ function fillGame(data) {
         card.rarity
       );
     });
+
+    if (data.gameState.playerOne.activationCardId != "") {
+      data.gameState.playerOne.cards.forEach((card) => {
+        if (card.id == data.gameState.playerOne.activationCardId) {
+          const card_opponent = document.getElementById("opponent-card");
+          card_opponent.innerHTML = "";
+          card_opponent.innerHTML = cardTemplateGame(
+            card.id,
+            card.name,
+            card.element,
+            card.phase,
+            card.attack,
+            card.life,
+            card.defense,
+            card.rarity
+          );
+        }
+      });
+    } else {
+      const card_opponent = document.getElementById("opponent-card");
+      card_opponent.innerHTML = "Carta do oponente";
+    }
   }
 
   button_player.disabled = !isYourTurn();
@@ -128,13 +219,11 @@ function enableDragAndDrop(cardsContainer) {
     activateZone.classList.remove("border-green-500", "bg-green-50");
   });
 
- 
   activateZone.addEventListener("drop", (e) => {
     e.preventDefault();
     activateZone.classList.remove("border-green-500", "bg-green-50");
 
     if (!isYourTurn()) {
-      showWarning("Não é seu turno!");
       return;
     }
 
