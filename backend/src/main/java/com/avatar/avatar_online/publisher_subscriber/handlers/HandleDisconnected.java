@@ -143,7 +143,7 @@ public class HandleDisconnected {
 
                 redirectService.sendOperationRequestToNode(
                         match.getManagerNodeId(),
-                        "UpdateGame",
+                        "UpdateGameActiveCard",
                         newOperation,
                         HttpMethod.POST
                 );
@@ -161,7 +161,7 @@ public class HandleDisconnected {
 
                 redirectService.sendOperationRequestToNode(
                         match.getPlayer2().getHostAddress(),
-                        "UpdateGame",
+                        "UpdateGameActiveCard",
                         newOperation,
                         HttpMethod.POST
                 );
