@@ -28,32 +28,25 @@ function handlerMain(message) {
     handleGetDeckSuccess(data.data);
   } else if (data.operationType === "GET_CARDS") {
     handleGetCardsSuccess(data.data);
-  } else if (data.operationType === "JOIN_QUEUE") {
-    handleJoinInQueueSuccess(data.data)
+  }
+  
+  else if (data.operationType === "JOIN_QUEUE") {
+    handlUpdateGameSuccess(data)
   }else if (data.operationType === "MATCH_FOUND") {
-    handleMatchFoundSuccess(data.data)
+    handlUpdateGameSuccess(data)
   }else if (data.operationType === "UPDATE_GAME") {
-    handlUpdateGameSuccess(data.data)
-  } else if (data.operationType === "LOGOUT_USER") {
+    handlUpdateGameSuccess(data)
+  }else if (data.operationType === "FINISHED_GAME") {
+    handlUpdateGameSuccess(data)
+  }
+  
+  else if (data.operationType === "LOGOUT_USER") {
     logout();
   }
 }
 
-function handleJoinInQueueSuccess(data) {
-  console.log(data)
-}
-
-function handleMatchFoundSuccess(data) {
-  if(data.matchId != null){
-    global_matchID = data.matchId
-  }
-  console.log(data)
-  console.log(global_matchID)
-
-}
-
 function handlUpdateGameSuccess(data) {
-  console.log(data)
+  updateGame(data)
 }
 
 function handleGetDeckSuccess(data) {

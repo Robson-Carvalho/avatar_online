@@ -172,138 +172,204 @@
     </div>
 
     <div id="battlefield">
-      <div id="loading_join_game"></div>
-
-      <div id="battle">
-        <button onclick="handlePlayCard()">start battle test button</button>
-      </div>
-    </div>
-
-    <div id="battleActiveCard">
-        <button onclick="handleActiveCard()">ativar carta test button</button>
-      </div>
-    </div>
-
-    <!-- Overlay -->
-    <div id="modal-overlay"
-      class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity duration-300"></div>
-
-    <!-- Modal Deck -->
-    <div id="deck-modal"
-      class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-6xl bg-white rounded-xl shadow-2xl z-50 transition-all duration-300 scale-95 opacity-0">
-
-      <div class="flex items-center justify-between p-6 border-b border-slate-200">
-        <h3 class="text-xl font-bold text-slate-800">Montar Deck</h3>
-        <button onclick="closeModal('deck-modal')" class="text-slate-400 hover:text-slate-600 transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      <!-- Tela de loading -->
+      <div id="loading-join-game"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-white/90 to-gray-100/90 backdrop-blur-sm">
+        <div class="flex flex-col items-center gap-4">
+          <svg class="w-14 h-14 animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.15" stroke-width="4"></circle>
+            <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
           </svg>
-        </button>
+          <div class="text-sm text-gray-700">Buscando partida…</div>
+        </div>
       </div>
 
-      <div class="p-6">
-        <!-- área do deck -->
-        <div class="grid grid-cols-5 gap-4">
-          <div
-            class="deck-card-1 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-w328 min-h-[248px] flex justify-center items-center text-gray-400 select-none ">
-            Arraste aqui
+      <!-- Campo de batalha modal -->
+      <div id="battle"
+        class="hidden fixed inset-0 z-40 flex flex-col justify-between bg-gradient-to-br from-slate-100 to-slate-300 shadow-2xl rounded-2xl border border-gray-200 p-4">
+
+        <!-- Header -->
+        <div
+          class="flex items-center justify-between bg-white/80 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-gray-200">
+          <!-- Ping -->
+          <div class="flex items-center gap-2 text-sm text-gray-700">
+            <div class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
+            <span id="ping-text">Ping: 32ms</span>
           </div>
 
-          <div
-            class="deck-card-2 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[248px] flex justify-center items-center text-gray-400 select-none">
-            Arraste aqui
+          <!-- Título -->
+          <div class="text-lg font-semibold text-gray-800 tracking-wide select-none">
+            Campo de Batalha ⚔️
           </div>
 
-          <div
-            class="deck-card-3 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[248px] flex justify-center items-center text-gray-400 select-none">
-            Arraste aqui
-          </div>
-
-          <div
-            class="deck-card-4 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[248px] flex justify-center items-center text-gray-400 select-none">
-            Arraste aqui
-          </div>
-
-          <div
-            class="deck-card-5 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[248px] flex justify-center items-center text-gray-400 select-none">
-            Arraste aqui
-          </div>
+          <!-- Botão render-se -->
+          <button id="surrender-btn" onclick="surrender()"
+            class="px-4 py-1.5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition">
+            Render-se
+          </button>
         </div>
 
+        <!-- Área principal do campo -->
+        <div id="battle-area"
+          class="flex-1 flex flex-col justify-center items-center p-6 bg-white/60 backdrop-blur-sm rounded-xl mt-4 mb-4 border border-gray-200 shadow-inner">
 
-        <div id="deck-cards-user"
-          class="mt-6 flex flex-row justify-center gap-4 flex-wrap w-full h-64 p-4 border-2 border-dashed border-gray-400 rounded-lg overflow-y-auto">
-          <!-- cartas para puxar e colocar no drag -->
+
+          <div class="flex flex-row justify-between mb-8">
+            <div id="activate-player-card" class="px-6 py-4 border-2 border-dashed border-gray-400 rounded-lg">
+              <!-- arratasr a carta para cá com drop and drag -->
+            </div>
+
+            <div class="mx-8">
+              <button id="button-player-card"
+                class="px-6 py-2 rounded-xl bg-green-500 text-white font-semibold shadow-md hover:bg-green-600 active:scale-95 transition disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none">
+                Jogar
+              </button>
+
+
+            </div>
+
+            <div id="opponent-card" class="px-6 py-4 gap-4 border-2 border-dashed border-gray-400 rounded-lg">
+              <!-- mostrar a carta do oponente -->
+            </div>
+          </div>
+
+          <div id="deck-player"
+            class="flex flex-row gap-4 px-6 py-4 border-2 border-dashed border-gray-400 rounded-lg ">
+            <!-- popular com o deck do player, para a arrasta para ativar  -->
+          </div>
         </div>
-
-      </div>
-
-
-      <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
-        <button onclick="closeModal('deck-modal')"
-          class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors">
-          Cancelar
-        </button>
-        <button onclick="handleUpdateDeck()"
-          class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
-          Salvar Deck
-        </button>
       </div>
     </div>
 
-    <!-- Modal Pacote -->
-    <div id="package-modal"
-      class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-6xl bg-white rounded-xl shadow-2xl z-50 transition-all duration-300 scale-95 opacity-0">
-      <div class="flex items-center justify-between p-6 border-b border-slate-200">
-        <h3 class="text-xl font-bold text-slate-800">Pacote de Cartas</h3>
-        <button onclick="closeModal('package-modal')" class="text-slate-400 hover:text-slate-600 transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-      <div class="p-6 max-h-96 overflow-y-auto">
-        <p class="text-slate-600 mb-4">Suas 5 cartas adquiridas:</p>
-        <!-- cartas aqui -->
 
-        <div id="package-cards" class="flex flex-row justify-center gap-4 w-full">
 
-        </div>
-      </div>
-      <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
-        <button onclick="closeModal('package-modal')"
-          class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors">
-          Fechar
-        </button>
-      </div>
+
+
+
+
+  </div>
+
+  <!-- Overlay -->
+  <div id="modal-overlay"
+    class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity duration-300"></div>
+
+  <!-- Modal Deck -->
+  <div id="deck-modal"
+    class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-6xl bg-white rounded-xl shadow-2xl z-50 transition-all duration-300 scale-95 opacity-0">
+
+    <div class="flex items-center justify-between p-6 border-b border-slate-200">
+      <h3 class="text-xl font-bold text-slate-800">Montar Deck</h3>
+      <button onclick="closeModal('deck-modal')" class="text-slate-400 hover:text-slate-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
     </div>
 
-    <!-- Modal Cartas -->
-    <div id="cards-modal"
-      class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-6xl bg-white rounded-xl shadow-2xl z-50 transition-all duration-300 scale-95 opacity-0">
-      <div class="flex items-center justify-between p-6 border-b border-slate-200">
-        <h3 class="text-xl font-bold text-slate-800">Minhas Cartas</h3>
-        <button onclick="closeModal('cards-modal')" class="text-slate-400 hover:text-slate-600 transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-      <div class="p-6 max-h-96 overflow-y-auto">
-        <p class="text-slate-600 mb-4">Suas cartas coletadas:</p>
-
-        <div id="user-cards" class="flex flex-wrap justify-center items-start gap-4 w-full">
-          <!-- cartas serão inseridas aqui -->
+    <div class="p-6">
+      <!-- área do deck -->
+      <div class="grid grid-cols-5 gap-4">
+        <div
+          class="deck-card-1 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-w328 min-h-[248px] flex justify-center items-center text-gray-400 select-none ">
+          Arraste aqui
         </div>
 
+        <div
+          class="deck-card-2 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[248px] flex justify-center items-center text-gray-400 select-none">
+          Arraste aqui
+        </div>
+
+        <div
+          class="deck-card-3 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[248px] flex justify-center items-center text-gray-400 select-none">
+          Arraste aqui
+        </div>
+
+        <div
+          class="deck-card-4 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[248px] flex justify-center items-center text-gray-400 select-none">
+          Arraste aqui
+        </div>
+
+        <div
+          class="deck-card-5 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 min-h-[248px] flex justify-center items-center text-gray-400 select-none">
+          Arraste aqui
+        </div>
       </div>
-      <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
-        <button onclick="closeModal('cards-modal')"
-          class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors">
-          Fechar
-        </button>
+
+
+      <div id="deck-cards-user"
+        class="mt-6 flex flex-row justify-center gap-4 flex-wrap w-full h-64 p-4 border-2 border-dashed border-gray-400 rounded-lg overflow-y-auto">
+        <!-- cartas para puxar e colocar no drag -->
+      </div>
+
+    </div>
+
+
+    <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
+      <button onclick="closeModal('deck-modal')"
+        class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors">
+        Cancelar
+      </button>
+      <button onclick="handleUpdateDeck()"
+        class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
+        Salvar Deck
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Pacote -->
+  <div id="package-modal"
+    class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-6xl bg-white rounded-xl shadow-2xl z-50 transition-all duration-300 scale-95 opacity-0">
+    <div class="flex items-center justify-between p-6 border-b border-slate-200">
+      <h3 class="text-xl font-bold text-slate-800">Pacote de Cartas</h3>
+      <button onclick="closeModal('package-modal')" class="text-slate-400 hover:text-slate-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="p-6 max-h-96 overflow-y-auto">
+      <p class="text-slate-600 mb-4">Suas 5 cartas adquiridas:</p>
+      <!-- cartas aqui -->
+
+      <div id="package-cards" class="flex flex-row justify-center gap-4 w-full">
+
       </div>
     </div>
+    <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
+      <button onclick="closeModal('package-modal')"
+        class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors">
+        Fechar
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Cartas -->
+  <div id="cards-modal"
+    class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-6xl bg-white rounded-xl shadow-2xl z-50 transition-all duration-300 scale-95 opacity-0">
+    <div class="flex items-center justify-between p-6 border-b border-slate-200">
+      <h3 class="text-xl font-bold text-slate-800">Minhas Cartas</h3>
+      <button onclick="closeModal('cards-modal')" class="text-slate-400 hover:text-slate-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="p-6 max-h-96 overflow-y-auto">
+      <p class="text-slate-600 mb-4">Suas cartas coletadas:</p>
+
+      <div id="user-cards" class="flex flex-wrap justify-center items-start gap-4 w-full">
+        <!-- cartas serão inseridas aqui -->
+      </div>
+
+    </div>
+    <div class="flex justify-end gap-3 p-6 border-t border-slate-200">
+      <button onclick="closeModal('cards-modal')"
+        class="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors">
+        Fechar
+      </button>
+    </div>
+  </div>
   </div>
 
 

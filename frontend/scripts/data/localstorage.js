@@ -5,3 +5,11 @@ function getUser() {
   
   return null;
 }
+
+function getMatch() {
+  const data = localStorage.getItem("match_avatar_online")
+  
+  if (data != null) return JSON.parse(data);
+  
+  return null;
+}

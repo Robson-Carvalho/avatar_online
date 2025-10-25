@@ -44,7 +44,25 @@ function activateCard(userID, matchID, cardID) {
       payload: {
         userID: userID,
         matchID: matchID,
-        //cardID: cardID | Comentei só pq a gente n ta enviando ID de carta ainda
+        cardID: cardID 
+      }
+    }
+
+    stompClient.send("/app/operation", {}, JSON.stringify(data));
+    log(`📤 Enviado: ${data.operationType}`);
+}
+
+function surrenderGame(userID, matchID) {
+    if (!stompClient || !stompClient.connected) {
+        alert("⚠️ Não conectado ao servidor!");
+        return;
+    }
+    
+    const data = {
+      operationType: "SURRENDER", 
+      payload: {
+        userID: userID,
+        matchID: matchID
       }
     }
 
