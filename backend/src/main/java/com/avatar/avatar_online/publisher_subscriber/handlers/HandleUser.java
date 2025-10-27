@@ -3,10 +3,7 @@ package com.avatar.avatar_online.publisher_subscriber.handlers;
 import com.avatar.avatar_online.DTOs.CardDTO;
 import com.avatar.avatar_online.DTOs.UserDTO;
 import com.avatar.avatar_online.models.User;
-import com.avatar.avatar_online.publisher_subscriber.model.OnlineUsers;
-import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
-import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
-import com.avatar.avatar_online.publisher_subscriber.model.OperationStatus;
+import com.avatar.avatar_online.publisher_subscriber.model.*;
 import com.avatar.avatar_online.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -74,7 +71,7 @@ public class HandleUser {
         String userID = (String) operation.getPayload().get("userID");
 
         try {
-            List<User> users = onlineUsers.getOnlineUsers(userID);
+            List<OnlineUserDTO> users = onlineUsers.getOnlineUsers(userID);
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Usuários online!", users);
         } catch (Exception e) {
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "Interno erro: "+e.getMessage(), null);

@@ -60,7 +60,7 @@ public class OnlineUsers {
         return onlineUsers.keySet();
     }
 
-    public List<User> getOnlineUsers(String userID) {
+    public List<OnlineUserDTO> getOnlineUsers(String userID) {
         UUID excludedUserId = UUID.fromString(userID);
 
         return this.getAllUserIds()
@@ -75,6 +75,7 @@ public class OnlineUsers {
                 })
                 .filter(Objects::nonNull)
                 .filter(user -> !user.getId().equals(excludedUserId)) // Filtra o usuário excluído
+                .map(user -> new OnlineUserDTO(user.getId().toString(), user.getNickname())) // mapeia para DTO
                 .collect(Collectors.toList());
     }
 
