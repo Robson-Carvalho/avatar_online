@@ -9,5 +9,4 @@ function sendPing() {
   };
 
   stompClient.send("/app/operation", {}, JSON.stringify(data));
-  log(`📤 Enviado: ${data.operationType}`);
 }

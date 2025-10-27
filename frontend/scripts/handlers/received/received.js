@@ -137,6 +137,7 @@ function handleLoginUserSuccess(data) {
   }
 
   updateViewsBasedOnConnection();
+  sendOperationGetOnlineUsers();
 }
 
 function handleOpenPackageSuccess(cards) {

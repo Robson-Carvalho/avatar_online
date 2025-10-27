@@ -36,21 +36,3 @@ function stopPingLoop() {
     pingInterval = null;
   }
 }
-
-// Exemplo de como integrar com sua lógica de rede:
-/*
-// Quando enviar ping:
-function sendPing() {
-  lastPingTime = Date.now();
-  // Sua lógica para enviar ping ao servidor
-  websocket.send(JSON.stringify({type: 'ping'}));
-}
-
-// Quando receber pong do servidor:
-websocket.onmessage = function(event) {
-  const data = JSON.parse(event.data);
-  if (data.type === 'pong') {
-    handlePingResponse();
-  }
-}
-*/

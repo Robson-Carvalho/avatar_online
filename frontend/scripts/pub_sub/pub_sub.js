@@ -54,10 +54,6 @@ function connect(host = "127.0.0.1") {
                     handlerMain(message)
                 });
 
-                stompClient.subscribe("/user/queue/pong", function(message) {
-                    handlerMain(message)
-                });
-
                 sendOperationGetOnlineUsers()
                 updateViewsBasedOnConnection();
             },

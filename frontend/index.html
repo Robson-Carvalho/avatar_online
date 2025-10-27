@@ -178,7 +178,9 @@
         Domine os quatro elementos! 🌀
       </p>
 
-      <div id="users" class="bg-red-500">o</div>
+      <div id="online-users-container" class="min-h-[150px] p-4 flex flex-col gap-2">
+        <!-- usuários online serão renderizados aqui -->
+      </div>
     </div>
 
     <div id="battlefield">
@@ -391,8 +393,6 @@
   </div>
 
 
-  <script src="./scripts/data/test.js"></script>
-
   <script src="./scripts/data/localstorage.js"></script>
   <script src="./scripts/game/index.js"></script>
   <script src="./scripts/handlers/received/received.js"></script>
@@ -410,8 +410,9 @@
   <script src="./scripts/view/dashboard.js"></script>
   <script src="./scripts/global/index.js"></script>
   <script src="./scripts/view/templates/cardsTemplate.js"></script>
+  <script src="./scripts/view/templates/onlineUserTemplate.js"></script>
   <script src="./scripts/view/deck_modal/dragDeck.js"></script>
-  <script src="./scripts/view/deck_modal/index.js"></script>
+  <script src="./scripts/view/users/index.js"></script>
   <script src="./scripts//view/users/index.js"></script>
 </body>
 
