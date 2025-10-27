@@ -32,6 +32,17 @@ public class MatchManagementService {
         return "";
     }
 
+    public Match getMatchByPlayerID(String sessionId, String userID){
+        for (Match match : activeMatchesMap.values()) {
+            if(sessionId.equals(match.getPlayer1().getUserSession()) || userID.equals(match.getPlayer1().getUserId())){
+                return match;
+            } else if (sessionId.equals(match.getPlayer2().getUserSession())  || userID.equals(match.getPlayer2().getUserId())) {
+                return match;
+            }
+        }
+        return null;
+    }
+
     /**
      * Registra uma nova partida no cluster, definindo o Gerente da Partida (MP) e as conexões dos jogadores.
      * Deve ser chamado tipicamente pelo nó Líder após um Matchmaking bem-sucedido.

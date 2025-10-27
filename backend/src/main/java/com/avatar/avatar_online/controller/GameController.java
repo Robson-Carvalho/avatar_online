@@ -8,6 +8,7 @@ import com.avatar.avatar_online.publisher_subscriber.model.OnlineUsers;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationType;
+import com.avatar.avatar_online.publisher_subscriber.service.Communication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,15 +22,18 @@ import java.util.Map;
 public class GameController {
     private final MatchManagementService matchManagementService;
     private final HandleGameController handleGameController;
+    private final Communication communication;
     private final OnlineUsers onlineUsers;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
-    public GameController(MatchManagementService matchManagementService, HandleGameController handleGameController, OnlineUsers onlineUsers) {
+    public GameController(MatchManagementService matchManagementService, HandleGameController handleGameController,
+                          OnlineUsers onlineUsers, Communication communication) {
         this.matchManagementService = matchManagementService;
         this.handleGameController = handleGameController;
+        this.communication = communication;
         this.onlineUsers = onlineUsers;
     }
 
@@ -103,6 +107,24 @@ public class GameController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
                     .body("{\"error\": \"Erro ao enviar notificação de PlayCard: " + e.getMessage() + "\"}");
+        }
+    }
+
+    @PostMapping("/notify/FinishGameSurrender")
+    public ResponseEntity<?> notifyFinishGameSurrender(@RequestBody OperationRequestDTO orD){
+        try{
+            Map<String, Object> payload = orD.getPayload();
+            OperationResponseDTO opresponseDTO = objectMapper.convertValue(
+                    payload.get("response"), OperationResponseDTO.class
+            );
+
+            String userSession = (String) payload.get("userSession");
+
+            communication.sendToUser(userSession, opresponseDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("{\"error\": \"Erro ao enviar notificação de FinishSurrender: " + e.getMessage() + "\"}");
         }
     }
 }
