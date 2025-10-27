@@ -1,6 +1,14 @@
-function renderUsersInDashboard() {
-  const usersContainer = document.getElementById("users"); 
-  
+function sendOperationGetOnlineUsers() {
+  const user = getUser();
+  if (user) {
+    getOnlineUsers(user.id);  
+  }
 }
 
-renderUsersInDashboard()
+function renderUsersInDashboard() {
+  const onlineUsers = getOnlineUsersLocalStorage();
+  const usersContainer = document.getElementById("users");
+
+  
+
+}

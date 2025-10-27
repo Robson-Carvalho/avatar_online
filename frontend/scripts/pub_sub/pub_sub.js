@@ -58,6 +58,7 @@ function connect(host = "127.0.0.1") {
                     handlerMain(message)
                 });
 
+                sendOperationGetOnlineUsers()
                 updateViewsBasedOnConnection();
             },
             function (error) {
