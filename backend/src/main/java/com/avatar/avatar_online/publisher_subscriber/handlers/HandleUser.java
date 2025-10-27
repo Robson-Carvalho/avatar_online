@@ -27,13 +27,14 @@ public class HandleUser {
         this.userService = userService;
     }
 
-    public OperationResponseDTO handleAuthUser(OperationRequestDTO operation){
+    public OperationResponseDTO handleAuthUser(OperationRequestDTO operation, String sessionId){
         String userID = (String) operation.getPayload().get("userID");
 
         try {
             Optional<User> user = userService.findById(UUID.fromString(userID));
 
             if (user.isPresent()) {
+                onlineUsers.addUser(user.get().getId().toString(), sessionId);
                 return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Usuário autenticado!", true);
             } else {
                 return new OperationResponseDTO(operation.getOperationType(), OperationStatus.WARNING,"Usuário não autenticado!", false);
@@ -43,18 +44,6 @@ public class HandleUser {
             );
         }
     }
-
-    public OperationResponseDTO handleGetOnlineUsers(OperationRequestDTO operation){
-        String userID = (String) operation.getPayload().get("userID");
-
-        try {
-            List<User> users = onlineUsers.getOnlineUsers(userID);
-            return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Usuários online!", users);
-        } catch (Exception e) {
-            return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "Interno erro: "+e.getMessage(), null);
-        }
-    }
-
 
     public OperationResponseDTO handleCreateUser(OperationRequestDTO operation) {
         String name = (String) operation.getPayload().get("name");
@@ -81,19 +70,31 @@ public class HandleUser {
         }
     }
 
-    public OperationResponseDTO handleLoginUser(OperationRequestDTO operation) {
+    public OperationResponseDTO handleGetOnlineUsers(OperationRequestDTO operation){
+        String userID = (String) operation.getPayload().get("userID");
+
+        try {
+            List<User> users = onlineUsers.getOnlineUsers(userID);
+            return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Usuários online!", users);
+        } catch (Exception e) {
+            return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "Interno erro: "+e.getMessage(), null);
+        }
+    }
+
+    public OperationResponseDTO handleLoginUser(OperationRequestDTO operation, String sessionId) {
         String nickname = (String) operation.getPayload().get("nickname");
         String password = (String) operation.getPayload().get("password");
 
         try {
+
             Optional<User> user = userService.login(nickname, password);
 
             if(user.isEmpty()){
                 return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "E-mail e/ou senha incorretos", null);
             }
 
+            onlineUsers.addUser(user.get().getId().toString(), sessionId);
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Login realizado com sucesso!", user);
-
         } catch (Exception e) {
             return new OperationResponseDTO(operation.getOperationType(),OperationStatus.ERROR, "Erro inesperado: " + e.getMessage(), null);
         }

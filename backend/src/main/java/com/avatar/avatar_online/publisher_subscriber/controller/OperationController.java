@@ -63,13 +63,13 @@ public class OperationController {
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response",handleDisconnected.logout(operation, userSession));
                 break;
             case AUTH_USER:
-                messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleUser.handleAuthUser(operation));
+                messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleUser.handleAuthUser(operation, userSession));
                 break;
             case CREATE_USER:
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleUser.handleCreateUser(operation));
                 break;
             case LOGIN_USER:
-                messagingTemplate.convertAndSendToUser(userSession, "/queue/response",  handleUser.handleLoginUser(operation));
+                messagingTemplate.convertAndSendToUser(userSession, "/queue/response",  handleUser.handleLoginUser(operation, userSession));
                 break;
             case OPEN_PACKAGE:
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleCard.handleOpenPackage(operation));

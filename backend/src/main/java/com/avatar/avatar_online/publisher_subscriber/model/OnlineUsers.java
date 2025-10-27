@@ -77,4 +77,8 @@ public class OnlineUsers {
                 .filter(user -> !user.getId().equals(excludedUserId)) // Filtra o usuário excluído
                 .collect(Collectors.toList());
     }
+
+    public int countOnlineUsers() {
+        return onlineUsers.size();
+    }
 }

@@ -3,10 +3,7 @@ package com.avatar.avatar_online.publisher_subscriber.handlers;
 import com.avatar.avatar_online.game.Match;
 import com.avatar.avatar_online.game.MatchManagementService;
 import com.avatar.avatar_online.publisher_subscriber.handlers.records.PlayerInGame;
-import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
-import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
-import com.avatar.avatar_online.publisher_subscriber.model.OperationStatus;
-import com.avatar.avatar_online.publisher_subscriber.model.OperationType;
+import com.avatar.avatar_online.publisher_subscriber.model.*;
 import com.avatar.avatar_online.publisher_subscriber.service.Communication;
 import com.avatar.avatar_online.raft.service.RedirectService;
 import com.avatar.avatar_online.service.CardService;
@@ -35,9 +32,12 @@ public class HandleDisconnected {
 
     private final CardService cardService;
 
+    private final OnlineUsers onlineUsers;
+
+
     @Autowired
     public HandleDisconnected(MatchManagementService matchManagementService, Communication communication,
-                      @Qualifier("hazelcastInstance") HazelcastInstance hazelcast, RedirectService redirectService, ObjectMapper objectMapper, CardService cardService) {
+                              @Qualifier("hazelcastInstance") HazelcastInstance hazelcast, RedirectService redirectService, ObjectMapper objectMapper, CardService cardService, OnlineUsers onlineUsers) {
         this.matchManagementService = matchManagementService;
         this.hazelcast = hazelcast;
         this.communication = communication;
@@ -45,12 +45,14 @@ public class HandleDisconnected {
         this.redirectService = redirectService;
         this.objectMapper = objectMapper;
         this.cardService = cardService;
+        this.onlineUsers = onlineUsers;
     }
 
     public OperationResponseDTO logout(OperationRequestDTO operation, String userSession) {
         String userID = (String) operation.getPayload().get("userID");
 
         try{
+            onlineUsers.removeByUserId(userID);
             this.handleSessionDisconnect(userSession, userID);
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK,"Usuário desconectado com sucesso!",null);
         }catch(Exception e){
@@ -62,7 +64,6 @@ public class HandleDisconnected {
         String matchID = (String) operation.getPayload().get("matchID");
         return matchManagementService.getMatchState(matchID);
     }
-
 
     public void surrender(OperationRequestDTO operation, String userSession) {
         Match match = this.getMatch(operation);
@@ -83,6 +84,8 @@ public class HandleDisconnected {
     }
 
     public void handleSessionDisconnect(String sessionId, String userID) {
+        onlineUsers.removeBySessionId(sessionId);
+
         for (PlayerInGame player : waitingQueue) {
             if (player.getUserSession().equals(sessionId) || player.getUserId().equals(userID)) {
                 System.out.println("🎯 Removendo player com sessionId: " + sessionId + " ou userID: "+ userID+" da fila");
