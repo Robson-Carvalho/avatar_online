@@ -4,6 +4,7 @@ import com.avatar.avatar_online.game.GameState;
 import com.avatar.avatar_online.game.MatchManagementService;
 import com.avatar.avatar_online.publisher_subscriber.handlers.HandleGame;
 import com.avatar.avatar_online.publisher_subscriber.handlers.HandleGameController;
+import com.avatar.avatar_online.publisher_subscriber.model.OnlineUsers;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationType;
@@ -22,16 +23,29 @@ public class GameController {
     private final MatchManagementService matchManagementService;
     private final HandleGameController handleGameController;
     private final Communication communication;
+    private final OnlineUsers onlineUsers;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
-    public GameController(MatchManagementService matchManagementService, HandleGameController handleGameController, Communication communication) {
+    public GameController(MatchManagementService matchManagementService, HandleGameController handleGameController,
+                          OnlineUsers onlineUsers, Communication communication) {
         this.matchManagementService = matchManagementService;
         this.handleGameController = handleGameController;
         this.communication = communication;
+        this.onlineUsers = onlineUsers;
     }
+
+    @GetMapping("/online/users/count")
+    public  Map<String, Object> onlineUsersCurrent(){
+        Map<String, Object> response = new HashMap<>();
+        int count = onlineUsers.countOnlineUsers();
+        response.put("online_users", count);
+
+        return response;
+    }
+
 
     @GetMapping("/matchs")
     public  Map<String, Object> matchs(){

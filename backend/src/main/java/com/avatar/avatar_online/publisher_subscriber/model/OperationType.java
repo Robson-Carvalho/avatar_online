@@ -1,6 +1,9 @@
 package com.avatar.avatar_online.publisher_subscriber.model;
 
 public enum OperationType {
+    PING,
+    PONG,
+    GET_ONLINE_USERS,
     FINISHED_GAME,
     FINISHED_SURRENDER,
     SURRENDER,

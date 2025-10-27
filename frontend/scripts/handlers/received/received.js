@@ -1,20 +1,14 @@
 function handlerMain(message) {
   const data = JSON.parse(message.body);
 
-  log(`📩 Resposta: messasge ${data.message}`);
-  log(`📩 Resposta: type: ${data.operationType}`);
-  log(`📩 Resposta: status: ${data.operationStatus}`);
-  log(`📩 Resposta: data: ${JSON.stringify(data.data)}`);
-
   if (data.operationType === "AUTH_USER") {
-    handleAuthUser(data.data)
-  }
-  else if (data.operationStatus == "ERROR") {
+    handleAuthUser(data.data);
+}
+else if (data.operationStatus == "ERROR") {
     showError(`${data.message}`);
   } else if (data.operationStatus == "WARNING") {
-    showWarning(`${data.message}`)
-  }
-  else if (data.operationType === "LOGIN_USER") {
+    showWarning(`${data.message}`);
+  } else if (data.operationType === "LOGIN_USER") {
     localStorage.setItem("user_avatar_online", JSON.stringify(data.data));
     handleLoginUserSuccess(data.data);
   } else if (data.operationType === "CREATE_USER") {
@@ -28,29 +22,39 @@ function handlerMain(message) {
     handleGetDeckSuccess(data.data);
   } else if (data.operationType === "GET_CARDS") {
     handleGetCardsSuccess(data.data);
-  }
-  
-  else if (data.operationType === "JOIN_QUEUE") {
-    handlUpdateGameSuccess(data)
-  }else if (data.operationType === "MATCH_FOUND") {
-    handlUpdateGameSuccess(data)
-  }else if (data.operationType === "UPDATE_GAME") {
-    handlUpdateGameSuccess(data)
-  }else if (data.operationType === "FINISHED_GAME") {
-    handlUpdateGameSuccess(data)
-  }
-  else if (data.operationType === "FINISHED_SURRENDER") {
-    handlUpdateGameSuccess(data)
+  } else if (data.operationType === "JOIN_QUEUE") {
+    handlUpdateGameSuccess(data);
+  } else if (data.operationType === "MATCH_FOUND") {
+    handlUpdateGameSuccess(data);
+  } else if (data.operationType === "UPDATE_GAME") {
+    handlUpdateGameSuccess(data);
+  } else if (data.operationType === "FINISHED_GAME") {
+    handlUpdateGameSuccess(data);
+  } else if (data.operationType === "FINISHED_SURRENDER") {
+    handlUpdateGameSuccess(data);
+  } else if (data.operationType === "PONG") {
+    handlePong();
+  } else if (data.operationType === "GET_ONLINE_USERS") {
+    localStorage.setItem("online_users_avatar_online",JSON.stringify(data.data));
+    renderUsersInDashboard();
+  } else if (data.operationType === "LOGOUT_USER") {
+    logout();
   }
 
-  
-  else if (data.operationType === "LOGOUT_USER") {
-    logout();
+  if (data.operationType !== "PONG") {
+    log(`📩 Resposta: messasge ${data.message}`);
+    log(`📩 Resposta: type: ${data.operationType}`);
+    log(`📩 Resposta: status: ${data.operationStatus}`);
+    log(`📩 Resposta: data: ${JSON.stringify(data.data)}`);
   }
 }
 
+function handlePong() {
+  handlePingResponse();
+}
+
 function handlUpdateGameSuccess(data) {
-  updateGame(data)
+  updateGame(data);
 }
 
 function handleGetDeckSuccess(data) {
