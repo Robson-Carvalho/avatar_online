@@ -34,9 +34,10 @@ public class PersistanceService {
     }
 
     @Transactional
-    public void applyUserSignUpCommand(UserSignUpCommand command){
+    public void applyUserSignUpCommand(UserSignUpCommand command) {
 
         if (userRepository.existsById(command.getPlayerId())){
+            System.out.println("Idempotência Raft: Comando de SignUp para usuário " + command.getPlayerId() + " já aplicado.");
             return;
         }
 
@@ -47,25 +48,14 @@ public class PersistanceService {
                 command.getEmail(),
                 command.getPassword()
         );
+        newUser.setId(command.getPlayerId());
 
         Deck newDeck = new Deck();
-
         newDeck.setId(command.getDeckId());
-        newUser.setId(command.getPlayerId());
         newDeck.setUser(newUser.getId());
 
-        try {
-            userRepository.save(newUser);
-            userRepository.flush();
-            deckRepository.save(newDeck);
-            deckRepository.flush();
-        } catch (DataIntegrityViolationException e){
-            if (e.getMessage().contains("users_pkey")) {
-                System.out.println("Idempotência tratada: Comando já aplicado.");
-                return;
-            }
-            throw e;
-        }
+        userRepository.save(newUser);
+        deckRepository.save(newDeck);
     }
 
     @Transactional

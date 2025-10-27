@@ -12,6 +12,7 @@ import com.avatar.avatar_online.repository.CardRepository;
 import com.avatar.avatar_online.repository.DeckRepository;
 import com.avatar.avatar_online.repository.UserRepository;
 import com.avatar.avatar_online.service.PersistanceService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,19 +32,28 @@ public class CommandExecutorService {
         System.out.println("⚡ Aplicando comando: " + command.getClass().getSimpleName() +
                 " no índice " + entry.getIndex());
 
-        if (command instanceof UserSignUpCommand) {
-            persistanceService.applyUserSignUpCommand((UserSignUpCommand) command);
-        } else if (command instanceof OpenPackCommand) {
-            persistanceService.applyOpenPackCommand((OpenPackCommand) command);
-        } else if (command instanceof SetDeckCommmand) {
-            persistanceService.applySetDeckCommand((SetDeckCommmand) command);
-        } else if (command instanceof TradeCardsCommand) {
-            persistanceService.applyTradeCardCommand((TradeCardsCommand) command);
+        try {
+            if (command instanceof UserSignUpCommand) {
+                persistanceService.applyUserSignUpCommand((UserSignUpCommand) command);
+            } else if (command instanceof OpenPackCommand) {
+                persistanceService.applyOpenPackCommand((OpenPackCommand) command);
+            } else if (command instanceof SetDeckCommmand) {
+                persistanceService.applySetDeckCommand((SetDeckCommmand) command);
+            } else if (command instanceof TradeCardsCommand) {
+                persistanceService.applyTradeCardCommand((TradeCardsCommand) command);
+            }
+
+        } catch (DataIntegrityViolationException e) {
+            if (e.getRootCause() != null && e.getRootCause().getMessage().contains("users_pkey")) {
+                if (command instanceof UserSignUpCommand) {
+                    System.out.println("✅ Idempotência tratada (DB): " + command.getClass().getSimpleName() +
+                            " no índice " + entry.getIndex() + " já aplicado por concorrência.");
+                    return;
+                }
+            }
+            System.err.println("❌ Erro de integridade de dados não tratável por idempotência para o comando: "
+                    + command.getClass().getSimpleName());
+            throw e;
         }
     }
-
-    private void applyCard() {
-
-    }
-
 }
