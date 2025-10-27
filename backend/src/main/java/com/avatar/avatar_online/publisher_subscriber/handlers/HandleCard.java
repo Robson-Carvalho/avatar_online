@@ -34,6 +34,17 @@ public class HandleCard {
         }
     }
 
+    public OperationResponseDTO handleGetCardsByPlayerId(OperationRequestDTO operation){
+        String userID = (String) operation.getPayload().get("userID");
+
+        try {
+            List<CardDTO> cards = cardService.findByUserIdWithoutDeck(UUID.fromString(userID));
+            return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Cartas do user: "+userID, cards);
+        } catch (Exception e) {
+            return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "Interno erro: "+e.getMessage(), null);
+        }
+    }
+
     public OperationResponseDTO handleProposalExchangeCard(OperationRequestDTO operation){
         return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "Interno erro: ", null);
 

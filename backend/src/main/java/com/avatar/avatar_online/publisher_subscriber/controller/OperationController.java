@@ -86,6 +86,9 @@ public class OperationController {
             case GET_CARDS:
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleCard.handleGetCards(operation));
                 break;
+            case GET_CARDS_BY_PLAYER_ID:
+                messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleCard.handleGetCardsByPlayerId(operation));
+                break;
             case GET_ONLINE_USERS:
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleUser.handleGetOnlineUsers(operation));
                 break;

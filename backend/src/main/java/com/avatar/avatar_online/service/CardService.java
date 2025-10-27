@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CardService {
@@ -77,6 +78,25 @@ public class CardService {
                 .toList();
     }
 
+    public List<CardDTO> findByUserIdWithoutDeck(UUID userId) {
+        Optional<Deck> op = deckService.findByUserId(userId.toString());
+
+        Set<UUID> deckCardIds = new HashSet<>();
+        if (op.isPresent()) {
+            Deck deck = op.get();
+            if (deck.getCard1() != null) deckCardIds.add(deck.getCard1());
+            if (deck.getCard2() != null) deckCardIds.add(deck.getCard2());
+            if (deck.getCard3() != null) deckCardIds.add(deck.getCard3());
+            if (deck.getCard4() != null) deckCardIds.add(deck.getCard4());
+            if (deck.getCard5() != null) deckCardIds.add(deck.getCard5());
+        }
+
+        return cardRepository.findAllByUserId(userId)
+                .stream()
+                .filter(card -> !deckCardIds.contains(card.getId()))
+                .map(CardDTO::new)
+                .toList();
+    }
 
     public List<Card> findAll() {
         return cardRepository.findAll();
