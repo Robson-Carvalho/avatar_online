@@ -27,6 +27,7 @@ function showSignIn() {
     document.getElementById("container-signUp").classList.add("hidden");
     document.getElementById("container-dashboard").classList.add("hidden");
   }
+  window.location.reload();
 }
 
 function showSignUp() {

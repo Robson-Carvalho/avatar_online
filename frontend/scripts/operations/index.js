@@ -40,6 +40,11 @@ function handleRegister(event) {
     const password = document.getElementById('password-register').value;
       
     console.log('Dados de registro:', { name, nickname, email, password });
+
+    if (!name || !nickname || !email || !password) {
+        showWarning("Complete todos os campos!");
+        return;
+    }
   
     createUser(name, nickname, email, password);
 }
