@@ -1,6 +1,6 @@
 package com.avatar.avatar_online.publisher_subscriber.model;
 
-import com.avatar.avatar_online.models.User;
+import com.avatar.avatar_online.publisher_subscriber.service.Communication;
 import com.avatar.avatar_online.service.UserService;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
@@ -15,25 +15,48 @@ public class OnlineUsers {
     // <userId, sessionId>
     private final IMap<String, String> onlineUsers;
     private final UserService  userService;
+    private final Communication communication;
+
 
     private static final String ONLINE_USERS_MAP = "online-users";
 
-    public OnlineUsers(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast, UserService userService) {
+    public OnlineUsers(@Qualifier("hazelcastInstance") HazelcastInstance hazelcast, UserService userService, Communication communication) {
         this.onlineUsers = hazelcast.getMap(ONLINE_USERS_MAP);
         this.userService = userService;
+        this.communication = communication;
     }
+
+    private void notifyNewStateOnlineUsers() {
+        if (!onlineUsers.isEmpty()) {
+            for (String sessionId : onlineUsers.values()) {
+                OperationResponseDTO response = new OperationResponseDTO(
+                        OperationType.GET_ONLINE_USERS.toString(),
+                        OperationStatus.OK, "Usuários online!",
+                        this.getOnlineUsers()
+                );
+
+                communication.sendToUser(sessionId, response);
+            }
+        }
+    }
+
 
     public void addUser(String userId, String sessionId) {
         onlineUsers.put(userId, sessionId);
+        this.notifyNewStateOnlineUsers();
     }
 
     public void removeByUserId(String userId) {
-        onlineUsers.remove(userId);
+        if(onlineUsers.containsKey(userId)){
+            onlineUsers.remove(userId);
+            this.notifyNewStateOnlineUsers();
+        }
     }
 
     public void removeBySessionId(String sessionId) {
         Optional<String> userId = getUserIdBySessionId(sessionId);
         userId.ifPresent(onlineUsers::remove);
+        this.notifyNewStateOnlineUsers();
     }
 
     public Optional<String> getSessionIdByUserId(String userId) {
@@ -60,11 +83,10 @@ public class OnlineUsers {
         return onlineUsers.keySet();
     }
 
-    public List<OnlineUserDTO> getOnlineUsers(String userID) {
-        UUID excludedUserId = UUID.fromString(userID);
-
+    public List<OnlineUserDTO> getOnlineUsers() {
         return this.getAllUserIds()
                 .stream()
+                .filter(Objects::nonNull)
                 .map(idStr -> {
                     try {
                         UUID id = UUID.fromString(idStr);
@@ -74,8 +96,7 @@ public class OnlineUsers {
                     }
                 })
                 .filter(Objects::nonNull)
-                .filter(user -> !user.getId().equals(excludedUserId)) // Filtra o usuário excluído
-                .map(user -> new OnlineUserDTO(user.getId().toString(), user.getNickname())) // mapeia para DTO
+                .map(user -> new OnlineUserDTO(user.getId().toString(), user.getNickname()))
                 .collect(Collectors.toList());
     }
 

@@ -68,10 +68,9 @@ public class HandleUser {
     }
 
     public OperationResponseDTO handleGetOnlineUsers(OperationRequestDTO operation){
-        String userID = (String) operation.getPayload().get("userID");
 
         try {
-            List<OnlineUserDTO> users = onlineUsers.getOnlineUsers(userID);
+            List<OnlineUserDTO> users = onlineUsers.getOnlineUsers();
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Usuários online!", users);
         } catch (Exception e) {
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "Interno erro: "+e.getMessage(), null);

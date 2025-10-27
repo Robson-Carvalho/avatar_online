@@ -52,8 +52,8 @@ public class HandleDisconnected {
         String userID = (String) operation.getPayload().get("userID");
 
         try{
-            onlineUsers.removeByUserId(userID);
             this.handleSessionDisconnect(userSession, userID);
+            onlineUsers.removeByUserId(userID);
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK,"Usuário desconectado com sucesso!",null);
         }catch(Exception e){
             return new OperationResponseDTO(operation.getOperationType(),OperationStatus.ERROR, "Erro inesperado: " + e.getMessage(), null);
@@ -84,13 +84,12 @@ public class HandleDisconnected {
     }
 
     public void handleSessionDisconnect(String sessionId, String userID) {
-        onlineUsers.removeBySessionId(sessionId);
-
         for (PlayerInGame player : waitingQueue) {
             if (player.getUserSession().equals(sessionId) || player.getUserId().equals(userID)) {
                 System.out.println("🎯 Removendo player com sessionId: " + sessionId + " ou userID: "+ userID+" da fila");
-
+                onlineUsers.removeBySessionId(sessionId);
                 boolean remove = waitingQueue.remove(player);
+
                 if (!remove){
                     System.out.println("Erro ao remover da fila");
                     return;
@@ -112,6 +111,7 @@ public class HandleDisconnected {
             System.out.println("Enviar STATUS para o oponente ["+opponentSession+"] que partida acabou com vitória!");
             this.sendToOpponentStatusWin(opponentSession, null);
             matchManagementService.unRegisterMatchBySessionId(sessionId);
+            onlineUsers.removeBySessionId(sessionId);
             return;
         }
 

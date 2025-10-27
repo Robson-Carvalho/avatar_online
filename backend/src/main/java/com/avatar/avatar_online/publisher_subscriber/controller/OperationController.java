@@ -54,7 +54,7 @@ public class OperationController {
 
         switch (type) {
             case PING:
-                messagingTemplate.convertAndSendToUser(userSession, "/queue/pong", handleStatus.handlePing(operation));
+                messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleStatus.handlePing(operation));
                 break;
             case SURRENDER:
                 handleDisconnected.surrender(operation, userSession);
