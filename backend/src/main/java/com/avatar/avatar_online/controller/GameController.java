@@ -37,6 +37,17 @@ public class GameController {
         this.onlineUsers = onlineUsers;
     }
 
+    @PostMapping("/notify/update/online/users")
+    public ResponseEntity<?> updateOnlineUsers(@RequestBody OperationResponseDTO orD){
+        try{
+            onlineUsers.handleUpdateOnlineUsersOtherNode(orD);
+            return ResponseEntity.ok().build();
+        } catch(Exception e){
+            return ResponseEntity.internalServerError()
+                    .body("{\"error\": \"Erro ao enviar notificação de GameFound: " + e.getMessage() + "\"}");
+        }
+    }
+
     @GetMapping("/online/users/count")
     public  Map<String, Object> onlineUsersCurrent(){
         Map<String, Object> response = new HashMap<>();

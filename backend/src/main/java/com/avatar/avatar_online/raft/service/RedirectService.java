@@ -80,6 +80,19 @@ public class RedirectService {
         }
     }
 
+    public void sendOperationRespondeToNode(String serverHostIp, String targetApiFunc, OperationResponseDTO operation, HttpMethod method) {
+        String targetUrl = String.format("http://%s:%d/api/game/notify/%s", serverHostIp, 8080, targetApiFunc);
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Object> requestEntity = new HttpEntity<>(operation, headers);
+
+            restTemplate.exchange(targetUrl, method, requestEntity, String.class);
+        } catch (Exception e) {
+            System.err.println("❌ Falha ao enviar comando para " + serverHostIp + ": " + e.getMessage());
+        }
+    }
+
     public ResponseEntity<AppendEntriesResponse> sendCommandToNode(
             String targetURL,
             Object command,

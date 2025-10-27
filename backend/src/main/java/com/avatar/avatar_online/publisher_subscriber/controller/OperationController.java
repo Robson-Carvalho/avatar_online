@@ -53,6 +53,12 @@ public class OperationController {
         }
 
         switch (type) {
+            case EXCHANGE_CARD:
+                messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleCard.handleExchangeCard(operation));
+                break;
+            case PROPOSAL_EXCHANGE_CARD:
+                messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleCard.handleProposalExchangeCard(operation));
+                break;
             case PING:
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleStatus.handlePing(operation));
                 break;

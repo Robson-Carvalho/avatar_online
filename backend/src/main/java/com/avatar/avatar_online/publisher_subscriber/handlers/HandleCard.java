@@ -34,6 +34,16 @@ public class HandleCard {
         }
     }
 
+    public OperationResponseDTO handleProposalExchangeCard(OperationRequestDTO operation){
+        return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "Interno erro: ", null);
+
+    }
+
+    public OperationResponseDTO handleExchangeCard(OperationRequestDTO operation){
+        return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "Interno erro: ",null);
+
+    }
+
     public OperationResponseDTO handleOpenPackage(OperationRequestDTO operation) {
         String userID = (String) operation.getPayload().get("userID");
 

@@ -5,7 +5,9 @@ import com.avatar.avatar_online.DTOs.UserDTO;
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.publisher_subscriber.model.*;
 import com.avatar.avatar_online.service.UserService;
+import com.hazelcast.core.HazelcastInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -17,21 +19,26 @@ import java.util.UUID;
 public class HandleUser {
     private final OnlineUsers onlineUsers;
     private final UserService userService;
+    private final HazelcastInstance hazelcast;
+
 
     @Autowired
-    public HandleUser(OnlineUsers onlineUsers, UserService userService) {
+    public HandleUser(OnlineUsers onlineUsers, UserService userService, @Qualifier("hazelcastInstance")  HazelcastInstance hazelcast) {
         this.onlineUsers = onlineUsers;
         this.userService = userService;
+        this.hazelcast = hazelcast;
     }
 
     public OperationResponseDTO handleAuthUser(OperationRequestDTO operation, String sessionId){
         String userID = (String) operation.getPayload().get("userID");
+        String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
+
 
         try {
             Optional<User> user = userService.findById(UUID.fromString(userID));
 
             if (user.isPresent()) {
-                onlineUsers.addUser(user.get().getId().toString(), sessionId);
+                onlineUsers.addUser(user.get().getId().toString(), sessionId, currentNodeId);
                 return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Usuário autenticado!", true);
             } else {
                 return new OperationResponseDTO(operation.getOperationType(), OperationStatus.WARNING,"Usuário não autenticado!", false);
@@ -81,6 +88,8 @@ public class HandleUser {
         String nickname = (String) operation.getPayload().get("nickname");
         String password = (String) operation.getPayload().get("password");
 
+        String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
+
         try {
 
             Optional<User> user = userService.login(nickname, password);
@@ -89,7 +98,7 @@ public class HandleUser {
                 return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "E-mail e/ou senha incorretos", null);
             }
 
-            onlineUsers.addUser(user.get().getId().toString(), sessionId);
+            onlineUsers.addUser(user.get().getId().toString(), sessionId, currentNodeId);
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Login realizado com sucesso!", user);
         } catch (Exception e) {
             return new OperationResponseDTO(operation.getOperationType(),OperationStatus.ERROR, "Erro inesperado: " + e.getMessage(), null);
