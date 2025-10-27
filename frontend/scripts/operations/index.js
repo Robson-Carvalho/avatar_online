@@ -77,13 +77,6 @@ function handleGetCards() {
     }
 }
 
-function handleJoinInGame() {
-  
-}
-
-function handleLeaveGame() {
-  
-}
 
 function logout() {
     localStorage.removeItem('user_avatar_online');

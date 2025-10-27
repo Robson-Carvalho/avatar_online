@@ -29,6 +29,7 @@ function connect(host = "127.0.0.1") {
 
         socket.onclose = function (event) {
             log(`❌ Socket fechado: código ${event.code}, motivo: ${event.reason}`);
+            stopPingLoop()
             updateViewsBasedOnConnection();
             attemptReconnect();
         };
@@ -42,7 +43,7 @@ function connect(host = "127.0.0.1") {
         stompClient.connect({},
             function (frame) {
                 log("✅ STOMP Conectado: " + frame);
-
+                startPingLoop()
                 const user = getUser()
 
                 if (user) {
@@ -50,6 +51,10 @@ function connect(host = "127.0.0.1") {
                 }
 
                 stompClient.subscribe("/user/queue/response", function (message) {
+                    handlerMain(message)
+                });
+
+                stompClient.subscribe("/user/queue/pong", function(message) {
                     handlerMain(message)
                 });
 
