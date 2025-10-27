@@ -5,7 +5,6 @@ function sendOperationGetOnlineUsers() {
   }
 }
 
-
 function renderUsersInDashboard() {
   const onlineUsers = getOnlineUsersLocalStorage(); 
   const user = getUser()
@@ -29,3 +28,27 @@ function renderUsersInDashboard() {
     `;
   }
 }
+
+function openExchangeCard(id, nickname) {
+  const modal = document.getElementById("exchange-card-modal");
+  const userInfo = document.getElementById("modalUserInfo");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const sendBtn = document.getElementById("sendBtn");
+
+  // Atualiza informações dentro do modal
+  userInfo.textContent = `ID: ${id} | Nickname: ${nickname}`;
+
+  // Mostra o modal
+  modal.classList.remove("hidden");
+}
+
+function sendExchangeCard(id, nickname) {
+  const modal = document.getElementById("exchange-card-modal");
+  modal.classList.add("hidden");
+}
+
+function cancelExchangeCard(id, nickname) {
+  const modal = document.getElementById("exchange-card-modal");
+  modal.classList.add("hidden");
+}
+
