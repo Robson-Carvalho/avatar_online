@@ -19,7 +19,6 @@ public class MulticastListener {
         this.peerService = peerService;
     }
 
-    @PostConstruct
     public void startListener() {
         new Thread(this::listenForMulticast).start();
     }

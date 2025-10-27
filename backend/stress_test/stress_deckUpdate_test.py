@@ -15,7 +15,7 @@ import random
 from collections import Counter
 
 LEADER_IP = "localhost"
-PORT = 8080
+PORT = 8083
 URL = f"http://{LEADER_IP}:{PORT}/api/deck"
 
 NUM_THREADS = 100
