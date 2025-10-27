@@ -1,7 +1,9 @@
 package com.avatar.avatar_online.publisher_subscriber.handlers;
 
+import com.avatar.avatar_online.DTOs.CardDTO;
 import com.avatar.avatar_online.DTOs.UserDTO;
 import com.avatar.avatar_online.models.User;
+import com.avatar.avatar_online.publisher_subscriber.model.OnlineUsers;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.OperationStatus;
@@ -10,16 +12,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Component
 public class HandleUser {
-
+    private final OnlineUsers onlineUsers;
     private final UserService userService;
 
     @Autowired
-    public HandleUser(UserService userService) {
+    public HandleUser(OnlineUsers onlineUsers, UserService userService) {
+        this.onlineUsers = onlineUsers;
         this.userService = userService;
     }
 
@@ -39,6 +43,18 @@ public class HandleUser {
             );
         }
     }
+
+    public OperationResponseDTO handleGetOnlineUsers(OperationRequestDTO operation){
+        String userID = (String) operation.getPayload().get("userID");
+
+        try {
+            List<User> users = onlineUsers.getOnlineUsers(userID);
+            return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Usuários online!", users);
+        } catch (Exception e) {
+            return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "Interno erro: "+e.getMessage(), null);
+        }
+    }
+
 
     public OperationResponseDTO handleCreateUser(OperationRequestDTO operation) {
         String name = (String) operation.getPayload().get("name");
