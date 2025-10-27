@@ -115,7 +115,7 @@ public class HandleCard {
                 communication.sendToUser(sessionId, responseUser);
                 communication.sendToUser(player2.getSessionId(), responsePlayer2);
             } else {
-                // realizar redirect
+                // código aqui
             }
         }catch (Exception e){
             OperationResponseDTO response = new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR,"Erro inesperado: " + e.getMessage(), null);
