@@ -57,7 +57,7 @@ public class OperationController {
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleCard.handleExchangeCard(operation));
                 break;
             case PROPOSAL_EXCHANGE_CARD:
-                messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleCard.handleProposalExchangeCard(operation));
+                handleCard.handleProposalExchangeCard(operation, userSession);
                 break;
             case PING:
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleStatus.handlePing(operation));

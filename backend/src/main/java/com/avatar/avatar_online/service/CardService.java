@@ -78,18 +78,26 @@ public class CardService {
                 .toList();
     }
 
+
+    public CardDTO findById(UUID cardId) {
+        return cardRepository.findById(cardId)
+                .map(CardDTO::new)
+                .orElse(null);
+    }
+
     public List<CardDTO> findByUserIdWithoutDeck(UUID userId) {
         Optional<Deck> op = deckService.findByUserId(userId.toString());
-
         Set<UUID> deckCardIds = new HashSet<>();
-        if (op.isPresent()) {
-            Deck deck = op.get();
-            if (deck.getCard1() != null) deckCardIds.add(deck.getCard1());
-            if (deck.getCard2() != null) deckCardIds.add(deck.getCard2());
-            if (deck.getCard3() != null) deckCardIds.add(deck.getCard3());
-            if (deck.getCard4() != null) deckCardIds.add(deck.getCard4());
-            if (deck.getCard5() != null) deckCardIds.add(deck.getCard5());
-        }
+        op.ifPresent(deck -> Arrays.asList(
+                                deck.getCard1(),
+                                deck.getCard2(),
+                                deck.getCard3(),
+                                deck.getCard4(),
+                                deck.getCard5()
+                        ).stream()
+                        .filter(Objects::nonNull)
+                        .forEach(deckCardIds::add)
+        );
 
         return cardRepository.findAllByUserId(userId)
                 .stream()
@@ -97,6 +105,7 @@ public class CardService {
                 .map(CardDTO::new)
                 .toList();
     }
+
 
     public List<Card> findAll() {
         return cardRepository.findAll();

@@ -94,6 +94,10 @@ public class OnlineUsers {
         return Optional.ofNullable(onlineUsers.get(userId)).map(OnlineUserInfo::getSessionId);
     }
 
+    public Optional<OnlineUserInfo> getUserInfoByUserId(String userId) {
+        return Optional.ofNullable(onlineUsers.get(userId));
+    }
+
     public Optional<String> getHostByUserId(String userId) {
         return Optional.ofNullable(onlineUsers.get(userId)).map(OnlineUserInfo::getHost);
     }
