@@ -107,7 +107,8 @@ public class HandleDisconnected {
 
         if(!opponentSession.isEmpty()) {
             System.out.println("Enviar STATUS para o oponente ["+opponentSession+"] que partida acabou com vitória!");
-            this.sendToOpponentStatusWin(opponentSession, null);
+            Match match =  matchManagementService.getMatchByPlayerID(sessionId, userID);
+            this.sendToOpponentStatusWin(opponentSession, match);
             matchManagementService.unRegisterMatchBySessionId(sessionId);
             return;
         }
@@ -116,13 +117,6 @@ public class HandleDisconnected {
     }
 
     private void sendToOpponentStatusWin(String userSession, Match match){
-        if (match == null) {
-            OperationResponseDTO response = new OperationResponseDTO(OperationType.FINISHED_SURRENDER.toString(), OperationStatus.OK, "Você ganhou!", null);
-
-            communication.sendToUser(userSession, response);
-            return;
-        }
-
         if (match.getIslocalMatch()){
             // Aqui tem que verificar ainda, fiquei sem tempo
             OperationResponseDTO response = new OperationResponseDTO(OperationType.FINISHED_SURRENDER.toString(), OperationStatus.OK, "Você ganhou!", null);
@@ -135,6 +129,7 @@ public class HandleDisconnected {
                 Map<String, Object> newPayload = new HashMap<>();
 
                 newPayload.put("response", response);
+                newPayload.put("userSession", userSession);
 
                 OperationRequestDTO newOperation = new OperationRequestDTO(
                         OperationType.FINISHED_SURRENDER.toString(),
@@ -143,7 +138,7 @@ public class HandleDisconnected {
 
                 redirectService.sendOperationRequestToNode(
                         match.getManagerNodeId(),
-                        "UpdateGameActiveCard",
+                        "FinishGameSurrender",
                         newOperation,
                         HttpMethod.POST
                 );
@@ -153,6 +148,7 @@ public class HandleDisconnected {
                 Map<String, Object> newPayload = new HashMap<>();
 
                 newPayload.put("response", response);
+                newPayload.put("userSession", userSession);
 
                 OperationRequestDTO newOperation = new OperationRequestDTO(
                         OperationType.FINISHED_SURRENDER.toString(),
@@ -161,13 +157,11 @@ public class HandleDisconnected {
 
                 redirectService.sendOperationRequestToNode(
                         match.getPlayer2().getHostAddress(),
-                        "UpdateGameActiveCard",
+                        "FinishGameSurrender",
                         newOperation,
                         HttpMethod.POST
                 );
             }
-
-            return;
         }
     }
 
