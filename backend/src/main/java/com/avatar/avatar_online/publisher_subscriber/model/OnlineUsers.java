@@ -46,7 +46,7 @@ public class OnlineUsers {
 
                 // sessão não é local
                 if(!Objects.equals(currentNodeId, info.getHost())){
-                    redirectService.sendOperationRespondeToNode(
+                    redirectService.sendOperationResponseToNode(
                             info.getHost(),
                             "update/online/users",
                             response,

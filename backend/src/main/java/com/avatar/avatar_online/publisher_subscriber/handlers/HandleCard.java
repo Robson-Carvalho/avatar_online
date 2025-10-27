@@ -7,9 +7,11 @@ import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.ProposalDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.*;
 import com.avatar.avatar_online.publisher_subscriber.service.Communication;
+import com.avatar.avatar_online.raft.service.RedirectService;
 import com.avatar.avatar_online.service.CardService;
 import com.hazelcast.core.HazelcastInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -24,13 +26,15 @@ public class HandleCard {
     private final OnlineUsers onlineUsers;
     private final Communication communication;
     private final HazelcastInstance hazelcast;
+    private final RedirectService redirectService;
 
     @Autowired
-    public HandleCard(CardService cardService, OnlineUsers onlineUsers, Communication communication, HazelcastInstance hazelcast) {
+    public HandleCard(CardService cardService, OnlineUsers onlineUsers, Communication communication, HazelcastInstance hazelcast, RedirectService redirectService) {
         this.cardService = cardService;
         this.onlineUsers = onlineUsers;
         this.communication = communication;
         this.hazelcast = hazelcast;
+        this.redirectService = redirectService;
     }
 
     public OperationResponseDTO handleGetCards(OperationRequestDTO operation){
@@ -84,43 +88,51 @@ public class HandleCard {
                 return;
             }
 
+            ProposalDTO proposalDTO = new ProposalDTO(
+                    card1.getId().toString(),
+                    card1.getName(),
+                    card1.getElement().toString(),
+                    card1.getPhase().toString(),
+                    card1.getAttack(),
+                    card1.getLife(),
+                    card1.getDefense(),
+                    card1.getRarity().toString(),
+
+                    card2.getId().toString(),
+                    card2.getName(),
+                    card2.getElement().toString(),
+                    card2.getPhase().toString(),
+                    card2.getAttack(),
+                    card2.getLife(),
+                    card2.getDefense(),
+                    card2.getRarity().toString(),
+
+                    // IDs dos jogadores
+                    player1ID,
+                    player2ID
+            );
+
             if (Objects.equals(currentNodeId, player2.getHost())) {
-                ProposalDTO proposalDTO = new ProposalDTO(
-                        card1.getId().toString(),
-                        card1.getName(),
-                        card1.getElement().toString(),
-                        card1.getPhase().toString(),
-                        card1.getAttack(),
-                        card1.getLife(),
-                        card1.getDefense(),
-                        card1.getRarity().toString(),
-
-                        card2.getId().toString(),
-                        card2.getName(),
-                        card2.getElement().toString(),
-                        card2.getPhase().toString(),
-                        card2.getAttack(),
-                        card2.getLife(),
-                        card2.getDefense(),
-                        card2.getRarity().toString(),
-
-                        // IDs dos jogadores
-                        player1ID,
-                        player2ID
-                );
-
                 OperationResponseDTO responseUser = new OperationResponseDTO(OperationType.PROPOSAL_EXCHANGE_CARD_SENDER.toString(), OperationStatus.OK, "Proposta enviada!", null);
                 OperationResponseDTO responsePlayer2 = new OperationResponseDTO(OperationType.PROPOSAL_EXCHANGE_CARD_RECEIVER.toString(), OperationStatus.OK, "Você recebeu uma proposta de troca", proposalDTO);
 
                 communication.sendToUser(sessionId, responseUser);
                 communication.sendToUser(player2.getSessionId(), responsePlayer2);
             } else {
-                // código aqui
+                OperationResponseDTO responseUser = new OperationResponseDTO(OperationType.PROPOSAL_EXCHANGE_CARD_SENDER.toString(), OperationStatus.OK, "Proposta enviada!", null);
+                OperationResponseDTO responsePlayer2 = new OperationResponseDTO(OperationType.PROPOSAL_EXCHANGE_CARD_RECEIVER.toString(), OperationStatus.OK, "Você recebeu uma proposta de troca", proposalDTO);
+
+                communication.sendToUser(sessionId, responseUser);
+                redirectService.sendOperationResponseCardToNode(player2.getHost(),"proposal/"+player2.getSessionId(), responsePlayer2, HttpMethod.POST);
             }
         }catch (Exception e){
             OperationResponseDTO response = new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR,"Erro inesperado: " + e.getMessage(), null);
             communication.sendToUser(sessionId, response);
         }
+    }
+
+    public void sendProposal(OperationResponseDTO response, String sessionId){
+        communication.sendToUser(sessionId, response);
     }
 
     public OperationResponseDTO handleExchangeCard(OperationRequestDTO operation){
