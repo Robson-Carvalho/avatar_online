@@ -27,7 +27,7 @@ function startPingLoop() {
   if (pingInterval) clearInterval(pingInterval);
   
   sendPingToServer();
-  pingInterval = setInterval(sendPingToServer, 1000);
+  pingInterval = setInterval(sendPingToServer, 5000); // lembrar de trocar
 }
 
 function stopPingLoop() {

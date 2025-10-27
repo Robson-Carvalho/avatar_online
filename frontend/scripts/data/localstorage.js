@@ -22,3 +22,11 @@ function getMatch() {
   
   return null;
 }
+
+function getPROPOSAL() {
+  const data = localStorage.getItem("avatar_online_PROPOSAL_EXCHANGE_CARD_RECEIVER")
+  
+  if (data != null) return JSON.parse(data);
+  
+  return null;
+}

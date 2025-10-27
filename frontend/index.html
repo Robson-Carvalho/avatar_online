@@ -178,21 +178,68 @@
         Domine os quatro elementos! 🌀
       </p>
 
-      <div id="exchange-card-modal"
-        class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-lg p-6 w-96 max-w-full">
-          <!-- Conteúdo do modal -->
-          <h2 class="text-lg font-bold mb-4">Trocar Cartas</h2>
-          <p id="modalUserInfo" class="mb-4"></p>
+      <!-- Modal de aceitar troca -->
+      <div id="your-accept-exchange"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-4xl flex flex-col gap-6">
+
+          <!-- Título -->
+          <h2 class="text-2xl font-bold text-center text-gray-800">Proposta de Troca</h2>
+
+          <!-- Área dos cards -->
+          <div class="flex flex-row items-center justify-center gap-6 flex-wrap">
+            <!-- Card jogador 1 -->
+            <div class="flex flex-col items-center flex-shrink-0">
+              <div id="card1-exchange">
+                <!-- Render card1 aqui -->
+              </div>
+              <p class="mt-2 text-sm text-gray-600 font-medium">Carta do outro jogador</p>
+            </div>
+
+            <!-- Seta de troca -->
+            <div class="text-3xl font-bold text-gray-500 select-none">🔄</div>
+
+            <!-- Card jogador 2 -->
+            <div class="flex flex-col items-center flex-shrink-0">
+              <div id="card2-exchange">
+                <!-- Render card2 aqui -->
+              </div>
+              <p class="mt-2 text-sm text-gray-600 font-medium">Sua carta</p>
+            </div>
+          </div>
 
           <!-- Botões -->
-          <div class="flex justify-end gap-2">
-            <button id="cancelBtn" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-            <button id="sendBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Enviar</button>
+          <div class="flex justify-end gap-4">
+            <button onclick="cancelToServerExchangeCard()"
+              class="px-5 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors">
+              Cancelar
+            </button>
+            <button onclick="sendToServerExchangeCard()"
+              class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+              Aceitar
+            </button>
           </div>
+
         </div>
       </div>
 
+
+      <div id="modal-cards-player" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-50">
+        <div class="bg-white w-[80%] max-w-8xl rounded-xl shadow-lg p-6 relative">
+          <!-- Botão de fechar -->
+          <button id="close-modal-cards" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 transition">
+            ✖
+          </button>
+
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">Cartas do Jogador</h2>
+
+          <!-- Container das cartas -->
+          <div id="cards-to-player"
+            class="flex flex-wrap gap-4 items-center justify-center overflow-y-auto max-h-[70vh] p-2">
+          </div>
+
+        </div>
+      </div>
 
       <div id="online-users-container" class="min-h-[150px] p-4 flex flex-col gap-2">
         <!-- usuários online serão renderizados aqui -->
@@ -429,7 +476,6 @@
   <script src="./scripts/view/templates/onlineUserTemplate.js"></script>
   <script src="./scripts/view/deck_modal/dragDeck.js"></script>
   <script src="./scripts/view/users/index.js"></script>
-  <script src="./scripts//view/users/index.js"></script>
 </body>
 
 </html>

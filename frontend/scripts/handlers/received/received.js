@@ -3,11 +3,16 @@ function handlerMain(message) {
 
   if (data.operationType === "AUTH_USER") {
     handleAuthUser(data.data);
-}
-else if (data.operationStatus == "ERROR") {
+  } else if (data.operationStatus == "ERROR") {
     showError(`${data.message}`);
   } else if (data.operationStatus == "WARNING") {
     showWarning(`${data.message}`);
+  } else if (
+    data.operationType === "EXCHANGE_CARD" &&
+    data.operationStatus == "WARNING"
+  ) {
+    showWarning(`${data.message}`);
+    return;
   } else if (data.operationType === "LOGIN_USER") {
     localStorage.setItem("user_avatar_online", JSON.stringify(data.data));
     handleLoginUserSuccess(data.data);
@@ -35,10 +40,27 @@ else if (data.operationStatus == "ERROR") {
   } else if (data.operationType === "PONG") {
     handlePong();
   } else if (data.operationType === "GET_ONLINE_USERS") {
-    localStorage.setItem("online_users_avatar_online",JSON.stringify(data.data));
+    localStorage.setItem(
+      "online_users_avatar_online",
+      JSON.stringify(data.data)
+    );
     renderUsersInDashboard();
   } else if (data.operationType === "LOGOUT_USER") {
     logout();
+  } else if (data.operationType === "GET_CARDS_BY_PLAYER_ID") {
+    openModalCardsToPlayer(data.data);
+  } else if (data.operationType === "PROPOSAL_EXCHANGE_CARD_SENDER") {
+    showInfo("🔄 Proposta de troca enviada!");
+  } else if (data.operationType === "PROPOSAL_EXCHANGE_CARD_RECEIVER") {
+    console.log("oiii", data.data)
+    localStorage.setItem(
+      "avatar_online_PROPOSAL_EXCHANGE_CARD_RECEIVER",
+      JSON.stringify(data.data)
+    );
+    showInfo("🔄 Proposta de troca recebida!");
+    handleProposalExchangeCardReceiver();
+  } else if (data.operationType === "EXCHANGE_CARD") {
+    showSuccess("Troca realizada!");
   }
 
   if (data.operationType !== "PONG") {
@@ -47,6 +69,10 @@ else if (data.operationStatus == "ERROR") {
     log(`📩 Resposta: status: ${data.operationStatus}`);
     log(`📩 Resposta: data: ${JSON.stringify(data.data)}`);
   }
+}
+
+function handleProposalExchangeCardReceiver() {
+  openModalExchangeCard();
 }
 
 function handlePong() {
@@ -110,7 +136,8 @@ function handleGetCardsSuccess(data) {
   document.getElementById("user-cards").innerHTML = "";
 
   data.forEach((card) => {
-    document.getElementById("user-cards").innerHTML += cardTemplateOpenPackage(
+    document.getElementById("user-cards").innerHTML += cardTemplate(
+      card.id,
       card.name,
       card.element,
       card.phase,
@@ -157,6 +184,7 @@ function handleOpenPackageSuccess(cards) {
   cards.forEach((card) => {
     document.getElementById("package-cards").innerHTML +=
       cardTemplateOpenPackage(
+        card.id,
         card.name,
         card.element,
         card.phase,

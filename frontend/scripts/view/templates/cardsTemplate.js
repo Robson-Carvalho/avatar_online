@@ -1,4 +1,4 @@
-function cardTemplateOpenPackage(name, element, phase, attack, life, defense, rarity) {
+function cardTemplateOpenPackage(id, name, element, phase, attack, life, defense, rarity) {
   return `
     <div
       class="package-card w-48 h-64 bg-white rounded-lg shadow-md border border-gray-200 p-4 hover:shadow-lg transition-shadow duration-300 flex flex-col justify-between">
@@ -10,6 +10,35 @@ function cardTemplateOpenPackage(name, element, phase, attack, life, defense, ra
       <div class="flex flex-col gap-1 mt-2 text-sm text-gray-600 flex-grow">
         <p>Elemento: <span class="font-medium">${element}</span></p>
         <p>Fase: <span class="font-medium">${phase}</span></p>
+        <p>⚔️ Ataque: <span class="text-green-600 font-medium">${attack}</span></p>
+        <p>❤️ Vida: <span class="text-red-600 font-medium">${life}</span></p>
+        <p>🛡️ Defesa: <span class="text-blue-600 font-medium">${defense}</span></p>
+        <p>⭐ Raridade: <span class="font-medium">${rarity}</span></p>
+      </div>
+    </div>
+  `;
+}
+
+
+function cardTemplate(id, name, element, phase, attack, life, defense, rarity) {
+  return `
+    <div
+      class="package-card w-64 h-72 bg-white rounded-lg shadow-md border border-gray-200 p-4 hover:shadow-lg transition-shadow duration-300 flex flex-col justify-between relative">
+
+      <!-- Nome -->
+      <p class="package-card-name text-left text-base font-bold text-gray-800 mb-2">
+        ${name}
+      </p>
+
+      <!-- ID -->
+      <div class="bg-gray-100 px-2 py-1 rounded text-xs text-gray-700 font-mono break-all mb-3">
+        ID: ${id}
+      </div>
+
+      <!-- Atributos -->
+      <div class="flex flex-col gap-1 text-sm text-gray-600 flex-grow">
+        <p>🌪️ Elemento: <span class="font-medium">${element}</span></p>
+        <p>📘 Fase: <span class="font-medium">${phase}</span></p>
         <p>⚔️ Ataque: <span class="text-green-600 font-medium">${attack}</span></p>
         <p>❤️ Vida: <span class="text-red-600 font-medium">${life}</span></p>
         <p>🛡️ Defesa: <span class="text-blue-600 font-medium">${defense}</span></p>
