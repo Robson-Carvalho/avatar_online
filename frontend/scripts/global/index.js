@@ -28,6 +28,7 @@ function startPingLoop() {
   
   sendPingToServer();
   pingInterval = setInterval(sendPingToServer, 1000); 
+}
 
 function stopPingLoop() {
   if (pingInterval) {
