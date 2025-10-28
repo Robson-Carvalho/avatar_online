@@ -31,11 +31,16 @@ function updateGame(data) {
     const match = getMatch();
     const user = getUser();
 
-    if (user.id == match.gameState.playerWin) {
+    if ("FINISHED_DRAW" == match.gameState.playerWin) {
+      showSuccess("Empate!😡");
+      cleanGame();
+    } else if (user.id == match.gameState.playerWin) {
       showSuccess("Você ganhou!🥳");
       cleanGame();
+    } else if (match.gameState.playerWin == "") {
+      return;
     } else {
-      showInfo("Você perdeu!😓");
+      showInfo("Você perdeu!🫠");
       cleanGame();
     }
   }
