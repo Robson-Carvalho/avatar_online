@@ -35,6 +35,8 @@ function handlerMain(message) {
     handlUpdateGameSuccess(data);
   } else if (data.operationType === "FINISHED_GAME") {
     handlUpdateGameSuccess(data);
+  } else if (data.operationType === "FINISHED_DRAW") {
+    handlUpdateGameSuccess(data);
   } else if (data.operationType === "FINISHED_SURRENDER") {
     handlUpdateGameSuccess(data);
   } else if (data.operationType === "PONG") {
@@ -52,7 +54,7 @@ function handlerMain(message) {
   } else if (data.operationType === "PROPOSAL_EXCHANGE_CARD_SENDER") {
     showInfo("🔄 Proposta de troca enviada!");
   } else if (data.operationType === "PROPOSAL_EXCHANGE_CARD_RECEIVER") {
-    console.log("oiii", data.data)
+    console.log("oiii", data.data);
     localStorage.setItem(
       "avatar_online_PROPOSAL_EXCHANGE_CARD_RECEIVER",
       JSON.stringify(data.data)
