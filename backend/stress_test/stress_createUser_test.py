@@ -6,13 +6,18 @@ import random
 import string
 import os
 
-LEADER_IP = "localhost"
+# --- CONFIGURAÇÕES DO TESTE ---
+SERVER_IP1 = "localhost"
+SERVER_IP2 = "172.16.201.5"
+SERVER_IP3 = "172.16.201.8"
+# 🎯 NOVA LISTA DE NÓS: Altere as portas conforme a configuração real dos seus nós Raft
 NODE_URLS = [
-    f"http://{LEADER_IP}:8081/api/users",
-    f"http://{LEADER_IP}:8082/api/users",
-    f"http://{LEADER_IP}:8083/api/users",
+    f"http://{SERVER_IP1}:8080/api/users",
+    f"http://{SERVER_IP2}:8080/api/users",
+    f"http://{SERVER_IP3}:8080/api/users",
 ]
-WARMUP_URL = NODE_URLS[1] 
+# Use a primeira URL para o Warm-up, se necessário, ou escolha um nó conhecido
+WARMUP_URL = NODE_URLS[2] 
 
 NUM_USERS = 300
 REQUESTS_PER_USER = 1

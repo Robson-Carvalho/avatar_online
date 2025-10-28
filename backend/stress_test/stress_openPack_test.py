@@ -7,12 +7,17 @@ from collections import Counter, defaultdict
 import os
 
 # --- CONFIGURAÇÕES DO TESTE ---
-LEADER_IP = "localhost"
+# --- CONFIGURAÇÕES DO TESTE ---
+SERVER_IP1 = "localhost"
+SERVER_IP2 = "172.16.201.5"
+SERVER_IP3 = "172.16.201.8"
+# 🎯 NOVA LISTA DE NÓS: Altere as portas conforme a configuração real dos seus nós Raft
 NODE_URLS = [
-    f"http://{LEADER_IP}:8081/api/cards/pack",
-    f"http://{LEADER_IP}:8082/api/cards/pack",
-    f"http://{LEADER_IP}:8083/api/cards/pack",
+    f"http://{SERVER_IP1}:8080/api/cards/pack",
+    f"http://{SERVER_IP2}:8080/api/cards/pack",
+    f"http://{SERVER_IP3}:8080/api/cards/pack",
 ]
+
 
 NUM_THREADS = 200
 REQUESTS_PER_THREAD = 5
