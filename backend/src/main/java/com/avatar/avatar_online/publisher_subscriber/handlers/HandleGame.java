@@ -159,7 +159,19 @@ public class HandleGame {
                 communication.sendToUser(match.getPlayer2().getUserSession(), response);
                 matchManagementService.unregisterMatch(match.getMatchId());
                 return;
-            }else if(match.getGameState().getPlayerWin().equals(match.getGameState().getPlayerTwo().getId())){
+            }else if(match.getGameState().getPlayerWin().equals("DRAW")){
+                OperationResponseDTO response = new OperationResponseDTO(
+                        OperationType.FINISHED_DRAW.toString(),
+                        OperationStatus.OK,
+                        "Partida finalizada",
+                        matchDTO);
+
+                communication.sendToUser(match.getPlayer1().getUserSession(), response);
+                communication.sendToUser(match.getPlayer2().getUserSession(), response);
+                matchManagementService.unregisterMatch(match.getMatchId());
+                return;
+            }
+            else if(match.getGameState().getPlayerWin().equals(match.getGameState().getPlayerTwo().getId())){
                 OperationResponseDTO response = new OperationResponseDTO(
                         OperationType.FINISHED_GAME.toString(),
                         OperationStatus.OK,
@@ -208,7 +220,7 @@ public class HandleGame {
                             newOperation,
                             HttpMethod.POST
                     );
-                } else {
+                }else {
                     communication.sendToUser(match.getPlayer1().getUserSession(), response);
                     redirectService.sendOperationRequestToNode(
                             match.getPlayer2().getHostAddress(),
@@ -219,7 +231,48 @@ public class HandleGame {
                 }
                 matchManagementService.unregisterMatch(match.getMatchId());
                 return;
-            }else if(match.getGameState().getPlayerWin().equals(match.getGameState().getPlayerTwo().getId())){
+            }
+
+            else if(match.getGameState().getPlayerWin().equals("DRAW")){
+                OperationResponseDTO response = new OperationResponseDTO(
+                        OperationType.FINISHED_DRAW.toString(),
+                        OperationStatus.OK,
+                        "Partida finalizada",
+                        matchDTO);
+
+                Map<String, Object> newPayload = new HashMap<>(operation.getPayload());
+
+                newPayload.put("response", response);
+
+                OperationRequestDTO newOperation = new OperationRequestDTO(
+                        operation.getOperationType(),
+                        newPayload
+                );
+
+                if (!match.getManagerNodeId().equals(currentNodeId) ) {
+                    communication.sendToUser(match.getPlayer2().getUserSession(), response);
+                    redirectService.sendOperationRequestToNode(
+                            match.getPlayer1().getHostAddress(),
+                            "UpdateGame",
+                            newOperation,
+                            HttpMethod.POST
+                    );
+                } else {
+                    communication.sendToUser(match.getPlayer1().getUserSession(), response);
+                    redirectService.sendOperationRequestToNode(
+                            match.getPlayer2().getHostAddress(),
+                            "UpdateGame",
+                            newOperation,
+                            HttpMethod.POST
+                    );
+                }
+
+                matchManagementService.unregisterMatch(match.getMatchId());
+                return;
+            }
+
+
+            else if(match.getGameState().getPlayerWin().equals(match.getGameState().getPlayerTwo().getId())){
                 OperationResponseDTO response = new OperationResponseDTO(
                         OperationType.FINISHED_GAME.toString(),
                         OperationStatus.OK,
@@ -252,6 +305,7 @@ public class HandleGame {
                             HttpMethod.POST
                     );
                 }
+
                 matchManagementService.unregisterMatch(match.getMatchId());
                 return;
             }
