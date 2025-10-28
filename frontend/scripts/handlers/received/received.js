@@ -36,7 +36,8 @@ function handlerMain(message) {
   } else if (data.operationType === "FINISHED_GAME") {
     handlUpdateGameSuccess(data);
   } else if (data.operationType === "FINISHED_DRAW") {
-    handlUpdateGameSuccess(data);
+     showSuccess("Empate!😡");
+    cleanGame();
   } else if (data.operationType === "FINISHED_SURRENDER") {
     handlUpdateGameSuccess(data);
   } else if (data.operationType === "PONG") {

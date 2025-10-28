@@ -38,10 +38,7 @@ function updateGame(data) {
       showInfo("Você perdeu!🫠");
       cleanGame();
     }
-  } else if ("FINISHED_DRAW" == match.gameState.playerWin) {
-    showSuccess("Empate!😡");
-    cleanGame();
-  }
+  } 
 }
 
 function fillGame(data) {
