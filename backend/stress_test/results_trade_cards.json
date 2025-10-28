@@ -1,17 +1,16 @@
 {
   "total_requests": 200,
-  "success": 198,
-  "failure": 2,
+  "success": 200,
+  "failure_total": 0,
+  "chunk_failures": 0,
   "duplicate_trades": 0,
-  "error_rate_percent": 1.0,
-  "time_seconds": 6.0933520793914795,
-  "throughput_req_s": 32.494429571805334,
-  "avg_latency_ms": 13.737576007843018,
-  "p90_latency_ms": 15.321731567382812,
-  "p95_latency_ms": 16.180038452148438,
+  "error_rate_percent": 0.0,
+  "time_seconds": 6.0981597900390625,
+  "throughput_req_s": 32.79677917372494,
+  "avg_latency_ms": 9.220925569534302,
+  "p90_latency_ms": 11.214971542358398,
+  "p95_latency_ms": 11.583566665649414,
   "status_counts": {
-    "http_200": 198,
-    "('Connection broken: InvalidChunkLength(got length b\\'{\"PLayerId1\":\"18874a62-8d18-4d2f-9dc0-c9664d8d24c2\",\"PLayerId2\":\"980f11a3-ed4b-4a57-8b6a-d95a068e05c6\",\"CardId1\":\"9e9f7063-d54c-44ef-8b48-b5ed93ffdea8\",\"CardId2\":\"df4799b3-ea32-4a3b-8efa-7e5181f148e2\"}\\', 0 bytes read)', InvalidChunkLength(got length b'{\"PLayerId1\":\"18874a62-8d18-4d2f-9dc0-c9664d8d24c2\",\"PLayerId2\":\"980f11a3-ed4b-4a57-8b6a-d95a068e05c6\",\"CardId1\":\"9e9f7063-d54c-44ef-8b48-b5ed93ffdea8\",\"CardId2\":\"df4799b3-ea32-4a3b-8efa-7e5181f148e2\"}', 0 bytes read))": 1,
-    "('Connection broken: InvalidChunkLength(got length b\\'{\"PLayerId1\":\"53aa9df9-1726-4314-b867-ec58d697e29e\",\"PLayerId2\":\"88979981-9e41-4ede-a1c9-f9c78a515f95\",\"CardId1\":\"c2a15724-231e-4705-bf31-d3af33846549\",\"CardId2\":\"ae133f95-7e05-4772-9bd4-a5f13e34417b\"}\\', 0 bytes read)', InvalidChunkLength(got length b'{\"PLayerId1\":\"53aa9df9-1726-4314-b867-ec58d697e29e\",\"PLayerId2\":\"88979981-9e41-4ede-a1c9-f9c78a515f95\",\"CardId1\":\"c2a15724-231e-4705-bf31-d3af33846549\",\"CardId2\":\"ae133f95-7e05-4772-9bd4-a5f13e34417b\"}', 0 bytes read))": 1
+    "http_200": 200
   }
 }

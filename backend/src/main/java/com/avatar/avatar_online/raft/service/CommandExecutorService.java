@@ -26,7 +26,7 @@ public class CommandExecutorService {
         this.persistanceService = persistanceService;
     }
 
-    public void executeCommand(LogEntry entry) {
+    public synchronized void executeCommand(LogEntry entry) {
         Object command = entry.getCommand();
 
         System.out.println("⚡ Aplicando comando: " + command.getClass().getSimpleName() +

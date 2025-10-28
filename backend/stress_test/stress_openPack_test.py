@@ -1,37 +1,36 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Teste de carga de abertura de pacotes garantindo 25 cartas por usuário.
-- Endpoint: POST /api/cards/pack
-- Payload: {"PlayerId": "<id>"}
-- Cada thread representa um usuário fixo
-"""
-
 import requests
 import threading
 import time
 import json
 import random
 from collections import Counter, defaultdict
+import os
 
+# --- CONFIGURAÇÕES DO TESTE ---
 LEADER_IP = "localhost"
-PORT = 8082
-URL = f"http://{LEADER_IP}:{PORT}/api/cards/pack"
+NODE_URLS = [
+    f"http://{LEADER_IP}:8081/api/cards/pack",
+    f"http://{LEADER_IP}:8082/api/cards/pack",
+    f"http://{LEADER_IP}:8083/api/cards/pack",
+]
 
 NUM_THREADS = 200
-REQUESTS_PER_THREAD = 5  # cada requisição traz 5 cartas
+REQUESTS_PER_THREAD = 5
 TIMEOUT = 20
 SLEEP_BETWEEN_THREAD_STARTS = 0.05
 
-PLAYER_IDS_FILE = "all_player_ids.json"  # arquivo JSON com lista de PlayerIds
+PLAYER_IDS_FILE = "all_player_ids.json" 
 lock = threading.Lock()
 all_results = []
 all_card_ids = []
 status_counter = Counter()
 player_ids = []
-users_cards_map = defaultdict(list)  # usuário -> lista de cartas
+users_cards_map = defaultdict(list)
 
-# Carrega os PlayerIds de arquivo JSON
+# Variável global para rastreamento (agora conta como falha)
+CHUNK_FAILURE_COUNT = 0 
+CHUNK_ERROR_MESSAGES = ["InvalidChunkLength", "Premature end of chunk coded message body"]
+
 def load_player_ids():
     global player_ids
     try:
@@ -41,10 +40,9 @@ def load_player_ids():
             raise RuntimeError(f"É necessário pelo menos {NUM_THREADS} PlayerIds únicos.")
         print(f"Carregado {len(player_ids)} PlayerIds.")
     except Exception as e:
-        print(f"Erro ao carregar {PLAYER_IDS_FILE}: {e}")
+        print(f"❌ Erro ao carregar {PLAYER_IDS_FILE}: {e}")
         exit(1)
 
-# Cria um mapeamento fixo thread -> player
 def assign_players_to_threads():
     return random.sample(player_ids, NUM_THREADS)
 
@@ -52,16 +50,19 @@ def generate_payload(thread_id, thread_player_ids):
     player_id = thread_player_ids[thread_id]
     return {"PlayerId": player_id}
 
-def send_request(session, payload):
+# send_request: Retorna o erro de chunk como qualquer outro erro de conexão
+def send_request(session, url, payload):
     start = time.time()
     try:
-        resp = session.post(URL, json=payload, timeout=TIMEOUT)
+        resp = session.post(url, json=payload, timeout=TIMEOUT)
         latency = (time.time() - start) * 1000
-        return resp, latency, None
+        return resp, latency, None 
     except requests.exceptions.RequestException as e:
         latency = (time.time() - start) * 1000
-        return None, latency, str(e)
+        error_msg = str(e)
+        return None, latency, error_msg
 
+# validate_response: Função simples, sem lógica de reclassificação
 def validate_response(resp):
     if resp is None:
         return False, "no_response"
@@ -82,29 +83,51 @@ def worker(thread_id, thread_player_ids):
     local_card_ids = []
 
     for _ in range(REQUESTS_PER_THREAD):
+        target_url = random.choice(NODE_URLS) 
         payload = generate_payload(thread_id, thread_player_ids)
-        resp, latency, err = send_request(session, payload)
+        
+        resp, latency, err = send_request(session, target_url, payload) 
         latencies.append(latency)
-
+        
+        # 🛑 INÍCIO DA LÓGICA DE TRATAMENTO DE ERROS DE CONEXÃO 🛑
         if err:
             failures += 1
-            with lock:
-                status_counter[err] += 1
-            print(f"[Thread {thread_id}] Erro: {err}")
+            
+            # 1. Checa se é um erro de CHUNK
+            if any(msg in err for msg in CHUNK_ERROR_MESSAGES):
+                with lock:
+                    global CHUNK_FAILURE_COUNT
+                    CHUNK_FAILURE_COUNT += 1
+                    status_counter["CHUNK_FAILURE"] += 1 # Registra no contador geral
+                
+                # 🛑 SILENCIADO: Não imprime nada para CHUNK_FAILURE 🛑
+            else:
+                # 2. Outros erros de conexão/timeout (ERROS REAIS): Imprime e registra
+                with lock:
+                    status_counter[err] += 1
+                # Mantenha o print para depurar outros erros de rede/timeout
+                print(f"[Thread {thread_id}] -> {target_url} | Falha REAL de Conexão/Timeout: {err}") 
+            
             continue
+        # 🛑 FIM DA LÓGICA DE TRATAMENTO DE ERROS DE CONEXÃO 🛑
 
+        # Validação de resposta HTTP (só chega aqui se send_request foi bem-sucedido)
         ok, result = validate_response(resp)
+
         if ok:
             successes += 1
             local_card_ids.extend(result)
+            
             with lock:
                 status_counter["http_200"] += 1
-                users_cards_map[payload["PlayerId"]].extend(result)
+                users_cards_map[payload["PlayerId"]].extend(local_card_ids)
+
         else:
             failures += 1
             with lock:
                 status_counter[result] += 1
-            print(f"[Thread {thread_id}] Falha validação: {result}")
+            # Falha de validação/erro HTTP: Mantenha o print
+            print(f"[Thread {thread_id}] -> {target_url} | Falha validação/HTTP: {result}") 
 
     with lock:
         all_card_ids.extend(local_card_ids)
@@ -119,7 +142,12 @@ def run_load_test():
     load_player_ids()
     thread_player_ids = assign_players_to_threads()
     total_requests = NUM_THREADS * REQUESTS_PER_THREAD
-    print(f"Iniciando teste de abertura de pacotes: {NUM_THREADS} threads x {REQUESTS_PER_THREAD} req = {total_requests}")
+    
+    print("\n--- INFORMAÇÕES DO TESTE ---")
+    print(f"URLs Alvo: {NODE_URLS}")
+    print(f"Total de requisições: {total_requests}")
+    print(f"Threads: {NUM_THREADS} | Req/Thread: {REQUESTS_PER_THREAD}")
+    print("----------------------------\n")
 
     threads = []
     start_global = time.time()
@@ -135,6 +163,7 @@ def run_load_test():
 
     total_success = sum(r["success"] for r in all_results)
     total_failure = sum(r["failure"] for r in all_results)
+    
     latencies = [l for r in all_results for l in r["latencies"]]
     total_time = end_global - start_global
     throughput = total_success / total_time if total_time > 0 else 0
@@ -144,7 +173,6 @@ def run_load_test():
     p90 = latencies[int(len(latencies)*0.90)-1] if latencies else 0
     p95 = latencies[int(len(latencies)*0.95)-1] if latencies else 0
 
-    # Garante que cada usuário tenha apenas cartas únicas
     users_with_cards = []
     for user_id, cards in users_cards_map.items():
         unique_cards = list(cards)
@@ -155,8 +183,9 @@ def run_load_test():
 
     print("\n--- RESULTADOS ---")
     print(f"Total requisições: {total_requests}")
-    print(f"Sucessos: {total_success}")
-    print(f"Falhas: {total_failure}")
+    print(f"Sucessos HTTP (200 + JSON OK): {total_success}")
+    print(f"Falhas TOTAIS: {total_failure}")
+    print(f"Falhas de Chunk Ocultas: {CHUNK_FAILURE_COUNT}")
     print(f"Taxa de erro: {total_failure/total_requests*100:.2f}%")
     print(f"Tempo total: {total_time:.2f}s | Throughput: {throughput:.2f} req/s")
     print(f"Lat média: {avg_latency:.2f} ms | P90: {p90:.2f} ms | P95: {p95:.2f} ms")
@@ -166,7 +195,8 @@ def run_load_test():
     out = {
         "total_requested": total_requests,
         "success": total_success,
-        "failure": total_failure,
+        "failure_total": total_failure,
+        "chunk_failures": CHUNK_FAILURE_COUNT,
         "time_seconds": total_time,
         "throughput_req_s": throughput,
         "avg_latency_ms": avg_latency,
