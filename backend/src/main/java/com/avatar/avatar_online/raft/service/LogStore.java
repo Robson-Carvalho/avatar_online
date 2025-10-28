@@ -67,21 +67,35 @@ public class LogStore {
 
     public void markCommitted(long newCommitIndex) {
         long oldCommitIndex = lastCommittedIndex.get();
-        long oldAppliedIndex = lastAppliedIndex.get();
 
         if (newCommitIndex > oldCommitIndex && newCommitIndex <= lastLogIndex.get()) {
-            for (long i = oldAppliedIndex + 1; i <= newCommitIndex; i++) {
-                LogEntry entry = logEntries.get(i);
-                if (entry != null) {
-                    commandExecutorService.executeCommand(entry);
-                    lastAppliedIndex.set(i); // ✅ marca que foi aplicado
+
+            synchronized (this) {
+
+                long currentAppliedIndex = lastAppliedIndex.get();
+
+                if (newCommitIndex > currentAppliedIndex) {
+
+                    for (long i = currentAppliedIndex + 1; i <= newCommitIndex; i++) {
+                        LogEntry entry = logEntries.get(i);
+
+                        if (entry != null) {
+
+                            commandExecutorService.executeCommand(entry);
+
+                            lastAppliedIndex.set(i);
+                        }
+                    }
+
+                    lastCommittedIndex.set(newCommitIndex);
+                    logConsensusService.updateLastCommittedIndex(newCommitIndex);
+
+                    System.out.println("✅ Log commitado e aplicado até o índice: " + newCommitIndex);
+
+                } else {
+                    System.out.println("⚠️ markCommitted chamado, mas os logs já foram aplicados até o índice: " + currentAppliedIndex);
                 }
             }
-
-            lastCommittedIndex.set(newCommitIndex);
-            logConsensusService.updateLastCommittedIndex(newCommitIndex);
-
-            System.out.println("✅ Log commitado e aplicado até o índice: " + newCommitIndex);
         }
     }
 

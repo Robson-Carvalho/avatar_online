@@ -1,29 +1,28 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Teste de carga de escolha de deck usando PlayerIds reais.
-- Endpoint: POST /api/deck
-- Payload: {"userId": "<id>", "card1Id": "...", "card2Id": "...", ...}
-- Lista de PlayerIds e suas cartas: arquivo JSON ou lista em memória
-"""
-
 import requests
 import threading
 import time
 import json
 import random
 from collections import Counter
+import os
 
+# --- CONFIGURAÇÕES DO TESTE ---
 LEADER_IP = "localhost"
-PORT = 8083
-URL = f"http://{LEADER_IP}:{PORT}/api/deck"
+# 🎯 NOVA LISTA DE NÓS: Altere as portas conforme a configuração real dos seus nós Raft
+NODE_URLS = [
+    f"http://{LEADER_IP}:8081/api/deck",
+    f"http://{LEADER_IP}:8082/api/deck",
+    f"http://{LEADER_IP}:8083/api/deck",
+]
+# Use a primeira URL para o Warm-up, se necessário, ou escolha um nó conhecido
+WARMUP_URL = NODE_URLS[0] 
 
-NUM_THREADS = 100
+NUM_THREADS = 300
 REQUESTS_PER_THREAD = 1
 TIMEOUT = 20
 SLEEP_BETWEEN_THREAD_STARTS = 0.05
 
-USERS_FILE = "users_with_cards.json"  # {"user_id1": ["card1","card2",...], ...}
+USERS_FILE = "users_with_cards.json"
 lock = threading.Lock()
 all_results = []
 status_counter = Counter()
@@ -35,7 +34,8 @@ def load_users_data():
     try:
         with open(USERS_FILE, "r") as f:
             users_list = json.load(f)
-            users_data = {u["userId"]: u["cards"] for u in users_list}
+            # Adaptado para o formato do seu arquivo, que é uma lista de objetos
+            users_data = {u["userId"]: u["cards"] for u in users_list if "userId" in u and "cards" in u}
         print(f"Carregado {len(users_data)} usuários com suas cartas.")
     except Exception as e:
         print(f"Erro ao carregar {USERS_FILE}: {e}")
@@ -46,6 +46,7 @@ def generate_payload():
     cards = users_data[user_id]
 
     if len(cards) < 5:
+        # Lançar um erro se não houver cartas suficientes para evitar falhas de índice
         raise RuntimeError(f"Usuário {user_id} tem menos de 5 cartas!")
 
     selected_cards = random.sample(cards, 5)
@@ -65,10 +66,11 @@ def generate_payload():
 
     return payload
 
-def send_request(session, payload):
+def send_request(session, url, payload):
     start = time.time()
     try:
-        resp = session.post(URL, json=payload, timeout=TIMEOUT)
+        # A requisição agora usa a URL aleatória fornecida
+        resp = session.post(url, json=payload, timeout=TIMEOUT) 
         latency = (time.time() - start) * 1000
         return resp, latency, None
     except requests.exceptions.RequestException as e:
@@ -78,15 +80,19 @@ def send_request(session, payload):
 def validate_response(resp):
     if resp is None:
         return False, "no_response"
+    # O Raft deve retornar 200/201 (Sucesso) ou 307/308 (Redirecionamento, mas a biblioteca requests trata isso)
     if resp.status_code != 200:
         return False, f"http_{resp.status_code}"
+    
+    # Se a requisição for bem-sucedida, o corpo pode estar vazio ou ter uma resposta de sucesso.
     if resp.text.strip() == "":
         return True, None
     try:
+        # Tenta parsear o JSON para garantir que não é um erro de servidor
         data = resp.json()
         return True, data
     except Exception:
-        print(f"Resposta inválida do servidor: {resp.text}")
+        # Isso pode ser o erro InvalidChunkLength disfarçado em um texto de erro ou HTML
         return False, "json_parse_error"
 
 def worker(thread_id):
@@ -97,6 +103,8 @@ def worker(thread_id):
 
     for _ in range(REQUESTS_PER_THREAD):
         try:
+            # 🎯 Escolhe uma URL alvo aleatoriamente para CADA REQUISIÇÃO
+            target_url = random.choice(NODE_URLS)
             payload = generate_payload()
         except Exception as e:
             print(f"[Thread {thread_id}] Erro ao gerar payload: {e}")
@@ -105,14 +113,16 @@ def worker(thread_id):
             failures += 1
             continue
 
-        resp, latency, err = send_request(session, payload)
+        # Passa a URL alvo para a função de envio
+        resp, latency, err = send_request(session, target_url, payload) 
         latencies.append(latency)
 
         if err:
             failures += 1
             with lock:
                 status_counter[err] += 1
-            print(f"[Thread {thread_id}] Erro: {err}")
+            # Imprime a URL alvo para depuração
+            print(f"[Thread {thread_id}] -> {target_url} | Erro: {err}") 
             continue
 
         ok, result = validate_response(resp)
@@ -124,7 +134,8 @@ def worker(thread_id):
             failures += 1
             with lock:
                 status_counter[result] += 1
-            print(f"[Thread {thread_id}] Falha validação: {result}")
+            # Imprime a URL alvo para depuração
+            print(f"[Thread {thread_id}] -> {target_url} | Falha validação: {result}. Texto: {resp.text}")
 
     with lock:
         all_results.append({
@@ -137,7 +148,11 @@ def worker(thread_id):
 def run_load_test():
     load_users_data()
     total_requests = NUM_THREADS * REQUESTS_PER_THREAD
-    print(f"Iniciando teste de escolha de deck: {NUM_THREADS} threads x {REQUESTS_PER_THREAD} req = {total_requests}")
+    print(f"\n--- INFORMAÇÕES DO TESTE ---")
+    print(f"URLs Alvo: {NODE_URLS}")
+    print(f"Total de requisições: {total_requests}")
+    print(f"Threads: {NUM_THREADS} | Req/Thread: {REQUESTS_PER_THREAD}")
+    print("----------------------------\n")
 
     threads = []
     start_global = time.time()
@@ -163,11 +178,8 @@ def run_load_test():
     p95 = latencies[int(len(latencies)*0.95)-1] if latencies else 0
 
     print("\n--- RESULTADOS ---")
-    print(f"Total requisições: {total_requests}")
-    print(f"Sucessos: {total_success}")
-    print(f"Falhas: {total_failure}")
+    print(f"Sucessos: {total_success} | Falhas: {total_failure}")
     print(f"Taxa de erro: {total_failure/total_requests*100:.2f}%")
-    print(f"Cartões duplicados detectados: {duplicate_deck_count}")
     print(f"Tempo total: {total_time:.2f}s | Throughput: {throughput:.2f} req/s")
     print(f"Lat média: {avg_latency:.2f} ms | P90: {p90:.2f} ms | P95: {p95:.2f} ms")
     print("Status counts:", dict(status_counter))

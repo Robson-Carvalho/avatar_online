@@ -1,14 +1,14 @@
 {
-  "total_requested": 100,
-  "success": 100,
+  "total_requested": 300,
+  "success": 300,
   "failure": 0,
   "duplicate_deck_count": 0,
-  "time_seconds": 5.1074512004852295,
-  "throughput_req_s": 19.579237485519112,
-  "avg_latency_ms": 13.846259117126465,
-  "p90_latency_ms": 19.8976993560791,
-  "p95_latency_ms": 22.00794219970703,
+  "time_seconds": 15.388262271881104,
+  "throughput_req_s": 19.4953786658672,
+  "avg_latency_ms": 14.608534177144369,
+  "p90_latency_ms": 20.16139030456543,
+  "p95_latency_ms": 21.8045711517334,
   "status_counts": {
-    "http_200": 100
+    "http_200": 300
   }
 }

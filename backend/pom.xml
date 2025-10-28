@@ -40,6 +40,11 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+        </dependency>
+
         <!-- Jackson for DTO serialization in map values -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

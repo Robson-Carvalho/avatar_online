@@ -1,28 +1,19 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Teste de carga para trocas de cartas entre dois jogadores reais.
-Endpoint: POST /api/cards/trade
-Payload:
-{
-  "PLayerId1": "<id_player1>",
-  "PLayerId2": "<id_player2>",
-  "CardId1": "<id_card_player1>",
-  "CardId2": "<id_card_player2>"
-}
-"""
-
 import requests
 import threading
 import time
 import json
 import random
-from collections import Counter
+from collections import Counter, defaultdict
+import os
 
-# Configurações de rede
+# --- CONFIGURAÇÕES DE REDE AJUSTADAS ---
 LEADER_IP = "localhost"
-PORT = 8081
-URL = f"http://{LEADER_IP}:{PORT}/api/cards/trade"
+NODE_URLS = [
+    f"http://{LEADER_IP}:8081/api/cards/trade",
+    f"http://{LEADER_IP}:8082/api/cards/trade", 
+    f"http://{LEADER_IP}:8083/api/cards/trade", 
+]
+# -------------------------------------
 
 # Configurações do teste
 NUM_THREADS = 200
@@ -30,46 +21,54 @@ REQUESTS_PER_THREAD = 1
 TIMEOUT = 20
 SLEEP_BETWEEN_THREAD_STARTS = 0.03
 
-# Dados de entrada
-USERS_FILE = "users_with_cards.json"  # [{"userId": "...", "cards": ["...","..."]}, ...]
+USERS_FILE = "users_with_cards.json" 
 
-# Variáveis globais
 lock = threading.Lock()
 users_data = []
 status_counter = Counter()
 results = []
 duplicate_trades = 0
 
+# Variáveis globais para rastreamento de CHUNK FAILURE
+CHUNK_FAILURE_COUNT = 0 
+CHUNK_ERROR_MESSAGES = ["InvalidChunkLength", "Premature end of chunk coded message body"]
+
 def load_users_data():
+    # ... (Função inalterada)
     global users_data
     try:
         with open(USERS_FILE, "r") as f:
-            users_data = json.load(f)
+            users_list = json.load(f)
+            # Filtra usuários sem cartas para garantir payloads válidos
+            users_data = [u for u in users_list if u.get("cards") and len(u["cards"]) > 0] 
         print(f"✅ Carregado {len(users_data)} usuários com cartas disponíveis.")
     except Exception as e:
         print(f"❌ Erro ao carregar {USERS_FILE}: {e}")
         exit(1)
 
 def generate_trade_payload():
-    """Gera uma troca entre dois usuários distintos e uma carta de cada."""
+    # ... (Função inalterada)
+    if len(users_data) < 2:
+         raise RuntimeError("Não há dados suficientes para simular uma troca.")
+
     user1, user2 = random.sample(users_data, 2)
-    cards1 = user1["cards"]
-    cards2 = user2["cards"]
+    cards1 = user1.get("cards")
+    cards2 = user2.get("cards")
 
     if not cards1 or not cards2:
-        raise RuntimeError("Usuário sem cartas suficientes.")
+        # Isso deve ser filtrado por load_users_data, mas é um bom fallback
+        raise RuntimeError("Usuário selecionado sem cartas suficientes.")
 
     card1 = random.choice(cards1)
     card2 = random.choice(cards2)
 
     payload = {
-        "PLayerId1": user1["userId"],
+        "PLayerId1": user1["userId"], 
         "PLayerId2": user2["userId"],
         "CardId1": card1,
         "CardId2": card2
     }
 
-    # Valida duplicidade (não deve ocorrer)
     if card1 == card2:
         global duplicate_trades
         with lock:
@@ -77,10 +76,11 @@ def generate_trade_payload():
 
     return payload
 
-def send_trade_request(session, payload):
+def send_trade_request(session, url, payload):
+    # ... (Função inalterada, apenas retorna o erro)
     start = time.time()
     try:
-        resp = session.post(URL, json=payload, timeout=TIMEOUT)
+        resp = session.post(url, json=payload, timeout=TIMEOUT) 
         latency = (time.time() - start) * 1000
         return resp, latency, None
     except requests.exceptions.RequestException as e:
@@ -88,12 +88,15 @@ def send_trade_request(session, payload):
         return None, latency, str(e)
 
 def validate_response(resp):
+    # ... (Função inalterada)
     if resp is None:
         return False, "no_response"
     if resp.status_code != 200:
         return False, f"http_{resp.status_code}"
+    
     try:
-        json.loads(resp.text)
+        # Para endpoint de trade, esperamos um JSON de sucesso, mesmo que vazio
+        json.loads(resp.text) 
         return True, None
     except Exception:
         return False, "invalid_json"
@@ -104,6 +107,8 @@ def worker(thread_id):
     latencies = []
 
     for _ in range(REQUESTS_PER_THREAD):
+        target_url = random.choice(NODE_URLS) 
+        
         try:
             payload = generate_trade_payload()
         except Exception as e:
@@ -113,24 +118,40 @@ def worker(thread_id):
             failures += 1
             continue
 
-        resp, latency, err = send_trade_request(session, payload)
+        resp, latency, err = send_trade_request(session, target_url, payload) 
         latencies.append(latency)
 
+        # 🛑 INÍCIO DA LÓGICA DE SILENCIAMENTO E RASTREAMENTO 🛑
         if err:
-            with lock:
-                status_counter[err] += 1
-            print(f"[Thread {thread_id}] Erro requisição: {err}")
             failures += 1
+            
+            # 1. Checa se é um erro de CHUNK
+            if any(msg in err for msg in CHUNK_ERROR_MESSAGES):
+                with lock:
+                    global CHUNK_FAILURE_COUNT
+                    CHUNK_FAILURE_COUNT += 1
+                    status_counter["CHUNK_FAILURE"] += 1
+                
+                # Silenciado: Não imprime nada para CHUNK_FAILURE 
+            else:
+                # 2. Outros erros de conexão/timeout (ERROS REAIS): Imprime e registra
+                with lock:
+                    status_counter[err] += 1
+                print(f"[Thread {thread_id}] -> {target_url} | Falha REAL de Conexão/Timeout: {err}") 
+            
             continue
+        # 🛑 FIM DA LÓGICA DE SILENCIAMENTO E RASTREAMENTO 🛑
 
         ok, err_status = validate_response(resp)
+        
+        # O contador HTTP só é atualizado se não houve erro de conexão
         with lock:
             status_counter["http_200" if ok else err_status] += 1
 
         if ok:
             successes += 1
         else:
-            print(f"[Thread {thread_id}] Falha validação: {err_status}")
+            print(f"[Thread {thread_id}] -> {target_url} | Falha validação: {err_status}. Resposta: {resp.text.strip() if resp.text else 'N/A'}") 
             failures += 1
 
     with lock:
@@ -144,7 +165,12 @@ def worker(thread_id):
 def run_load_test():
     load_users_data()
     total_requests = NUM_THREADS * REQUESTS_PER_THREAD
-    print(f"🚀 Iniciando teste de troca de cartas: {NUM_THREADS} threads x {REQUESTS_PER_THREAD} req = {total_requests}")
+    
+    print("\n--- INFORMAÇÕES DO TESTE ---")
+    print(f"URLs Alvo: {NODE_URLS}")
+    print(f"Total de requisições: {total_requests}")
+    print(f"Threads: {NUM_THREADS} | Req/Thread: {REQUESTS_PER_THREAD}")
+    print("----------------------------\n")
 
     threads = []
     start_global = time.time()
@@ -171,21 +197,22 @@ def run_load_test():
     p95 = latencies[int(len(latencies)*0.95)-1] if latencies else 0
     throughput = total_success / total_time if total_time > 0 else 0
 
-    print("\n📊 --- RESULTADOS ---")
+    print("\n📊 --- RESULTADOS FINAIS ---")
     print(f"Total de requisições: {total_requests}")
-    print(f"Sucessos: {total_success}")
-    print(f"Falhas: {total_failure}")
-    print(f"Duplicações detectadas: {duplicate_trades}")
+    print(f"Sucessos HTTP (200 + JSON OK): {total_success}")
+    print(f"Falhas TOTAIS: {total_failure}")
+    print(f"Falhas de Chunk Ocultas: {CHUNK_FAILURE_COUNT}")
     print(f"Taxa de erro: {total_failure/total_requests*100:.2f}%")
     print(f"Tempo total: {total_time:.2f}s | Throughput: {throughput:.2f} req/s")
     print(f"Latência média: {avg_latency:.2f} ms | P90: {p90:.2f} ms | P95: {p95:.2f} ms")
     print("Status counts:", dict(status_counter))
 
-    # salvar resultados
+    # Salvar resultados
     out = {
         "total_requests": total_requests,
         "success": total_success,
-        "failure": total_failure,
+        "failure_total": total_failure,
+        "chunk_failures": CHUNK_FAILURE_COUNT,
         "duplicate_trades": duplicate_trades,
         "error_rate_percent": total_failure/total_requests*100 if total_requests else 0,
         "time_seconds": total_time,
