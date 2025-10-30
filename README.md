@@ -26,6 +26,11 @@ Os testes foram executados em um ambiente **Dockerizado**, composto por três n�
 
 Cada contêiner é definido em seu respectivo `docker-compose.yml`, com **endereços fixos** configurados para permitir a comunicação entre os nós.
 
+ps: Configurar variável de ambiente. Lembre-se de trocar o IP pelo da máquina que está executando.
+
+bash
+ export HOST_IP_NA_REDE_LOCAL=172.16.201.8
+
 ---
 
 ## 3. Execução dos Testes
@@ -102,3 +107,4 @@ Nesses casos, o sistema deve:
 | `Throughput (req/s)` | Número de requisições processadas por segundo. |
 | `Taxa de sucesso (%)` | Percentual de requisições concluídas sem erro. |
 ---
+
