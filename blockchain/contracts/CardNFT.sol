@@ -38,11 +38,12 @@ contract CardNFT is ERC721, Ownable {
     }
 
     mapping(uint256 => Card) public cards;
+
     mapping(address => uint256[]) public playerCards;
+
     uint256 private nextTokenId = 1;
     address public packOpenerAddress;
 
-    // CONSTRUCTOR CORRIGIDO - Passando os argumentos necessários
     constructor() ERC721("Avatar Cards", "AVC") Ownable(msg.sender) {
         packOpenerAddress = msg.sender;
     }
@@ -88,18 +89,19 @@ contract CardNFT is ERC721, Ownable {
         uint256 cardId2
     ) external {
         require(
-            msg.sender == player1 || msg.sender == player2,
-            "Only owners can initiate swap"
+            msg.sender == player1 ||
+                msg.sender == player2 ||
+                msg.sender == owner() ||
+                msg.sender == packOpenerAddress,
+            "Not authorized to initiate swap"
         );
 
         require(_ownsCard(player1, cardId1), "Player1 does not own card1");
         require(_ownsCard(player2, cardId2), "Player2 does not own card2");
 
-        // Remove as cartas dos arrays
         _removeCardFromPlayer(player1, cardId1);
         _removeCardFromPlayer(player2, cardId2);
 
-        // Adiciona as cartas trocadas
         playerCards[player1].push(cardId2);
         playerCards[player2].push(cardId1);
     }
@@ -145,6 +147,7 @@ contract CardNFT is ERC721, Ownable {
         );
 
         uint256 tokenId = nextTokenId++;
+
         cards[tokenId] = Card(
             name,
             element,

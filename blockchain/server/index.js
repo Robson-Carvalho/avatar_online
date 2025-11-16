@@ -123,6 +123,22 @@ app.post("/registry_match", (req, res) => {
   );
 });
 
+app.post("/swap_cards", (req, res) => {
+  const { player1, cardId1, player2, cardId2 } = req.body;
+
+  if (!player1 || !cardId1 || !player2 || !cardId2) {
+    return res.status(400).json({
+      error:
+        "Todos os parâmetros são obrigatórios: player1, cardId1, player2, cardId2",
+    });
+  }
+
+  run_process(
+    `truffle exec scripts/swap_cards.js ${player1} ${cardId1} ${player2} ${cardId2}`,
+    res
+  );
+});
+
 app.listen(PORT, () => {
   console.log(`NodeJS API running on http://localhost:${PORT}`);
 });
