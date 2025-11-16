@@ -11,7 +11,6 @@ app.use(
     credentials: true,
   })
 );
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -38,15 +37,14 @@ function run_process(cmd, res) {
 
       let data = null;
 
-      const regex = /(\{[\s\S]*?\}|\[[\s\S]*?\])/;
-
+      const regex = /###JSON_START###([\s\S]*)$/;
       const match = stdout.match(regex);
 
       if (match) {
         try {
-          data = JSON.parse(match[0]);
+          data = JSON.parse(match[1]);
         } catch (e) {
-          console.log("JSON inválido!");
+          console.log("JSON inválido! " + e);
         }
       }
 
@@ -98,6 +96,31 @@ app.post("/get_cards", (req, res) => {
 
 app.get("/create_account", (req, res) => {
   run_process("truffle exec scripts/create_account.js", res);
+});
+
+app.post("/open_pack", (req, res) => {
+  const { address } = req.body;
+
+  if (!address) {
+    return res.status(400).json({ error: "endereço é obrigatório" });
+  }
+
+  run_process(`truffle exec scripts/open_pack.js ${address}`, res);
+});
+
+app.post("/registry_match", (req, res) => {
+  const { player1, player2, winner } = req.body;
+
+  if (!player1 || !player2 || !winner) {
+    return res
+      .status(400)
+      .json({ error: "Corpo com informações insuficientes ou corrompido" });
+  }
+
+  run_process(
+    `truffle exec scripts/registry_match.js ${player1} ${player2} ${winner}`,
+    res
+  );
 });
 
 app.listen(PORT, () => {

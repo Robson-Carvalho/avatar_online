@@ -25,7 +25,7 @@ module.exports = async function (callback) {
       balance: web3.utils.fromWei(saldo, "ether"),
     };
 
-    console.info(JSON.stringify(result, null, 2));
+    console.info("###JSON_START###" + JSON.stringify(result, null, 2));
     callback();
   } catch (error) {
     console.error("Erro:", error);

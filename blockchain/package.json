@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
     "cors": "^2.8.5",
     "express": "^5.1.0"
   }

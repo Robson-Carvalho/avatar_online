@@ -48,7 +48,7 @@ module.exports = async function (callback) {
       cartas.push(formatarCartaParaJSON(id, dados));
     }
 
-    console.info(JSON.stringify(cartas, null, 2));
+    console.info("###JSON_START###" + JSON.stringify(cartas, null, 2));
     callback();
   } catch (error) {
     console.error("Erro:", error);

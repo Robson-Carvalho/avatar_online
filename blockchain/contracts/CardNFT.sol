@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-contract CardNFT {
+import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+
+contract CardNFT is ERC721, Ownable {
     enum ElementCard {
         AIR,
         BLOOD,
@@ -37,20 +40,19 @@ contract CardNFT {
     mapping(uint256 => Card) public cards;
     mapping(address => uint256[]) public playerCards;
     uint256 private nextTokenId = 1;
-    address public owner;
     address public packOpenerAddress;
 
-    constructor() {
-        owner = msg.sender;
+    // CONSTRUCTOR CORRIGIDO - Passando os argumentos necessários
+    constructor() ERC721("Avatar Cards", "AVC") Ownable(msg.sender) {
+        packOpenerAddress = msg.sender;
     }
 
-    function setPackOpener(address _opener) external {
-        require(msg.sender == owner, "Only owner can set opener");
+    function setPackOpener(address _opener) external onlyOwner {
         packOpenerAddress = _opener;
     }
 
     function getCard(
-        uint256 id
+        uint256 tokenId
     )
         public
         view
@@ -65,7 +67,8 @@ contract CardNFT {
             string memory description
         )
     {
-        Card memory c = cards[id];
+        require(_exists(tokenId), "Card does not exist");
+        Card memory c = cards[tokenId];
         return (
             c.name,
             c.element,
@@ -76,6 +79,53 @@ contract CardNFT {
             c.rarity,
             c.description
         );
+    }
+
+    function swapCards(
+        address player1,
+        uint256 cardId1,
+        address player2,
+        uint256 cardId2
+    ) external {
+        require(
+            msg.sender == player1 || msg.sender == player2,
+            "Only owners can initiate swap"
+        );
+
+        require(_ownsCard(player1, cardId1), "Player1 does not own card1");
+        require(_ownsCard(player2, cardId2), "Player2 does not own card2");
+
+        // Remove as cartas dos arrays
+        _removeCardFromPlayer(player1, cardId1);
+        _removeCardFromPlayer(player2, cardId2);
+
+        // Adiciona as cartas trocadas
+        playerCards[player1].push(cardId2);
+        playerCards[player2].push(cardId1);
+    }
+
+    function _ownsCard(
+        address player,
+        uint256 cardId
+    ) internal view returns (bool) {
+        uint256[] memory cardsArray = playerCards[player];
+        for (uint256 i = 0; i < cardsArray.length; i++) {
+            if (cardsArray[i] == cardId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function _removeCardFromPlayer(address player, uint256 cardId) internal {
+        uint256[] storage cardsArray = playerCards[player];
+        for (uint256 i = 0; i < cardsArray.length; i++) {
+            if (cardsArray[i] == cardId) {
+                cardsArray[i] = cardsArray[cardsArray.length - 1];
+                cardsArray.pop();
+                break;
+            }
+        }
     }
 
     function mintCard(
@@ -89,11 +139,11 @@ contract CardNFT {
         string memory description,
         address to
     ) public {
-        // CONDIÇÃO MODIFICADA: Permite que o owner OU o PackOpener minte cartas
         require(
-            msg.sender == owner || msg.sender == packOpenerAddress,
+            msg.sender == owner() || msg.sender == packOpenerAddress,
             "Only owner or pack opener can mint"
         );
+
         uint256 tokenId = nextTokenId++;
         cards[tokenId] = Card(
             name,
@@ -105,6 +155,11 @@ contract CardNFT {
             rarity,
             description
         );
+
+        // Minta o token ERC721
+        _mint(to, tokenId);
+
+        // Adiciona ao array do jogador
         playerCards[to].push(tokenId);
     }
 
@@ -112,5 +167,10 @@ contract CardNFT {
         address player
     ) public view returns (uint256[] memory) {
         return playerCards[player];
+    }
+
+    // Função para verificar se o token existe (usando a função do ERC721)
+    function _exists(uint256 tokenId) internal view virtual returns (bool) {
+        return _ownerOf(tokenId) != address(0);
     }
 }
