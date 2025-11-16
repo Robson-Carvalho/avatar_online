@@ -20,8 +20,12 @@ public class UserSignUpCommand implements Serializable {
 
     private final String password;
 
-    public  UserSignUpCommand(UUID commandId, String operationType,UUID deckId, UUID playerId, String name,
-                              String email, String nickname, String password) {
+    private final String privateKey;
+
+    private final String address;
+
+    public  UserSignUpCommand(UUID commandId, String operationType, UUID deckId, UUID playerId, String name,
+                              String email, String nickname, String password, String privateKey, String address) {
         this.commandId = commandId;
         this.operationType = operationType;
         this.deckId = deckId;
@@ -30,6 +34,8 @@ public class UserSignUpCommand implements Serializable {
         this.email = email;
         this.nickname = nickname;
         this.password = password;
+        this.privateKey = privateKey;
+        this.address = address;
     }
 
     public UUID getCommandId() {
@@ -58,5 +64,13 @@ public class UserSignUpCommand implements Serializable {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getPrivateKey() {
+        return privateKey;
+    }
+
+    public String getAddress() {
+        return address;
     }
 }
