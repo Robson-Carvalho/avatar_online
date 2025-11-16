@@ -23,16 +23,23 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private String privateKey;
+    @Column(nullable = false)
+    private String address;
+
     public User() {
 
     }
 
-    public User(UUID id,String name, String nickname, String email, String password) {
+    public User(UUID id,String name, String nickname, String email, String password, String privateKey, String address) {
         this.id = id;
         this.name = name;
         this.nickname = nickname;
         this.email = email;
         this.password = password;
+        this.privateKey = privateKey;
+        this.address = address;
     }
 
     // ===== Getters e Setters =====
@@ -74,5 +81,18 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getPrivateKey() {
+        return privateKey;
+    }
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
+    }
+    public String getAddress() {
+        return address;
+    }
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
