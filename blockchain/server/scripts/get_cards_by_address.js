@@ -46,7 +46,6 @@ module.exports = async function (callback) {
       cartas.push(formatarCartaParaJSON(id, dados));
     }
 
-    // 🔥 JSON final que a API irá capturar
     console.log(JSON.stringify(cartas, null, 2));
 
     callback();

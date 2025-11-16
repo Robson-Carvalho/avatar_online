@@ -26,13 +26,11 @@ function run_process(cmd, res) {
         });
       }
 
-      // --- Tenta parsear JSON se existir ---
       let data = null;
       try {
-        // pega JSON no fim da saída
         const match = stdout.trim().match(/\{[\s\S]*\}$/);
         if (match) {
-          data = JSON.parse(match[0]); // JSON válido do script
+          data = JSON.parse(match[0]);
         }
       } catch (e) {
         console.log("JSON inválido (ignorando)");
@@ -43,7 +41,7 @@ function run_process(cmd, res) {
         command: cmd,
         output: stdout,
         stderr: stderr || null,
-        data, // <--- só vem se o script imprimir JSON
+        data,
       });
     }
   );
