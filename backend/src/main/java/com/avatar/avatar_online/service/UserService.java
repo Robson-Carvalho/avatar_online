@@ -1,6 +1,8 @@
 package com.avatar.avatar_online.service;
 
+import com.avatar.avatar_online.DTOs.Create_WalletDTO;
 import com.avatar.avatar_online.DTOs.UserDTO;
+import com.avatar.avatar_online.Truffle_Comunication.TruffleApiUser;
 import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.service.CPCommitService;
@@ -23,27 +25,45 @@ public class UserService {
     private final ClusterLeadershipService leadershipService;
     private final RedirectService redirectService;
     private final CPCommitService cPCommitService;
+    private final TruffleApiUser truffleApiUser;
 
 
     public UserService(UserRepository userRepository,
                        ClusterLeadershipService leadershipService,
-                       RedirectService leaderRedirectService, CPCommitService cPCommitService) {
+                       RedirectService leaderRedirectService, CPCommitService cPCommitService,
+                       TruffleApiUser truffleApiUser) {
         this.userRepository = userRepository;
         this.leadershipService = leadershipService;
         this.redirectService = leaderRedirectService;
         this.cPCommitService = cPCommitService;
+        this.truffleApiUser = truffleApiUser;
     }
 
     @Transactional
     public ResponseEntity<?> createUser(UserDTO user) {
+        System.out.println("⚠️ createUser chamado no nó: " + leadershipService.isLeader() + "  |  " + System.currentTimeMillis());
         try {
             if (!leadershipService.isLeader()) {
                 System.out.println("🚫 Este nó não é o líder. Redirecionando para o líder...");
                 return redirectService.redirectToLeader("/api/users", user, HttpMethod.POST);
             }
 
+            System.out.println("⚠️ createUser chamado no nó: " + leadershipService.isLeader() + "  |  " + System.currentTimeMillis());
+
+            ResponseEntity<Create_WalletDTO> responseEntity = truffleApiUser.createWallet();
+
+            Create_WalletDTO walletDTO = responseEntity.getBody();
+
+            if (walletDTO == null ||
+                    walletDTO.getData() == null ||
+                    walletDTO.getData().getAddress() == null ||
+                    walletDTO.getData().getPrivate_key() == null) {
+
+                return ResponseEntity.internalServerError().body("Falha ao criar carteira na blockchain.");
+            }
+
             UserSignUpCommand command = new UserSignUpCommand(UUID.randomUUID(), "SIGN_USER",UUID.randomUUID(), UUID.randomUUID(), user.getName(),
-                    user.getEmail(), user.getNickname(), user.getPassword());
+                    user.getEmail(), user.getNickname(), user.getPassword(), walletDTO.getData().getPrivate_key(), walletDTO.getData().getAddress());
 
             boolean response = cPCommitService.tryCommitUserSignUp(command);
 
@@ -53,7 +73,7 @@ public class UserService {
             }
 
             User user1 = new User(command.getPlayerId(), user.getName(), user.getNickname(),
-                    user.getEmail(), user.getPassword());
+                    user.getEmail(), user.getPassword(), walletDTO.getData().getPrivate_key(), walletDTO.getData().getAddress());
 
             return ResponseEntity.ok().body(user1);
         } catch (Exception e) {

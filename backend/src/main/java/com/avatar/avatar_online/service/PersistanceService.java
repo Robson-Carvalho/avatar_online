@@ -46,7 +46,9 @@ public class PersistanceService {
                 command.getName(),
                 command.getNickname(),
                 command.getEmail(),
-                command.getPassword()
+                command.getPassword(),
+                command.getPrivateKey(),
+                command.getAddress()
         );
         newUser.setId(command.getPlayerId());
 
