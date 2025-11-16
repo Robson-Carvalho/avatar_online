@@ -1,25 +1,35 @@
 version: '3.9'
 
-# Define uma rede customizada para que os contêineres possam se comunicar
 networks:
   avatar-net:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.16.0/24
+
 
 services:
-  # --- NÓ 1 ---
+  # ===============================
+  # == NÓ 1 ==
+  # ===============================
   app1:
     build: .
     container_name: avatar-node-1
     depends_on:
       - db1
     networks:
-      - avatar-net
+      avatar-net:
+        ipv4_address: 192.168.16.7
     environment:
       - APP_SERVER_PORT=8080
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db1:5432/avatar_db
       - SPRING_DATASOURCE_USERNAME=avatar_user
       - SPRING_DATASOURCE_PASSWORD=senha123
       - NODE_NAME=node-1
+
+      # HAZELCAST CONFIG
+      - HAZELCAST_MEMBER_LIST=192.168.16.7:5701,192.168.16.6:5701,192.168.16.5:5701
+
     ports:
       - "8081:8080"
 
@@ -27,7 +37,8 @@ services:
     image: postgres:17
     container_name: postgres-node-1
     networks:
-      - avatar-net
+      avatar-net:
+        ipv4_address: 192.168.16.17
     environment:
       POSTGRES_DB: avatar_db
       POSTGRES_USER: avatar_user
@@ -37,20 +48,27 @@ services:
     volumes:
       - postgres_data_node1:/var/lib/postgresql/data
 
-  # --- NÓ 2 ---
+  # ===============================
+  # == NÓ 2 ==
+  # ===============================
   app2:
     build: .
     container_name: avatar-node-2
     depends_on:
       - db2
     networks:
-      - avatar-net
+      avatar-net:
+        ipv4_address: 192.168.16.6
     environment:
       - APP_SERVER_PORT=8080
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db2:5432/avatar_db
       - SPRING_DATASOURCE_USERNAME=avatar_user
       - SPRING_DATASOURCE_PASSWORD=senha123
       - NODE_NAME=node-2
+
+      # HAZELCAST CONFIG
+      - HAZELCAST_MEMBER_LIST=192.168.16.7:5701,192.168.16.6:5701,192.168.16.5:5701
+
     ports:
       - "8082:8080"
 
@@ -58,7 +76,8 @@ services:
     image: postgres:17
     container_name: postgres-node-2
     networks:
-      - avatar-net
+      avatar-net:
+        ipv4_address: 192.168.16.16
     environment:
       POSTGRES_DB: avatar_db
       POSTGRES_USER: avatar_user
@@ -68,20 +87,27 @@ services:
     volumes:
       - postgres_data_node2:/var/lib/postgresql/data
 
-  # --- NÓ 3 ---
+  # ===============================
+  # == NÓ 3 ==
+  # ===============================
   app3:
     build: .
     container_name: avatar-node-3
     depends_on:
       - db3
     networks:
-      - avatar-net
+      avatar-net:
+        ipv4_address: 192.168.16.5
     environment:
       - APP_SERVER_PORT=8080
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db3:5432/avatar_db
       - SPRING_DATASOURCE_USERNAME=avatar_user
       - SPRING_DATASOURCE_PASSWORD=senha123
       - NODE_NAME=node-3
+
+      # HAZELCAST CONFIG
+      - HAZELCAST_MEMBER_LIST=192.168.16.7:5701,192.168.16.6:5701,192.168.16.5:5701
+
     ports:
       - "8083:8080"
 
@@ -89,7 +115,8 @@ services:
     image: postgres:17
     container_name: postgres-node-3
     networks:
-      - avatar-net
+      avatar-net:
+        ipv4_address: 192.168.16.15
     environment:
       POSTGRES_DB: avatar_db
       POSTGRES_USER: avatar_user
