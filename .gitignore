@@ -15,6 +15,7 @@ build/
 !mvnw.cmd
 .gradle/
 **/gradle-app.setting
+node_modules
 
 # Logs
 

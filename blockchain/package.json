@@ -1,0 +1,19 @@
+{
+  "name": "blockchain",
+  "version": "1.0.0",
+  "description": "```bash   truffle compile   truffle migrate --reset   truffule test   truffle exec scripts/get_cards.js   truffle exec scripts/create_account.js   truffle exec scripts/create_account_without_cards.js   truffle exec scripts/get_cards_by_address.js 0x8d1c210484d04f84ac7Af4AceE6Caa02B0ff38f4 # buscar cartas de um player passando seu endereço ```",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+}
