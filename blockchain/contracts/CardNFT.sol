@@ -38,17 +38,44 @@ contract CardNFT {
     mapping(address => uint256[]) public playerCards;
     uint256 private nextTokenId = 1;
     address public owner;
-    // VARIÁVEL ADICIONADA para armazenar o endereço do contrato PackOpener
     address public packOpenerAddress;
 
     constructor() {
         owner = msg.sender;
     }
 
-    // FUNÇÃO ADICIONADA para que o dono possa autorizar o PackOpener
     function setPackOpener(address _opener) external {
         require(msg.sender == owner, "Only owner can set opener");
         packOpenerAddress = _opener;
+    }
+
+    function getCard(
+        uint256 id
+    )
+        public
+        view
+        returns (
+            string memory name,
+            ElementCard element,
+            PhaseCard phase,
+            uint256 attack,
+            uint256 life,
+            uint256 defense,
+            RarityCard rarity,
+            string memory description
+        )
+    {
+        Card memory c = cards[id];
+        return (
+            c.name,
+            c.element,
+            c.phase,
+            c.attack,
+            c.life,
+            c.defense,
+            c.rarity,
+            c.description
+        );
     }
 
     function mintCard(

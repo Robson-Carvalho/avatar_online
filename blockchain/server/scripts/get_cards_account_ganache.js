@@ -1,4 +1,5 @@
 const CardNFT = artifacts.require("CardNFT");
+const PackOpener = artifacts.require("PackOpener");
 
 const ELEMENT_MAP = [
   "AIR",
@@ -28,29 +29,29 @@ function formatarCartaParaJSON(id, dados) {
 
 module.exports = async function (callback) {
   try {
-    const playerAddress = process.argv[4];
-    if (!playerAddress) {
-      console.log("Erro: Endereço não informado");
-      return callback(new Error("Endereço não informado"));
-    }
-
-    console.log(`Buscando cartas de ${playerAddress}`);
-
     const nft = await CardNFT.deployed();
-    const cardIds = await nft.getPlayerCards(playerAddress);
+    const opener = await PackOpener.deployed();
+
+    const accounts = await web3.eth.getAccounts();
+    const player = accounts[0];
+
+    console.log(`Abrindo pack para ${player}`);
+
+    await opener.openPack({ from: player });
+
+    const cardIds = await nft.getPlayerCards(player);
 
     const cartas = [];
 
     for (const id of cardIds) {
-      const dados = await nft.cards(id);
+      const dados = await nft.getCard(id);
       cartas.push(formatarCartaParaJSON(id, dados));
     }
 
-    console.log(JSON.stringify(cartas, null, 2));
-
+    console.info(JSON.stringify(cartas, null, 2));
     callback();
   } catch (error) {
-    console.error("Erro ao buscar cartas:", error);
+    console.error("Erro:", error);
     callback(error);
   }
 };

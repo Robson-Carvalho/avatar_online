@@ -4,6 +4,14 @@ const { exec } = require("child_process");
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -26,21 +34,25 @@ function run_process(cmd, res) {
         });
       }
 
+      console.log(stdout);
+
       let data = null;
-      try {
-        const match = stdout.trim().match(/\{[\s\S]*\}$/);
-        if (match) {
+
+      const regex = /(\{[\s\S]*?\}|\[[\s\S]*?\])/;
+
+      const match = stdout.match(regex);
+
+      if (match) {
+        try {
           data = JSON.parse(match[0]);
+        } catch (e) {
+          console.log("JSON inválido!");
         }
-      } catch (e) {
-        console.log("JSON inválido (ignorando)");
       }
 
       return res.json({
         status: "success",
         command: cmd,
-        output: stdout,
-        stderr: stderr || null,
         data,
       });
     }
@@ -70,8 +82,8 @@ app.get("/test", (req, res) => {
   run_process("truffle test", res);
 });
 
-app.get("/get_cards", (req, res) => {
-  run_process("truffle exec scripts/get_cards.js", res);
+app.get("/get_cards_account_ganache", (req, res) => {
+  run_process("truffle exec scripts/get_cards_account_ganache.js", res);
 });
 
 app.post("/get_cards", (req, res) => {
@@ -81,15 +93,11 @@ app.post("/get_cards", (req, res) => {
     return res.status(400).json({ error: "endereço é obrigatório" });
   }
 
-  run_process(`truffle exec scripts/get_cards_by_address.js ${address}`, res);
-});
-
-app.get("/create_account_with_cards", (req, res) => {
-  run_process("truffle exec scripts/create_account.js", res);
+  run_process(`truffle exec scripts/get_cards.js ${address}`, res);
 });
 
 app.get("/create_account", (req, res) => {
-  run_process("truffle exec scripts/create_account_without_cards.js", res);
+  run_process("truffle exec scripts/create_account.js", res);
 });
 
 app.listen(PORT, () => {
