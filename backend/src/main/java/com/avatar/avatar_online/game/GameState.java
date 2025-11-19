@@ -17,6 +17,8 @@ public class GameState implements Serializable {
     private String turnPlayerId;
     private String playerWin;
 
+
+
     public GameState( String playerOneID, String playerTwoID) {
         this.id = UUID.randomUUID().toString();
         this.message = "Game state updated";
@@ -48,6 +50,7 @@ public class GameState implements Serializable {
 
         if (pointsP1 >= 3 && pointsP2 >= 3) {
             this.playerWin = "DRAW";
+
         } else if (pointsP1 >= 3) {
             this.playerWin = playerOne.getId();
         } else if (pointsP2 >= 3) {

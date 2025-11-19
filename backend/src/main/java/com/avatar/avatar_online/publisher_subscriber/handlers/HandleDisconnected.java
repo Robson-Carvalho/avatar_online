@@ -1,5 +1,6 @@
 package com.avatar.avatar_online.publisher_subscriber.handlers;
 
+import com.avatar.avatar_online.Truffle_Comunication.TruffleApiUser;
 import com.avatar.avatar_online.game.Match;
 import com.avatar.avatar_online.game.MatchManagementService;
 import com.avatar.avatar_online.publisher_subscriber.handlers.records.PlayerInGame;
@@ -34,10 +35,12 @@ public class HandleDisconnected {
 
     private final OnlineUsers onlineUsers;
 
+    private final TruffleApiUser truffleApiUser;
+
 
     @Autowired
     public HandleDisconnected(MatchManagementService matchManagementService, Communication communication,
-                              @Qualifier("hazelcastInstance") HazelcastInstance hazelcast, RedirectService redirectService, ObjectMapper objectMapper, CardService cardService, OnlineUsers onlineUsers) {
+                              @Qualifier("hazelcastInstance") HazelcastInstance hazelcast, RedirectService redirectService, ObjectMapper objectMapper, CardService cardService, OnlineUsers onlineUsers, TruffleApiUser truffleApiUser) {
         this.matchManagementService = matchManagementService;
         this.hazelcast = hazelcast;
         this.communication = communication;
@@ -46,6 +49,7 @@ public class HandleDisconnected {
         this.objectMapper = objectMapper;
         this.cardService = cardService;
         this.onlineUsers = onlineUsers;
+        this.truffleApiUser = truffleApiUser;
     }
 
     public OperationResponseDTO logout(OperationRequestDTO operation, String userSession) {
@@ -79,6 +83,13 @@ public class HandleDisconnected {
 
             System.out.println("Enviar STATUS para o oponente ["+opponentSession+"] que partida acabou com vitória!");
             this.sendToOpponentStatusWin(opponentSession, match);
+
+            if(opponentSession.equals(match.getPlayer1().getUserSession())){
+                truffleApiUser.registryMatch(match.getPlayer1().getNickname(), match.getPlayer2().getNickname(), match.getPlayer1().getNickname());
+            } else {
+                truffleApiUser.registryMatch(match.getPlayer1().getNickname(), match.getPlayer2().getNickname(), match.getPlayer2().getNickname());
+            }
+
             matchManagementService.unregisterMatch(match.getMatchId());
         }
     }
@@ -110,7 +121,13 @@ public class HandleDisconnected {
         if(!opponentSession.isEmpty()) {
             System.out.println("Enviar STATUS para o oponente ["+opponentSession+"] que partida acabou com vitória!");
             Match match =  matchManagementService.getMatchByPlayerID(sessionId, userID);
+
             this.sendToOpponentStatusWin(opponentSession, match);
+            if(opponentSession.equals(match.getPlayer1().getUserSession())){
+                truffleApiUser.registryMatch(match.getPlayer1().getNickname(), match.getPlayer2().getNickname(), match.getPlayer1().getNickname());
+            } else {
+                truffleApiUser.registryMatch(match.getPlayer1().getNickname(), match.getPlayer2().getNickname(), match.getPlayer2().getNickname());
+            }
             matchManagementService.unRegisterMatchBySessionId(sessionId);
             onlineUsers.removeBySessionId(sessionId);
             return;
