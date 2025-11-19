@@ -12,16 +12,19 @@ public class PlayerInGame implements Serializable {
     private String userId; //
     private String userSession;
     private String hostAddress; //
+    private String nickname;
 
     @JsonCreator // Anote o construtor completo
     public PlayerInGame(
             @JsonProperty("userId") String userId,
             @JsonProperty("userSession") String userSession,
-            @JsonProperty("hostAddress") String hostAddress) {
+            @JsonProperty("hostAddress") String hostAddress,
+            @JsonProperty("nickname") String nickname) {
 
         this.userId = userId;
         this.userSession = userSession;
         this.hostAddress = hostAddress;
+        this.nickname = nickname;
     }
 
     public String getUserId() {
@@ -46,5 +49,13 @@ public class PlayerInGame implements Serializable {
 
     public void setHostAddress(String hostAddress) {
         this.hostAddress = hostAddress;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 }
