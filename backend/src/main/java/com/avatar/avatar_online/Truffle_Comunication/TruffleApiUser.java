@@ -1,6 +1,8 @@
 package com.avatar.avatar_online.Truffle_Comunication;
 
 import com.avatar.avatar_online.DTOs.Create_WalletDTO;
+import com.avatar.avatar_online.DTOs.MatchResultDTO;
+import com.avatar.avatar_online.DTOs.Registry_matchDTO;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -35,5 +37,23 @@ public class TruffleApiUser {
         return ResponseEntity.status(response.getStatusCode())
                 .headers(response.getHeaders())
                 .body(response.getBody());
+    }
+
+    public void registryMatch(String player1, String player2, String winner) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        MatchResultDTO body = new MatchResultDTO(player1, player2, winner);
+
+        HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
+
+        String url = UriComponentsBuilder.fromUriString(URL)
+                .path("/registry_match")
+                .build()
+                .toString();
+
+        ResponseEntity<?> response = restTemplate.exchange(
+                url , HttpMethod.POST, requestEntity, Registry_matchDTO.class
+        );
     }
 }
