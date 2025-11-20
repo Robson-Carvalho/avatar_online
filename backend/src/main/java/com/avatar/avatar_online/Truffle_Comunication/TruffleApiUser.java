@@ -1,12 +1,13 @@
 package com.avatar.avatar_online.Truffle_Comunication;
 
-import com.avatar.avatar_online.DTOs.Create_WalletDTO;
-import com.avatar.avatar_online.DTOs.MatchResultDTO;
-import com.avatar.avatar_online.DTOs.Registry_matchDTO;
+import com.avatar.avatar_online.DTOs.*;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.List;
 
 @Component
 public class TruffleApiUser {
@@ -54,6 +55,26 @@ public class TruffleApiUser {
 
         ResponseEntity<?> response = restTemplate.exchange(
                 url , HttpMethod.POST, requestEntity, Registry_matchDTO.class
+        );
+    }
+
+    public ResponseEntity<TruffleApiWrapper<PackResponseDto>> openPack(AddressDTO addressDTO) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<AddressDTO> requestEntity = new HttpEntity<>(addressDTO, headers);
+
+        String url = UriComponentsBuilder.fromUriString(URL)
+                .path("/open_pack")
+                .build()
+                .toString();
+
+        return restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                requestEntity,
+                new ParameterizedTypeReference<>() {
+                }
         );
     }
 }
