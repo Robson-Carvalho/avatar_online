@@ -50,13 +50,16 @@ public class Card implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(nullable = false)
+    private String TokenId;
+
     // ===== Construtores =====
     public Card() {
         // O ID será gerado automaticamente
     }
 
     public Card(User user, String name, ElementCard element, PhaseCard phase,
-                int attack, int life, int defense, RarityCard rarity, String description) {
+                int attack, int life, int defense, RarityCard rarity, String description, String TokenId) {
         this.user = user;
         this.name = name;
         this.element = element;
@@ -66,6 +69,7 @@ public class Card implements Serializable {
         this.defense = defense;
         this.rarity = rarity;
         this.description = description;
+        this.TokenId = TokenId;
     }
 
     public Card(Card card) {
@@ -150,5 +154,13 @@ public class Card implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getTokenId() {
+        return TokenId;
+    }
+
+    public void setTokenId(String tokenId) {
+        TokenId = tokenId;
     }
 }
