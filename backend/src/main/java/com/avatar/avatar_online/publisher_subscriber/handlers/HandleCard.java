@@ -1,9 +1,9 @@
 package com.avatar.avatar_online.publisher_subscriber.handlers;
 
-import com.avatar.avatar_online.DTOs.CardDTO;
-import com.avatar.avatar_online.DTOs.PackDTO;
-import com.avatar.avatar_online.DTOs.TradeCardDTO;
+import com.avatar.avatar_online.DTOs.*;
+import com.avatar.avatar_online.Truffle_Comunication.TruffleApiUser;
 import com.avatar.avatar_online.models.Card;
+import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.GetCardsResponseDTO;
 import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.ProposalDTO;
 import com.avatar.avatar_online.publisher_subscriber.model.*;
 import com.avatar.avatar_online.publisher_subscriber.service.Communication;
@@ -11,6 +11,7 @@ import com.avatar.avatar_online.raft.service.RedirectService;
 import com.avatar.avatar_online.service.CardService;
 import com.hazelcast.core.HazelcastInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -27,18 +28,34 @@ public class HandleCard {
     private final Communication communication;
     private final HazelcastInstance hazelcast;
     private final RedirectService redirectService;
+    private final TruffleApiUser truffleApiUser;
 
     @Autowired
-    public HandleCard(CardService cardService, OnlineUsers onlineUsers, Communication communication, HazelcastInstance hazelcast, RedirectService redirectService) {
+    public HandleCard(CardService cardService, OnlineUsers onlineUsers, Communication communication, @Qualifier("hazelcastInstance") HazelcastInstance hazelcast, RedirectService redirectService, TruffleApiUser truffleApiUser) {
         this.cardService = cardService;
         this.onlineUsers = onlineUsers;
         this.communication = communication;
         this.hazelcast = hazelcast;
         this.redirectService = redirectService;
+        this.truffleApiUser = truffleApiUser;
     }
 
     public OperationResponseDTO handleGetCards(OperationRequestDTO operation){
         String userID = (String) operation.getPayload().get("userID");
+        String addressWallet = (String) operation.getPayload().get("addressWallet");
+
+        System.out.println("oi: "+addressWallet);
+
+        ResponseEntity<TruffleApiWrapper<GetCardsResponseDTO>> truffleResponse = truffleApiUser.getCards(new AddressDTO(addressWallet));
+
+        if (!truffleResponse.getStatusCode().is2xxSuccessful() || truffleResponse.getBody() == null) {
+            System.out.println("Erro ao chamar Truffle: " + truffleResponse.getStatusCode());
+        }
+
+        if(truffleResponse.getBody() != null){
+            GetCardsResponseDTO cardsBlockchain = truffleResponse.getBody().getData();
+            System.out.println(cardsBlockchain);
+        }
 
         try {
             List<CardDTO> cards = cardService.findByUserId(UUID.fromString(userID));

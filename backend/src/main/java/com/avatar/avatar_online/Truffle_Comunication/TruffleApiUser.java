@@ -1,13 +1,12 @@
 package com.avatar.avatar_online.Truffle_Comunication;
 
 import com.avatar.avatar_online.DTOs.*;
+import com.avatar.avatar_online.publisher_subscriber.handlers.DTO.GetCardsResponseDTO;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.util.List;
 
 @Component
 public class TruffleApiUser {
@@ -77,4 +76,24 @@ public class TruffleApiUser {
                 }
         );
     }
+
+    public ResponseEntity<TruffleApiWrapper<GetCardsResponseDTO>> getCards(AddressDTO addressDTO) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<AddressDTO> requestEntity = new HttpEntity<>(addressDTO, headers);
+
+        String url = UriComponentsBuilder.fromUriString(URL)
+                .path("/get_cards")
+                .build()
+                .toString();
+
+        return restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                requestEntity,
+                new ParameterizedTypeReference<>() {}
+        );
+    }
+
 }
