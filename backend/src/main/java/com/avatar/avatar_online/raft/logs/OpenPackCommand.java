@@ -14,9 +14,9 @@ public class OpenPackCommand implements Serializable {
 
     private final UUID playerId;
 
-    private List<UUID> cards;
+    private List<Card> cards;
 
-    public OpenPackCommand(UUID commandId, String operationType, UUID playerId, List<UUID> cards) {
+    public OpenPackCommand(UUID commandId, String operationType, UUID playerId, List<Card> cards) {
         this.commandId = commandId;
         this.operationType = operationType;
         this.playerId = playerId;
@@ -35,6 +35,6 @@ public class OpenPackCommand implements Serializable {
         return playerId;
     }
 
-    public List<UUID> getCards() { return cards; }
+    public List<Card> getCards() { return cards; }
 
 }

@@ -1,10 +1,11 @@
 package com.avatar.avatar_online.service;
 
-import com.avatar.avatar_online.DTOs.CardDTO;
-import com.avatar.avatar_online.DTOs.PackDTO;
-import com.avatar.avatar_online.DTOs.TradeCardDTO;
+import com.avatar.avatar_online.DTOs.*;
+import com.avatar.avatar_online.Truffle_Comunication.TruffleApiUser;
+import com.avatar.avatar_online.Utils.CardMapper;
 import com.avatar.avatar_online.models.Card;
 import com.avatar.avatar_online.models.Deck;
+import com.avatar.avatar_online.models.User;
 import com.avatar.avatar_online.raft.logs.OpenPackCommand;
 import com.avatar.avatar_online.raft.logs.TradeCardsCommand;
 import com.avatar.avatar_online.raft.service.CPCommitService;
@@ -26,14 +27,18 @@ public class CardService {
     private final ClusterLeadershipService leadershipService;
     private final RedirectService redirectService;
     private final CPCommitService cPCommitService;
+    private final UserService userService;
+    private final TruffleApiUser truffleApiUser;
 
     public CardService(CardRepository cardRepository, DeckService deckService, ClusterLeadershipService leadershipService,
-                       RedirectService redirectService, CPCommitService cPCommitService) {
+                       RedirectService redirectService, CPCommitService cPCommitService, UserService userService, TruffleApiUser truffleApiUser) {
         this.cardRepository = cardRepository;
         this.deckService = deckService;
         this.leadershipService = leadershipService;
         this.redirectService = redirectService;
         this.cPCommitService = cPCommitService;
+        this.userService = userService;
+        this.truffleApiUser = truffleApiUser;
     }
 
     public List<Card> getCardsInDeck(String userID) {
@@ -119,22 +124,38 @@ public class CardService {
                     return redirectService.redirectToLeader("/api/cards/pack", packDTO, HttpMethod.POST);
                 }
 
-                List<Card> availableCards = cardRepository.findAllByUserIsNull();
+                Optional<User> userOptional =  userService.findById(UUID.fromString(packDTO.getPlayerId()));
 
-                if (availableCards.size() < 5) {
-                    throw new RuntimeException("LOGS: Pool de cartas insuficiente para abrir pacote.");
+                if(userOptional.isEmpty()){
+                    return ResponseEntity.badRequest().body("Erro em abrir pack");
                 }
 
-                List<Card> selectedCards = selectRandomCards(availableCards);
+                User user = userOptional.get();
 
-                List<UUID> selectedCardIds = selectedCards.stream()
-                        .map(Card::getId)
+                AddressDTO newAddressDTO = new AddressDTO(user.getAddress());
+
+                ResponseEntity<TruffleApiWrapper<PackResponseDto>> truffleResponse = truffleApiUser.openPack(newAddressDTO);
+
+                if (!truffleResponse.getStatusCode().is2xxSuccessful() || truffleResponse.getBody() == null) {
+                    return ResponseEntity.status(truffleResponse.getStatusCode())
+                            .body("Erro ao chamar Truffle: " + truffleResponse.getStatusCode());
+                }
+
+                PackResponseDto pack = truffleResponse.getBody().getData();
+
+                List<CardNFTRequestDto> nftCards = pack.getCartasDoPack();
+
+                if (nftCards == null || nftCards.isEmpty()) {
+                    return ResponseEntity.badRequest().body("Nenhuma carta retornada pelo Truffle");
+                }
+
+                List<Card> selectedCards = nftCards.stream()
+                        .map(CardMapper::fromNFT)
+                        .peek(c -> c.setUser(user))
                         .toList();
 
-                System.out.println("Cartas selecionadas para pacote: " + selectedCardIds);
-
                 OpenPackCommand command = new OpenPackCommand(UUID.randomUUID(), "OPEN_PACK",
-                        UUID.fromString(packDTO.getPlayerId()), selectedCardIds);
+                        UUID.fromString(packDTO.getPlayerId()), selectedCards);
 
                 boolean response = cPCommitService.tryCommitPackOpening(command);
 

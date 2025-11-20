@@ -62,24 +62,9 @@ public class PersistanceService {
 
     @Transactional
     public void applyOpenPackCommand(OpenPackCommand command){
-        UUID userId = command.getPlayerId();
-        List<UUID> cardsIds = command.getCards();
+        List<Card> cards = command.getCards();
 
-        Optional<User> userOptional = userRepository.findById(userId);
-
-        if(userOptional.isEmpty()){
-            throw new RuntimeException("usuário não encontrado com ID: " + userId);
-        }
-
-        User user = userOptional.get();
-
-        List<Card> cardsToAssign = cardRepository.findAllById(cardsIds);
-
-        for (Card card : cardsToAssign) {
-            card.setUser(user);
-        }
-
-        cardRepository.saveAll(cardsToAssign);
+        cardRepository.saveAll(cards);
     }
 
     @Transactional
