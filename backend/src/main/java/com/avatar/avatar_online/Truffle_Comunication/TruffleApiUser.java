@@ -98,4 +98,23 @@ public class TruffleApiUser {
         );
     }
 
+    public void tradeCards(TradeCardRequestDTO request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<TradeCardRequestDTO> requestEntity = new HttpEntity<>(request, headers);
+
+        String url = UriComponentsBuilder.fromUriString(URL)
+                .path("/swap_cards")
+                .build()
+                .toString();
+
+        restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                requestEntity,
+                new ParameterizedTypeReference<>() {
+                }
+        );
+    }
 }
