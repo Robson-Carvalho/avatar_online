@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
+
 @Component
 public class TruffleApiUser {
 
@@ -77,7 +79,7 @@ public class TruffleApiUser {
         );
     }
 
-    public ResponseEntity<TruffleApiWrapper<GetCardsResponseDTO>> getCards(AddressDTO addressDTO) {
+    public ResponseEntity<TruffleApiWrapper<List<GetCardsResponseDTO>>> getCards(AddressDTO addressDTO) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
