@@ -90,6 +90,11 @@ public class CardService {
                 .orElse(null);
     }
 
+    public Card findByCardId(UUID cardId) {
+        Optional<Card> cardOptional = cardRepository.findById(cardId);
+        return cardOptional.orElse(null);
+    }
+
     public List<CardDTO> findByUserIdWithoutDeck(UUID userId) {
         Optional<Deck> op = deckService.findByUserId(userId.toString());
         Set<UUID> deckCardIds = new HashSet<>();
@@ -178,6 +183,31 @@ public class CardService {
                 System.out.println("🚫 Este nó não é o líder. Redirecionando para o líder...");
                 return redirectService.redirectToLeader("/api/cards/trade", tradeCardDTO, HttpMethod.POST);
             }
+
+            Optional<User> userOptional1 =  userService.findById(UUID.fromString(tradeCardDTO.getPLayerId1()));
+
+            if(userOptional1.isEmpty()){
+                return ResponseEntity.badRequest().body("Erro em abrir pack");
+            }
+
+            User user1 = userOptional1.get();
+
+            Optional<User> userOptional2 =  userService.findById(UUID.fromString(tradeCardDTO.getPLayerId2()));
+
+            if(userOptional2.isEmpty()){
+                return ResponseEntity.badRequest().body("Erro em abrir pack");
+            }
+
+            User user2 = userOptional2.get();
+
+            Card card1 = findByCardId(UUID.fromString(tradeCardDTO.getCardId1()));
+
+            Card card2 = findByCardId(UUID.fromString(tradeCardDTO.getCardId2()));
+
+            TradeCardRequestDTO request = new TradeCardRequestDTO(user1.getAddress(), card1.getTokenId(),
+                    user2.getAddress(), card2.getTokenId());
+
+            truffleApiUser.tradeCards(request);
 
             System.out.println(tradeCardDTO.getCardId1());
             System.out.println(tradeCardDTO.getCardId2());
