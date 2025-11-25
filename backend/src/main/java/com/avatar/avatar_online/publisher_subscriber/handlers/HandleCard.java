@@ -54,22 +54,6 @@ public class HandleCard {
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.ERROR, "Interno erro: ao buscar usuário", null);
         }
 
-        // Já temos o address no bd, basta pegar ele
-        User user = userOptional.get();
-
-
-        // Ajustei aqui, o truffle retorna uma lista de cartas, por isso List<>
-        ResponseEntity<TruffleApiWrapper<List<GetCardsResponseDTO>>> truffleResponse = truffleApiUser.getCards(new AddressDTO(user.getAddress()));
-
-        if (!truffleResponse.getStatusCode().is2xxSuccessful() || truffleResponse.getBody() == null) {
-            System.out.println("Erro ao chamar Truffle: " + truffleResponse.getStatusCode());
-        }
-
-        if(truffleResponse.getBody() != null){
-            List<GetCardsResponseDTO> cardsBlockchain = truffleResponse.getBody().getData();
-            System.out.println(cardsBlockchain);
-        }
-
         try {
             List<CardDTO> cards = cardService.findByUserId(UUID.fromString(userID));
             return new OperationResponseDTO(operation.getOperationType(), OperationStatus.OK, "Cartas do user: "+userID, cards);
