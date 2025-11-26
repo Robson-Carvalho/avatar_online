@@ -207,7 +207,7 @@ module.exports = async function (callback) {
       }
     }
 
-    allEvents.sort((a, b) => a.timestamp - b.timestamp);
+    //allEvents.sort((a, b) => a.timestamp - b.timestamp);
 
     const result = {
       data: [
