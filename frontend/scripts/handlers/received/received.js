@@ -8,7 +8,12 @@ function handlerMain(message) {
     showError(`${data.message}`);
   } else if (data.operationStatus == "WARNING") {
     showWarning(`${data.message}`);
-  } else if (
+  }
+  else if (data.operationType === "GET_HISTORY") {
+    localStorage.setItem("history_avatar_online", JSON.stringify(data.data));
+    openModalHistoryBlockchain(data.data)
+  }
+  else if (
     data.operationType === "EXCHANGE_CARD" &&
     data.operationStatus == "WARNING"
   ) {
