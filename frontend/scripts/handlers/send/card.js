@@ -15,7 +15,7 @@ function openPackage(userID) {
   log(`📤 Enviado: ${data.operationType}`);
 }
 
-function getCards(userID) {
+function getCards(userID, addressWallet) {
   if (!stompClient || !stompClient.connected) {
     alert("⚠️ Não conectado ao servidor!");
     return;
@@ -25,6 +25,7 @@ function getCards(userID) {
     operationType: "GET_CARDS",
     payload: {
       userID: userID,
+      addressWallet: addressWallet,
     },
   };
 
@@ -66,7 +67,7 @@ function proposolExchangeCard(
       player1ID: player1Payload,
       card1ID: card1Payload,
       player2ID: player2Payload,
-      card2ID: card2Payload
+      card2ID: card2Payload,
     },
   };
 
@@ -91,13 +92,12 @@ function exchangeCard(
       player1ID: player1Payload,
       card1ID: card1Payload,
       player2ID: player2Payload,
-      card2ID: card2Payload
+      card2ID: card2Payload,
     },
   };
 
-  console.log(data.payload)
+  console.log(data.payload);
 
   stompClient.send("/app/operation", {}, JSON.stringify(data));
   log(`📤 Enviado: ${data.operationType}`);
 }
-
