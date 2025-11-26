@@ -1,3 +1,13 @@
+const divLoadingOpenPack = document.getElementById("loadingOpenPackage");
+
+function openLoadingOpenPack() {
+  divLoadingOpenPack.classList.remove("hidden");
+}
+
+function closeLoadingOpenPack() {
+  divLoadingOpenPack.classList.add("hidden");
+}
+
 function updateViewsBasedOnConnection() {
   const isConnected = stompClient !== null && stompClient.connected;
 
