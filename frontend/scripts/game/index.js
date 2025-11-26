@@ -1,3 +1,593 @@
+const dataJSON = {
+  "status": "success",
+  "command": "truffle exec scripts/getHistory.js",
+  "data": {
+    "data": [
+      {
+        "open_package": [
+          {
+            "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+            "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+            "packId": "0",
+            "cards": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ]
+          },
+          {
+            "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+            "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+            "packId": "1",
+            "cards": [
+              "6",
+              "7",
+              "8",
+              "9",
+              "10"
+            ]
+          }
+        ]
+      },
+      {
+        "swap_cards": [
+          {
+            "addressPlayer1": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+            "card1": "2",
+            "addressPlayer2": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+            "card2": "7",
+            "transaction": "0xc259900278a4ac8ef042b23d751a74598b1185f334edf917de167a3c752fb335"
+          },
+          {
+            "addressPlayer1": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+            "card1": "7",
+            "addressPlayer2": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+            "card2": "2",
+            "transaction": "0x0a4dfa8b7b9fedb2f425ce272ee37278e40050133d1c85ba14d0e06eaea884f4"
+          }
+        ]
+      },
+      {
+        "match_register": [
+          {
+            "player1": "sparta",
+            "player2": "rodri",
+            "win": "sparta",
+            "transaction": "0xd6f7e8a1bd109af5754156f15fda9334a344ad541d9d5537859948499bb96830",
+            "matchId": "0"
+          }
+        ]
+      },
+      {
+        "mint_cards": [
+          {
+            "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+            "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+            "card": {
+              "id": "1",
+              "name": "Carta 2 da Tribo BLOOD",
+              "element": "BLOOD",
+              "phase": "ADULT",
+              "rarity": "LEGENDARY"
+            }
+          },
+          {
+            "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+            "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+            "card": {
+              "id": "2",
+              "name": "Carta 17 da Tribo LIGHTNING",
+              "element": "LIGHTNING",
+              "phase": "MASTER",
+              "rarity": "EPIC"
+            }
+          },
+          {
+            "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+            "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+            "card": {
+              "id": "3",
+              "name": "Carta 1 da Tribo AIR",
+              "element": "AIR",
+              "phase": "COMMON",
+              "rarity": "COMMON"
+            }
+          },
+          {
+            "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+            "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+            "card": {
+              "id": "4",
+              "name": "Carta 1 da Tribo AIR",
+              "element": "AIR",
+              "phase": "COMMON",
+              "rarity": "COMMON"
+            }
+          },
+          {
+            "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+            "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+            "card": {
+              "id": "5",
+              "name": "Carta 2 da Tribo BLOOD",
+              "element": "BLOOD",
+              "phase": "ADULT",
+              "rarity": "LEGENDARY"
+            }
+          },
+          {
+            "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+            "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+            "card": {
+              "id": "6",
+              "name": "Carta 1 da Tribo AIR",
+              "element": "AIR",
+              "phase": "COMMON",
+              "rarity": "COMMON"
+            }
+          },
+          {
+            "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+            "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+            "card": {
+              "id": "7",
+              "name": "Carta 2 da Tribo BLOOD",
+              "element": "BLOOD",
+              "phase": "ADULT",
+              "rarity": "LEGENDARY"
+            }
+          },
+          {
+            "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+            "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+            "card": {
+              "id": "8",
+              "name": "Carta 1 da Tribo AIR",
+              "element": "AIR",
+              "phase": "COMMON",
+              "rarity": "COMMON"
+            }
+          },
+          {
+            "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+            "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+            "card": {
+              "id": "9",
+              "name": "Carta 1 da Tribo AIR",
+              "element": "AIR",
+              "phase": "COMMON",
+              "rarity": "COMMON"
+            }
+          },
+          {
+            "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+            "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+            "card": {
+              "id": "10",
+              "name": "Carta 2 da Tribo BLOOD",
+              "element": "BLOOD",
+              "phase": "ADULT",
+              "rarity": "LEGENDARY"
+            }
+          }
+        ]
+      }
+    ],
+    "timeline": [
+      {
+        "type": "open_package",
+        "timestamp": 1764124261,
+        "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+        "data": {
+          "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+          "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+          "packId": "0",
+          "cards": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        }
+      },
+      {
+        "type": "mint_cards",
+        "timestamp": 1764124261,
+        "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+        "data": {
+          "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+          "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+          "card": {
+            "id": "1",
+            "name": "Carta 2 da Tribo BLOOD",
+            "element": "BLOOD",
+            "phase": "ADULT",
+            "rarity": "LEGENDARY"
+          }
+        }
+      },
+      {
+        "type": "mint_cards",
+        "timestamp": 1764124261,
+        "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+        "data": {
+          "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+          "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+          "card": {
+            "id": "2",
+            "name": "Carta 17 da Tribo LIGHTNING",
+            "element": "LIGHTNING",
+            "phase": "MASTER",
+            "rarity": "EPIC"
+          }
+        }
+      },
+      {
+        "type": "mint_cards",
+        "timestamp": 1764124261,
+        "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+        "data": {
+          "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+          "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+          "card": {
+            "id": "3",
+            "name": "Carta 1 da Tribo AIR",
+            "element": "AIR",
+            "phase": "COMMON",
+            "rarity": "COMMON"
+          }
+        }
+      },
+      {
+        "type": "mint_cards",
+        "timestamp": 1764124261,
+        "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+        "data": {
+          "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+          "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+          "card": {
+            "id": "4",
+            "name": "Carta 1 da Tribo AIR",
+            "element": "AIR",
+            "phase": "COMMON",
+            "rarity": "COMMON"
+          }
+        }
+      },
+      {
+        "type": "mint_cards",
+        "timestamp": 1764124261,
+        "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+        "data": {
+          "address": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+          "transaction": "0x4e9242d81c68ee435fffe246bece9bcdff457c1b4054f54d87c8410d628e68cf",
+          "card": {
+            "id": "5",
+            "name": "Carta 2 da Tribo BLOOD",
+            "element": "BLOOD",
+            "phase": "ADULT",
+            "rarity": "LEGENDARY"
+          }
+        }
+      },
+      {
+        "type": "open_package",
+        "timestamp": 1764124265,
+        "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+        "data": {
+          "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+          "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+          "packId": "1",
+          "cards": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        }
+      },
+      {
+        "type": "mint_cards",
+        "timestamp": 1764124265,
+        "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+        "data": {
+          "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+          "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+          "card": {
+            "id": "6",
+            "name": "Carta 1 da Tribo AIR",
+            "element": "AIR",
+            "phase": "COMMON",
+            "rarity": "COMMON"
+          }
+        }
+      },
+      {
+        "type": "mint_cards",
+        "timestamp": 1764124265,
+        "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+        "data": {
+          "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+          "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+          "card": {
+            "id": "7",
+            "name": "Carta 2 da Tribo BLOOD",
+            "element": "BLOOD",
+            "phase": "ADULT",
+            "rarity": "LEGENDARY"
+          }
+        }
+      },
+      {
+        "type": "mint_cards",
+        "timestamp": 1764124265,
+        "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+        "data": {
+          "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+          "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+          "card": {
+            "id": "8",
+            "name": "Carta 1 da Tribo AIR",
+            "element": "AIR",
+            "phase": "COMMON",
+            "rarity": "COMMON"
+          }
+        }
+      },
+      {
+        "type": "mint_cards",
+        "timestamp": 1764124265,
+        "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+        "data": {
+          "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+          "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+          "card": {
+            "id": "9",
+            "name": "Carta 1 da Tribo AIR",
+            "element": "AIR",
+            "phase": "COMMON",
+            "rarity": "COMMON"
+          }
+        }
+      },
+      {
+        "type": "mint_cards",
+        "timestamp": 1764124265,
+        "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+        "data": {
+          "address": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+          "transaction": "0xd2d13e61e1f6787890c8d3e3f3f60bc173ce7ae9f617c9696d29d40892a0d05c",
+          "card": {
+            "id": "10",
+            "name": "Carta 2 da Tribo BLOOD",
+            "element": "BLOOD",
+            "phase": "ADULT",
+            "rarity": "LEGENDARY"
+          }
+        }
+      },
+      {
+        "type": "swap_cards",
+        "timestamp": 1764124299,
+        "transaction": "0xc259900278a4ac8ef042b23d751a74598b1185f334edf917de167a3c752fb335",
+        "data": {
+          "addressPlayer1": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+          "card1": "2",
+          "addressPlayer2": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+          "card2": "7",
+          "transaction": "0xc259900278a4ac8ef042b23d751a74598b1185f334edf917de167a3c752fb335"
+        }
+      },
+      {
+        "type": "swap_cards",
+        "timestamp": 1764124313,
+        "transaction": "0x0a4dfa8b7b9fedb2f425ce272ee37278e40050133d1c85ba14d0e06eaea884f4",
+        "data": {
+          "addressPlayer1": "0xb9d0c0D8d96b4B859636c55F734659A474fd0ff4",
+          "card1": "7",
+          "addressPlayer2": "0xdB4E625295391cF2E892143A156A51546cF5689B",
+          "card2": "2",
+          "transaction": "0x0a4dfa8b7b9fedb2f425ce272ee37278e40050133d1c85ba14d0e06eaea884f4"
+        }
+      },
+      {
+        "type": "match_register",
+        "timestamp": 1764124353,
+        "transaction": "0xd6f7e8a1bd109af5754156f15fda9334a344ad541d9d5537859948499bb96830",
+        "data": {
+          "player1": "sparta",
+          "player2": "rodri",
+          "win": "sparta",
+          "transaction": "0xd6f7e8a1bd109af5754156f15fda9334a344ad541d9d5537859948499bb96830",
+          "matchId": "0"
+        }
+      }
+    ],
+    "info": {
+      "mode": "all_blockchain",
+      "address": null,
+      "total_events": 15
+    }
+  }
+}
+const modalHistoryBlockchain = document.getElementById("modalHistoryBlockchain");
+const timelineContainer = document.getElementById("timelineContainer");
+
+function renderHistory(data) {
+  const timeline = data;
+  timelineContainer.innerHTML = "";
+
+  timeline.forEach(event => {
+    const card = document.createElement("div");
+
+    const borderColor =
+      event.type === "open_package" ? "border-blue-500" :
+        event.type === "mint_cards" ? "border-purple-500" :
+          event.type === "swap_cards" ? "border-green-500" :
+          event.type === "match_register" ? "border-orange-500" :
+          "border-gray-500";
+
+    card.className = `
+      bg-gray-800 text-gray-200 p-5 rounded-xl shadow-md border-l-4 ${borderColor}
+      hover:scale-[1.02] transition-transform duration-150
+      flex flex-col gap-2
+    `;
+
+    let html = `
+      <div class="flex justify-between items-center mb-1">
+        <span class="text-sm px-2 py-1 rounded bg-gray-700 uppercase tracking-wide text-gray-300">${event.type}</span>
+        <span class="text-xs text-gray-400">${new Date(event.timestamp * 1000).toLocaleString()}</span>
+      </div>
+
+      <p class="text-sm">
+        <span class="font-bold text-gray-300">Tx:</span> 
+        <span class="break-all text-gray-400">${event.transaction}</span>
+      </p>
+    `;
+
+    /* ------------------------------ OPEN PACKAGE ------------------------------ */
+    if (event.type === "open_package") {
+      const d = event.data;
+
+      html += `
+        <div class="mt-3 bg-gray-700/40 p-3 rounded-lg">
+          <p class="font-semibold text-blue-400 mb-2 flex items-center gap-1">📦 Pacote Aberto</p>
+
+          <p><strong class="text-gray-300">Player:</strong> 
+            <span class="text-gray-400 break-all">${d.address}</span>
+          </p>
+
+          <p><strong class="text-gray-300">Pack ID:</strong> 
+            <span class="text-gray-400">${d.packId}</span>
+          </p>
+
+          <p><strong class="text-gray-300">Cartas:</strong> 
+            <span class="text-gray-400">${d.cards.join(", ")}</span>
+          </p>
+        </div>
+      `;
+    }
+
+    /* ------------------------------ MINT CARDS ------------------------------ */
+    if (event.type === "mint_cards") {
+      const c = event.data.card;
+
+      html += `
+        <div class="mt-3 bg-gray-700/40 p-3 rounded-lg">
+          <p class="font-semibold text-purple-400 mb-2 flex items-center gap-1">✨ Carta Mintada</p>
+
+          <p><strong class="text-gray-300">ID:</strong> <span class="text-gray-400">${c.id}</span></p>
+          <p><strong class="text-gray-300">Nome:</strong> <span class="text-gray-400">${c.name}</span></p>
+          <p><strong class="text-gray-300">Elemento:</strong> <span class="text-gray-400">${c.element}</span></p>
+          <p><strong class="text-gray-300">Fase:</strong> <span class="text-gray-400">${c.phase}</span></p>
+          <p><strong class="text-gray-300">Raridade:</strong> <span class="text-gray-400">${c.rarity}</span></p>
+        </div>
+      `;
+    }
+
+    /* ------------------------------ SWAP CARDS ------------------------------ */
+    if (event.type === "swap_cards") {
+      const d = event.data;
+
+      html += `
+        <div class="mt-3 bg-gray-700/40 p-3 rounded-lg">
+          <p class="font-semibold text-green-400 mb-2 flex items-center gap-1">🔄 Troca de Cartas</p>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="font-semibold text-gray-300">Player 1:</p>
+              <p class="text-gray-400 break-all text-sm">${d.addressPlayer1}</p>
+              <p class="text-gray-400">Carta: ${d.card1}</p>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-300">Player 2:</p>
+              <p class="text-gray-400 break-all text-sm">${d.addressPlayer2}</p>
+              <p class="text-gray-400">Carta: ${d.card2}</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ------------------------------ MATCH REGISTER ------------------------------ */
+    if (event.type === "match_register") {
+      const d = event.data;
+
+      html += `
+        <div class="mt-3 bg-gray-700/40 p-3 rounded-lg">
+          <p class="font-semibold text-orange-400 mb-2 flex items-center gap-1">⚔️ Partida Registrada</p>
+
+          <p><strong class="text-gray-300">Player 1:</strong> 
+            <span class="text-gray-400">${d.player1}</span>
+          </p>
+
+          <p><strong class="text-gray-300">Player 2:</strong> 
+            <span class="text-gray-400">${d.player2}</span>
+          </p>
+
+          <p><strong class="text-gray-300">Vencedor:</strong> 
+            <span class="text-green-400 font-semibold">${d.win}</span>
+          </p>
+
+          <p><strong class="text-gray-300">Match ID:</strong> 
+            <span class="text-gray-400">${d.matchId}</span>
+          </p>
+        </div>
+      `;
+    }
+
+    card.innerHTML = html;
+    timelineContainer.appendChild(card);
+  });
+}
+
+function openModalHistoryBlockchain(data) {
+  console.log("chegooou!", data);
+  console.log("chegooou!", data.timeline);
+  
+  renderHistory(dataJSON.data.timeline);
+  
+  const overlay = document.getElementById('modalHistoryBlockchainOverlay');
+  const modal = document.getElementById('modalHistoryBlockchain');
+  
+  overlay.classList.remove('hidden');
+  modal.classList.remove('hidden');
+  
+  modal.offsetHeight;
+  
+  setTimeout(() => {
+    overlay.classList.add('opacity-100');
+    modal.classList.remove('scale-95', 'opacity-0');
+    modal.classList.add('scale-100', 'opacity-100');
+  }, 10);
+}
+
+function closeModalHistoryBlockchain() {  
+  const overlay = document.getElementById('modalHistoryBlockchainOverlay');
+  const modal = document.getElementById('modalHistoryBlockchain');
+  
+  overlay.classList.remove('opacity-100');
+  modal.classList.remove('scale-100', 'opacity-100');
+  modal.classList.add('scale-95', 'opacity-0');
+  
+  setTimeout(() => {
+    overlay.classList.add('hidden');
+    modal.classList.add('hidden');
+  }, 300);
+}
+
+document.getElementById('modalHistoryBlockchainOverlay').addEventListener('click', closeModalHistoryBlockchain);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !document.getElementById('modalHistoryBlockchain').classList.contains('hidden')) {
+    closeModalHistoryBlockchain();
+  }
+});
+
 function surrender() {
   const match = getMatch();
   const user = getUser();
@@ -38,7 +628,7 @@ function updateGame(data) {
       showInfo("Você perdeu!🫠");
       cleanGame();
     }
-  } 
+  }
 }
 
 function fillGame(data) {
