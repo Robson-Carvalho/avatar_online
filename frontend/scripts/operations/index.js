@@ -1,3 +1,7 @@
+function handleOpenBlockchain(){
+  alert("mostrar modal com histórico")
+}
+
 function handlePlayCard() {
   const user = getUser();
   const match = getMatch();
