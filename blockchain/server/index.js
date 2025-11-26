@@ -139,6 +139,10 @@ app.post("/swap_cards", (req, res) => {
   );
 });
 
+app.get("/history", (req, res) => {
+  run_process("truffle exec scripts/getHistory.js", res);
+});
+
 app.listen(PORT, () => {
   console.log(`NodeJS API running on http://localhost:${PORT}`);
 });
