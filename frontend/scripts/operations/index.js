@@ -1,5 +1,6 @@
 function handleOpenBlockchain(){
-  alert("mostrar modal com histórico")
+  const user = getUser();
+  getHistoryBlockchain(user.id)
 }
 
 function handlePlayCard() {
