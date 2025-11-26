@@ -117,4 +117,24 @@ public class TruffleApiUser {
                 }
         );
     }
+
+    public ResponseEntity<TruffleApiWrapper<HistoryResponseDTO>> getHistory() {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Void> requestEntity = new HttpEntity<>(null, headers);
+
+        String url = UriComponentsBuilder.fromUriString(URL)
+                .path("/history")
+                .build()
+                .toString();
+
+        return restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                requestEntity,
+                new ParameterizedTypeReference<TruffleApiWrapper<HistoryResponseDTO>>() {}
+        );
+    }
 }
