@@ -65,16 +65,22 @@ public class HandleGame {
         this.truffleApiUser = truffleApiUser;
     }
 
-    public ResponseEntity<HistoryResponseDTO> handleGetHistoriyBlockchain(){
+    public void handleGetHistoriyBlockchain(OperationRequestDTO operation, String userSession){
 
         ResponseEntity<HistoryResponseDTO> response = userService.getHistory();
 
         if (response == null || response.getBody() == null) {
-            return ResponseEntity.internalServerError()
-                    .body(null);
+            OperationResponseDTO responseDTO = new OperationResponseDTO();
+            responseDTO.setOperationStatus(OperationStatus.ERROR);
+            responseDTO.setMessage("Operação não reconhecida: " + operation.getOperationType());
+            communication.sendToUser(userSession, responseDTO);
         }
 
-        return response;
+        OperationResponseDTO responseDTO = new OperationResponseDTO(
+                operation.getOperationType(), OperationStatus.OK, "Guga Guga Guga", response
+        );
+
+        communication.sendToUser(userSession, responseDTO);
     }
 
     public void handleJoinInQueue(OperationRequestDTO operation, String userSession) {
