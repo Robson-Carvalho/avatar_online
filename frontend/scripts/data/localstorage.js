@@ -6,6 +6,14 @@ function getUser() {
   return null;
 }
 
+function getHistory() {
+  const data = localStorage.getItem("history_avatar_online")
+  
+  if (data != null) return JSON.parse(data);
+  
+  return null;
+}
+
 function getOnlineUsersLocalStorage() {
   const data = localStorage.getItem("online_users_avatar_online")
   
