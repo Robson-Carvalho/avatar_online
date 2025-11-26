@@ -63,7 +63,7 @@ public class HandleGame {
         this.truffleApiUser = truffleApiUser;
     }
 
-    public void handleGetHistoricBlockchain(OperationRequestDTO operation, String userSession){
+    public void handleGetHistoriyBlockchain(OperationRequestDTO operation, String userSession){
         return ;
     }
 
