@@ -22,6 +22,13 @@ contract PackOpener {
 
     CardData[] public allCards;
 
+    event PackOpened(
+    address indexed opener,
+    uint256 packId,
+    uint256 timestamp
+    );
+
+
     constructor(address _nftAddress) {
         cardNFT = CardNFT(_nftAddress);
         _initializeCards();
@@ -138,6 +145,8 @@ contract PackOpener {
                 player
             );
         }
+
+        emit PackOpened(msg.sender, packCounter, block.timestamp);
 
         packCounter++;
     }

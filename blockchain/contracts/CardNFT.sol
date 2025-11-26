@@ -37,6 +37,7 @@ contract CardNFT is ERC721, Ownable {
         string description;
     }
 
+
     mapping(uint256 => Card) public cards;
 
     mapping(address => uint256[]) public playerCards;
@@ -104,6 +105,7 @@ contract CardNFT is ERC721, Ownable {
 
         playerCards[player1].push(cardId2);
         playerCards[player2].push(cardId1);
+
     }
 
     function _ownsCard(
@@ -164,6 +166,7 @@ contract CardNFT is ERC721, Ownable {
 
         // Adiciona ao array do jogador
         playerCards[to].push(tokenId);
+
     }
 
     function getPlayerCards(
