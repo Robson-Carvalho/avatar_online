@@ -63,6 +63,10 @@ public class HandleGame {
         this.truffleApiUser = truffleApiUser;
     }
 
+    public void handleGetHistoricBlockchain(OperationRequestDTO operation, String userSession){
+        return ;
+    }
+
     public void handleJoinInQueue(OperationRequestDTO operation, String userSession) {
         String currentNodeId = hazelcast.getCluster().getLocalMember().getAddress().getHost();
         String userID = (String) operation.getPayload().get("userID");
