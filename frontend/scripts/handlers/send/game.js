@@ -1,3 +1,21 @@
+function getHistoryBlockchain(userID) {
+    if (!stompClient || !stompClient.connected) {
+        alert("⚠️ Não conectado ao servidor!");
+        return;
+    }
+    
+    const data = {
+      operationType: "GET_HISTORY", 
+      payload: {
+        userID: userID
+      }
+    }
+
+    stompClient.send("/app/operation", {}, JSON.stringify(data));
+    log(`📤 Enviado: ${data.operationType}`);
+}
+
+
 function JoinInQueue(userID) {
     if (!stompClient || !stompClient.connected) {
         alert("⚠️ Não conectado ao servidor!");
