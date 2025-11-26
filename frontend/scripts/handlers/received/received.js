@@ -4,6 +4,7 @@ function handlerMain(message) {
   if (data.operationType === "AUTH_USER") {
     handleAuthUser(data.data);
   } else if (data.operationStatus == "ERROR") {
+    closeLoadingOpenPack();
     showError(`${data.message}`);
   } else if (data.operationStatus == "WARNING") {
     showWarning(`${data.message}`);
@@ -20,6 +21,7 @@ function handlerMain(message) {
     localStorage.setItem("user_avatar_online", JSON.stringify(data.data));
     handleRegisterUserSuccess(data.data);
   } else if (data.operationType === "OPEN_PACKAGE") {
+    closeLoadingOpenPack();
     handleOpenPackageSuccess(data.data);
   } else if (data.operationType === "UPDATE_DECK") {
     handleUpdateDeckSuccess();
@@ -36,7 +38,7 @@ function handlerMain(message) {
   } else if (data.operationType === "FINISHED_GAME") {
     handlUpdateGameSuccess(data);
   } else if (data.operationType === "FINISHED_DRAW") {
-     showInfo("Empate!😡");
+    showInfo("Empate!😡");
     cleanGame();
   } else if (data.operationType === "FINISHED_SURRENDER") {
     handlUpdateGameSuccess(data);
