@@ -1,18 +1,14 @@
 package com.avatar.avatar_online.service;
 
 import com.avatar.avatar_online.DTOs.Create_WalletDTO;
-import com.avatar.avatar_online.DTOs.HistoryResponseDTO;
-import com.avatar.avatar_online.DTOs.TruffleApiWrapper;
 import com.avatar.avatar_online.DTOs.UserDTO;
 import com.avatar.avatar_online.Truffle_Comunication.TruffleApiUser;
 import com.avatar.avatar_online.models.User;
-import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.service.CPCommitService;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
 import com.avatar.avatar_online.raft.service.RedirectService;
 import com.avatar.avatar_online.repository.UserRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,20 +95,16 @@ public class UserService {
         return Optional.empty();
     }
 
-    public ResponseEntity<HistoryResponseDTO> getHistory(){
-        ResponseEntity<TruffleApiWrapper<HistoryResponseDTO>> truffleResponse =
-                truffleApiUser.getHistory();
+    public ResponseEntity<String> getHistory(){
+        ResponseEntity<String> truffleResponse = truffleApiUser.getHistory();
 
-        TruffleApiWrapper<HistoryResponseDTO> body = truffleResponse.getBody();
+        String body = truffleResponse.getBody();
 
-        // 3. Validando a resposta
-        if (body == null || body.getData() == null) {
-            return ResponseEntity.internalServerError()
-                    .body(null);
+        if (body == null) {
+            return ResponseEntity.internalServerError().body("Erro ao obter histórico");
         }
 
-        // 4. Retorno final
-        return ResponseEntity.ok(body.getData());
+        return ResponseEntity.ok(body);
     }
 
     public Optional<User> findById(UUID id) {

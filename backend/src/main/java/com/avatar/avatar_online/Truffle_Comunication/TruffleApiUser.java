@@ -118,7 +118,7 @@ public class TruffleApiUser {
         );
     }
 
-    public ResponseEntity<TruffleApiWrapper<HistoryResponseDTO>> getHistory() {
+    public ResponseEntity<String> getHistory() {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -134,7 +134,8 @@ public class TruffleApiUser {
                 url,
                 HttpMethod.GET,
                 requestEntity,
-                new ParameterizedTypeReference<TruffleApiWrapper<HistoryResponseDTO>>() {}
+                String.class
         );
     }
+
 }

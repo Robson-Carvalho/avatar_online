@@ -4,7 +4,7 @@ package com.avatar.avatar_online.DTOs;
 public class HistoryResponseDTO {
     private String status;
     private String command;
-    private HistoryDataWrapperDTO data;
+    private HistoryDataDTO data;
 
     public HistoryResponseDTO() {}
 
@@ -14,6 +14,6 @@ public class HistoryResponseDTO {
     public String getCommand() { return command; }
     public void setCommand(String command) { this.command = command; }
 
-    public HistoryDataWrapperDTO getData() { return data; }
-    public void setData(HistoryDataWrapperDTO data) { this.data = data; }
+    public HistoryDataDTO getData() { return data; }
+    public void setData(HistoryDataDTO data) { this.data = data; }
 }

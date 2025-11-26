@@ -67,7 +67,7 @@ public class HandleGame {
 
     public void handleGetHistoriyBlockchain(OperationRequestDTO operation, String userSession){
 
-        ResponseEntity<HistoryResponseDTO> response = userService.getHistory();
+        ResponseEntity<String> response = userService.getHistory();
 
         if (response == null || response.getBody() == null) {
             OperationResponseDTO responseDTO = new OperationResponseDTO();
