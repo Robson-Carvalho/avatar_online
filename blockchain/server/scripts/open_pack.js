@@ -63,9 +63,10 @@ module.exports = async function (callback) {
       id.toString()
     );
 
-    const novasCartasIds = cartasDepois.filter(
-      (id) => !cartasAntes.includes(id)
-    );
+   const novasCartasIds = [...new Set(
+  cartasDepois.filter(id => !cartasAntes.includes(id))
+)];
+
 
     const cartasDoPack = [];
     for (const id of novasCartasIds) {

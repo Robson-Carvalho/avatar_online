@@ -66,7 +66,7 @@ public class ClusterLeadershipService implements LeaderStatusQueryService {
     private void startLeaderElection() {
         electionScheduler.scheduleAtFixedRate(() -> {
             if (electionActive.get()) return;
-
+            
             electionActive.set(true);
             try {
                 performLeaderElection();
