@@ -1,6 +1,7 @@
 package com.avatar.avatar_online.publisher_subscriber.handlers;
 
 import com.avatar.avatar_online.DTOs.CardDTO;
+import com.avatar.avatar_online.DTOs.HistoryResponseDTO;
 import com.avatar.avatar_online.Truffle_Comunication.TruffleApiUser;
 import com.avatar.avatar_online.game.Match;
 import com.avatar.avatar_online.game.GameState;
@@ -27,6 +28,7 @@ import com.hazelcast.collection.IQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -63,8 +65,16 @@ public class HandleGame {
         this.truffleApiUser = truffleApiUser;
     }
 
-    public void handleGetHistoriyBlockchain(OperationRequestDTO operation, String userSession){
-        return ;
+    public ResponseEntity<HistoryResponseDTO> handleGetHistoriyBlockchain(){
+
+        ResponseEntity<HistoryResponseDTO> response = userService.getHistory();
+
+        if (response == null || response.getBody() == null) {
+            return ResponseEntity.internalServerError()
+                    .body(null);
+        }
+
+        return response;
     }
 
     public void handleJoinInQueue(OperationRequestDTO operation, String userSession) {

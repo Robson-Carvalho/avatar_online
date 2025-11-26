@@ -1,9 +1,12 @@
 package com.avatar.avatar_online.service;
 
 import com.avatar.avatar_online.DTOs.Create_WalletDTO;
+import com.avatar.avatar_online.DTOs.HistoryResponseDTO;
+import com.avatar.avatar_online.DTOs.TruffleApiWrapper;
 import com.avatar.avatar_online.DTOs.UserDTO;
 import com.avatar.avatar_online.Truffle_Comunication.TruffleApiUser;
 import com.avatar.avatar_online.models.User;
+import com.avatar.avatar_online.publisher_subscriber.model.OperationRequestDTO;
 import com.avatar.avatar_online.raft.logs.UserSignUpCommand;
 import com.avatar.avatar_online.raft.service.CPCommitService;
 import com.avatar.avatar_online.raft.service.ClusterLeadershipService;
@@ -94,6 +97,22 @@ public class UserService {
         }
 
         return Optional.empty();
+    }
+
+    public ResponseEntity<HistoryResponseDTO> getHistory(){
+        ResponseEntity<TruffleApiWrapper<HistoryResponseDTO>> truffleResponse =
+                truffleApiUser.getHistory();
+
+        TruffleApiWrapper<HistoryResponseDTO> body = truffleResponse.getBody();
+
+        // 3. Validando a resposta
+        if (body == null || body.getData() == null) {
+            return ResponseEntity.internalServerError()
+                    .body(null);
+        }
+
+        // 4. Retorno final
+        return ResponseEntity.ok(body.getData());
     }
 
     public Optional<User> findById(UUID id) {

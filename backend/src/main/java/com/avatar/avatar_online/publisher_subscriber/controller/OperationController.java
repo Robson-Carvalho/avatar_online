@@ -54,7 +54,7 @@ public class OperationController {
 
         switch (type) {
             case GET_HISTORY:
-                handleGame.handleGetHistoriyBlockchain(operation, userSession);
+                handleGame.handleGetHistoriyBlockchain();
             case EXCHANGE_CARD:
                 messagingTemplate.convertAndSendToUser(userSession, "/queue/response", handleCard.handleExchangeCard(operation));
                 break;
