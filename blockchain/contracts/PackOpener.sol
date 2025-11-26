@@ -20,14 +20,15 @@ contract PackOpener {
         string description;
     }
 
-    CardData[] public allCards;
-
+    // EVENTO MELHORADO
     event PackOpened(
-    address indexed opener,
-    uint256 packId,
-    uint256 timestamp
+        address indexed opener,
+        uint256 indexed packId,
+        uint256 timestamp,
+        uint256[] cardIds
     );
 
+    CardData[] public allCards;
 
     constructor(address _nftAddress) {
         cardNFT = CardNFT(_nftAddress);
@@ -89,6 +90,8 @@ contract PackOpener {
             )
         );
 
+        uint256[] memory newCardIds = new uint256[](5);
+
         for (uint256 i = 0; i < 5; i++) {
             uint256 uniqueSeed = uint256(
                 keccak256(abi.encodePacked(baseSeed, i))
@@ -107,9 +110,16 @@ contract PackOpener {
                 selectedCard.description,
                 msg.sender
             );
+
+            newCardIds[i] = cardNFT.getPlayerCards(msg.sender)[
+                cardNFT.getPlayerCards(msg.sender).length - 1
+            ];
         }
 
         packCounter++;
+
+        // EMITIR EVENTO COM IDs DAS CARTAS
+        emit PackOpened(msg.sender, packCounter, block.timestamp, newCardIds);
     }
 
     function openPackForPlayer(address player) public {
@@ -126,6 +136,8 @@ contract PackOpener {
                 )
             )
         );
+
+        uint256[] memory newCardIds = new uint256[](5);
 
         for (uint256 i = 0; i < 5; i++) {
             uint256 uniqueSeed = uint256(
@@ -144,9 +156,14 @@ contract PackOpener {
                 selectedCard.description,
                 player
             );
+
+            newCardIds[i] = cardNFT.getPlayerCards(player)[
+                cardNFT.getPlayerCards(player).length - 1
+            ];
         }
 
-        emit PackOpened(msg.sender, packCounter, block.timestamp);
+        // EMITIR EVENTO MELHORADO
+        emit PackOpened(player, packCounter, block.timestamp, newCardIds);
 
         packCounter++;
     }
@@ -156,11 +173,8 @@ contract PackOpener {
     ) private view returns (CardData memory) {
         require(allCards.length > 0, "No cards available");
 
-        uint256 randomIndex = uint256(
-            keccak256(
-                abi.encodePacked(seed) // Seed já é único para cada carta
-            )
-        ) % allCards.length;
+        uint256 randomIndex = uint256(keccak256(abi.encodePacked(seed))) %
+            allCards.length;
 
         return allCards[randomIndex];
     }

@@ -37,9 +37,25 @@ contract CardNFT is ERC721, Ownable {
         string description;
     }
 
+    event CardMinted(
+        address indexed to,
+        uint256 indexed tokenId,
+        string name,
+        ElementCard element,
+        PhaseCard phase,
+        RarityCard rarity,
+        uint256 timestamp
+    );
+
+    event CardsSwapped(
+        address indexed player1,
+        address indexed player2,
+        uint256 cardId1,
+        uint256 cardId2,
+        uint256 timestamp
+    );
 
     mapping(uint256 => Card) public cards;
-
     mapping(address => uint256[]) public playerCards;
 
     uint256 private nextTokenId = 1;
@@ -51,6 +67,26 @@ contract CardNFT is ERC721, Ownable {
 
     function setPackOpener(address _opener) external onlyOwner {
         packOpenerAddress = _opener;
+    }
+
+    function _update(
+        address to,
+        uint256 tokenId,
+        address auth
+    ) internal override returns (address) {
+        address from = super._update(to, tokenId, auth);
+
+        // remover do antigo dono
+        if (from != address(0)) {
+            _removeCardFromPlayer(from, tokenId);
+        }
+
+        // adicionar ao novo dono
+        if (to != address(0)) {
+            playerCards[to].push(tokenId);
+        }
+
+        return from;
     }
 
     function getCard(
@@ -97,15 +133,15 @@ contract CardNFT is ERC721, Ownable {
             "Not authorized to initiate swap"
         );
 
-        require(_ownsCard(player1, cardId1), "Player1 does not own card1");
-        require(_ownsCard(player2, cardId2), "Player2 does not own card2");
+        // Verificar dono REAL no ERC721
+        require(ownerOf(cardId1) == player1, "Player1 does not own card1");
+        require(ownerOf(cardId2) == player2, "Player2 does not own card2");
 
-        _removeCardFromPlayer(player1, cardId1);
-        _removeCardFromPlayer(player2, cardId2);
+        // Transferência REAL
+        _transfer(player1, player2, cardId1);
+        _transfer(player2, player1, cardId2);
 
-        playerCards[player1].push(cardId2);
-        playerCards[player2].push(cardId1);
-
+        emit CardsSwapped(player1, player2, cardId1, cardId2, block.timestamp);
     }
 
     function _ownsCard(
@@ -167,6 +203,16 @@ contract CardNFT is ERC721, Ownable {
         // Adiciona ao array do jogador
         playerCards[to].push(tokenId);
 
+        // EMITIR EVENTO DE MINT
+        emit CardMinted(
+            to,
+            tokenId,
+            name,
+            element,
+            phase,
+            rarity,
+            block.timestamp
+        );
     }
 
     function getPlayerCards(
